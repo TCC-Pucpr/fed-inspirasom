@@ -3,10 +3,10 @@
     "beforeDevCommand": "npm run start",
     "beforeBuildCommand": "npm run build",
     "devPath": "http://localhost:1420",
-    "distDir": "../dist/init/browser"
+    "distDir": "../dist/fed-inspirasom/browser"
   },
   "package": {
-    "productName": "init",
+    "productName": "fed-inspirasom",
     "version": "0.0.0"
   },
   "tauri": {
@@ -19,7 +19,7 @@
     },
     "windows": [
       {
-        "title": "init",
+        "title": "Inspirasom",
         "width": 800,
         "height": 600
       }
