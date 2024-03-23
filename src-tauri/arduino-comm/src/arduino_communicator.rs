@@ -80,11 +80,7 @@ impl SerialCommunicator for ArduinoCommunicator {
 
     fn send_message(&mut self, message: &str) -> bool {
         let message = format!("{}{}{}", self.message_begin_char, message, self.message_end_char);
-        let msg = message.as_bytes();
+        let msg = self.generate_message(&message);
         self.port.write(msg).is_ok()
-    }
-
-    fn generate_message<'a>(&self, msg: &'a str) -> &'a[u8] {
-        return msg.as_bytes();
     }
 }
