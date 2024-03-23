@@ -4,12 +4,12 @@ mod arduino_communicator;
 #[cfg(test)]
 mod arduino_tests {
     use crate::arduino_communicator::ArduinoCommunicator;
-    use crate::serial_communicator::{print_ports, SerialCommunicator};
+    use crate::serial_communicator::{SerialCommunicator};
     
     #[ignore]
     #[test]
     fn print_available_ports() {
-        print_ports();
+        println!("{:?}", serialport::available_ports().expect("No ports available"));
     }
     
     #[ignore]

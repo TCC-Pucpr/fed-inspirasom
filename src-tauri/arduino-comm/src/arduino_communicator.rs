@@ -8,7 +8,7 @@ use crate::serial_communicator::SerialCommunicator;
 
 const  BEGIN_CHAR: char = '{';
 const  END_CHAR: char = '}';
-const  DEFAULT_TIMEOUT: u64 = 1;
+const  DEFAULT_TIMEOUT: u64 = 30;
 const DEFAULT_BAUD: usize = 115_200;
 const DEFAULT_MESSAGE_CAPACITY: usize = 32;
 const FETCH_MESSAGE_REGEX: &str = r"\{(.*?)\}";
@@ -56,24 +56,24 @@ impl Default for ArduinoCommunicator {
 impl SerialCommunicator for ArduinoCommunicator {
     fn receive_message(&mut self) -> Result<String, Error> {
         let mut serial_buf: Vec<u8> = vec![0; self.message_capacity];
-        loop {
-            let res = self.port.read(&mut serial_buf);
-            match res {
-                Ok(size) => {
-                    if size > 0 {
-                        let string = String::from_utf8_lossy(&serial_buf);
-                        let regex = Regex::new(FETCH_MESSAGE_REGEX).expect("invalid regex");
-                        let cap = regex.captures(&string).expect("Invalid");
-                        return if let Some(s) = cap.get(1) {
-                            Ok(String::from(s.as_str()))
-                        } else {
-                            Err(Error::new(ErrorKind::InvalidInput, "Message incorrectly sent!"))
-                        }
+        let res = self.port.read(&mut serial_buf);
+        match res {
+            Ok(size) => {
+                if size > 0 {
+                    let string = String::from_utf8_lossy(&serial_buf);
+                    let regex = Regex::new(FETCH_MESSAGE_REGEX).expect("invalid regex");
+                    let cap = regex.captures(&string).expect("Invalid");
+                    return if let Some(s) = cap.get(1) {
+                        Ok(String::from(s.as_str()))
+                    } else {
+                        Err(Error::new(ErrorKind::InvalidInput, "Message incorrectly sent!"))
                     }
+                } else {
+                    Err(Error::new(ErrorKind::InvalidInput, "No message"))
                 }
-                Err(e) => {
-                    return Err(e);
-                }
+            }
+            Err(e) => {
+                return Err(e);
             }
         }
     }
