@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { invoke } from "@tauri-apps/api/tauri";
+import { RustDataSourceService } from './core/services/rust/dataSource/rust-dataSource.service';
 
 @Component({
   selector: 'app-root',
@@ -11,6 +12,11 @@ import { invoke } from "@tauri-apps/api/tauri";
   styleUrl: './app.component.css'
 })
 export class AppComponent {
+
+    constructor(
+        private rustInvoker: RustDataSourceService
+    ) { }
+
   greetingMessage = "";
   running = false;
 
