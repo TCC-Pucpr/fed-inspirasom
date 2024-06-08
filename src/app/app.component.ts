@@ -18,16 +18,15 @@ export class AppComponent {
     }
 
     greetingMessage = "";
-    running = false;
+    isListeningMidi = false;
 
     greet(event: SubmitEvent, name: string): void {
         event.preventDefault();
-
-        if (this.running) {
+        if (this.isListeningMidi) {
             this.rustInvoker.stop_midi();
         } else {
             this.rustInvoker.connect_midi();
         }
-        this.running = !this.running;
+        this.isListeningMidi = !this.isListeningMidi;
     }
 }
