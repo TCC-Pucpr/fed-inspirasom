@@ -23,7 +23,10 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-async fn connect_arduino_midi(window: Window, state: State<'_, MidiState>) -> Result<(), ()> {
+async fn connect_midi_device(window: Window, state: State<'_, MidiState>) -> Result<(), ()> {
+    if state.worker.lock().as_ref().unwrap().is_some() {
+        return Ok(())
+    }
     let wg = WaitGroup::new();
     *state.worker.lock().unwrap() = Some(wg.worker());
     let _conn = connect(move |wrapper| {
@@ -31,13 +34,12 @@ async fn connect_arduino_midi(window: Window, state: State<'_, MidiState>) -> Re
         window.emit(MIDI_NOTE, wrapper).expect("TODO: panic message");
     });
     wg.wait().await;
-    println!("Done");
     Ok(())
 }
 
 #[tauri::command]
-fn stop_connection(state: State<MidiState>) -> bool {
-    drop(state.worker.lock().unwrap());
+fn stop_midi(state: State<MidiState>) -> bool {
+    *state.worker.lock().unwrap() = None;
     true
 }
 
@@ -46,7 +48,8 @@ fn main() {
         .manage(MidiState { worker: Default::default() })
         .invoke_handler(tauri::generate_handler![
             greet,
-            connect_arduino_midi
+            connect_midi_device,
+            stop_midi
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { invoke } from "@tauri-apps/api/tauri";
 import { RustDataSourceService } from './core/services/rust/dataSource/rust-dataSource.service';
 
 @Component({
@@ -15,23 +14,20 @@ export class AppComponent {
 
     constructor(
         private rustInvoker: RustDataSourceService
-    ) { }
-
-  greetingMessage = "";
-  running = false;
-
-  greet(event: SubmitEvent, name: string): void {
-    event.preventDefault();
-
-    if(this.running) {
-      invoke<boolean>("stop_connection").then((result) => {
-        console.log("Received stop result")
-      });
-    } else {
-      invoke<void>("connect_arduino_midi").then((text) => {
-        console.log("Received")
-      });
+    ) {
     }
-    this.running = !this.running;
-  }
+
+    greetingMessage = "";
+    running = false;
+
+    greet(event: SubmitEvent, name: string): void {
+        event.preventDefault();
+
+        if (this.running) {
+            this.rustInvoker.stop_midi();
+        } else {
+            this.rustInvoker.connect_midi();
+        }
+        this.running = !this.running;
+    }
 }

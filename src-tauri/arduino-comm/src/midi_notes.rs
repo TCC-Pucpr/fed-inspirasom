@@ -1,15 +1,25 @@
 use serde::{Serialize};
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(EnumIter, Debug, Clone, Copy, Serialize, TS)]
+#[ts(export, export_to="../../../src/app/core/model/Note.ts")]
 pub enum Note {
-    Ab3, B4, Bb3, A4, F4, Bb4, E4, A3, G3, C4, G4, D4, Gb4, None
+    G3, Ab3, A3, Bb3, B3, C4, D4, E4, F4, Gb4, G4, Bb4, B4, None
 }
 
-pub fn byte_to_note(b: u8) -> Note {
-    Note::A3
+impl Note {
+    pub fn ordinal(&self) -> u8 {
+        *self as u8
+    }
+    pub fn from_byte(byte: u8) -> Option<Note> {
+        Note::iter().get((byte - 55) as usize)
+    }
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, TS)]
+#[ts(export, export_to="../../../src/app/core/model/MidiSignal.ts", rename="MidiSignal")]
 pub struct NoteWrapper {
     pub velocity: u8,
     pub note: Note
@@ -19,7 +29,7 @@ impl NoteWrapper {
     pub fn new_from_bytes(byte: u8, velocity: u8) -> NoteWrapper {
         NoteWrapper {
             velocity,
-            note: byte_to_note(byte)
+            note: *Note::from_byte(byte).get_or_insert(Note::A3)
         }
     }
 }
