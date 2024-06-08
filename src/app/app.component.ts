@@ -12,14 +12,21 @@ import { RustDataSourceService } from './core/services/rust/dataSource/rust-data
 })
 export class AppComponent {
 
-  constructor(
-    private rustInvoker: RustDataSourceService
-  ) { }
+    constructor(
+        private rustInvoker: RustDataSourceService
+    ) {
+    }
 
-  public greetingMessage: string = "";
+    greetingMessage = "";
+    isListeningMidi = false;
 
-  public async updateMessage(event: SubmitEvent, message: string): Promise<void>{
-    this.greetingMessage = await this.rustInvoker.greet(event, message);
-  }
-  
+    greet(event: SubmitEvent, name: string): void {
+        event.preventDefault();
+        if (this.isListeningMidi) {
+            this.rustInvoker.stop_midi();
+        } else {
+            this.rustInvoker.connect_midi();
+        }
+        this.isListeningMidi = !this.isListeningMidi;
+    }
 }
