@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { SecaoNotaComponent } from './secao-nota/secao-nota.component';
 import { CommonModule } from '@angular/common';
 import { RustDataSourceService } from '../../../../services/rust/dataSource/rust-dataSource.service';
@@ -16,7 +16,7 @@ import { Router } from '@angular/router';
   templateUrl: './partitura.component.html',
   styleUrl: './partitura.component.scss'
 })
-export class PartituraComponent implements OnInit {
+export class PartituraComponent implements OnInit, OnDestroy {
 
   public notasIndex: number[] = [0,1,2];
 
@@ -26,7 +26,12 @@ export class PartituraComponent implements OnInit {
   ){  }
 
   ngOnInit(): void {
+    this.rustInvoker.connect_midi();
     this.rustInvoker.listen_for_midi_note(this.andGetMidiNote);
+  }
+
+  ngOnDestroy(): void {
+    this.rustInvoker.stop_midi();
   }
 
   public voltaMenu() {
