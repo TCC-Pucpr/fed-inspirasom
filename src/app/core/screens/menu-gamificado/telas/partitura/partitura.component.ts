@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { SecaoNotaComponent } from './secao-nota/secao-nota.component';
 import { CommonModule } from '@angular/common';
 import { RustDataSourceService } from '../../../../services/rust/dataSource/rust-dataSource.service';
@@ -18,16 +18,23 @@ import { Router } from '@angular/router';
 })
 export class PartituraComponent implements OnInit, OnDestroy {
 
-  public notasIndex: number[] = [0,1,2];
+  public notasIndex: number[] = [];
 
   constructor(
     private rustInvoker: RustDataSourceService,
-    private router: Router
+    private router: Router,
+    private cdRef: ChangeDetectorRef
   ){  }
 
   ngOnInit(): void {
     this.rustInvoker.connect_midi();
-    this.rustInvoker.listen_for_midi_note(this.andGetMidiNote);
+
+    const andUpdateNotes = (signal: MidiSignal) => {
+      this.notasIndex.push(PartituraNotas.notas[signal.note]);
+      this.cdRef.detectChanges();
+    }
+
+    this.rustInvoker.listen_for_midi_note(andUpdateNotes);
   }
 
   ngOnDestroy(): void {
@@ -36,10 +43,6 @@ export class PartituraComponent implements OnInit, OnDestroy {
 
   public voltaMenu() {
     this.router.navigate(['menu-gamificado']);
-  }
-
-  public andGetMidiNote(signal: MidiSignal){
-    this.notasIndex.push(PartituraNotas.notas[signal.note])
   }
 
 }
