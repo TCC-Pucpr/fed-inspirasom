@@ -1,8 +1,8 @@
 use midir::{ConnectError, MidiInput, MidiInputConnection};
 
-use crate::midi_notes::NoteWrapper;
+use crate::midi_notes::MidiWrapper;
 
-pub fn connect<F: Fn(NoteWrapper) + Send + 'static>(callback: F) -> Result<MidiInputConnection<()>, ConnectError<MidiInput>> {
+pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(callback: F) -> Result<MidiInputConnection<()>, ConnectError<MidiInput>> {
     let midi_in = MidiInput::new("MidiConnection").expect("Error");
     let ports = midi_in.ports();
     let input_port = match ports.len() {
@@ -28,7 +28,13 @@ pub fn connect<F: Fn(NoteWrapper) + Send + 'static>(callback: F) -> Result<MidiI
         move |_, x: &[u8], _| {
             println!("{:?} recebido", x);
             if x.len() > 2 {
-                callback(NoteWrapper::new_from_bytes(x[1], x[2]))
+                callback(
+                    MidiWrapper::new_from_bytes_with_velocity_percentage(
+                        x[0],
+                        x[1], 
+                        x[2]
+                    )
+                )
             }
         },
         ()
