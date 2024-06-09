@@ -28,13 +28,7 @@ pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(callback: F) -> Result<MidiI
         move |_, x: &[u8], _| {
             println!("{:?} recebido", x);
             if x.len() > 2 {
-                callback(
-                    MidiWrapper::new_from_bytes_with_velocity_percentage(
-                        x[0],
-                        x[1], 
-                        x[2]
-                    )
-                )
+                callback(MidiWrapper::new_from_bytes(x[0], x[1], x[2]))
             }
         },
         ()

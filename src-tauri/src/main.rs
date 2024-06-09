@@ -30,8 +30,8 @@ async fn connect_midi_device(window: Window, state: State<'_, MidiState>) -> Res
     let wg = WaitGroup::new();
     *state.worker.lock().unwrap() = Some(wg.worker());
     let _conn = connect(move |wrapper| {
-        println!("{} - {:?}", wrapper.velocity, wrapper.note);
-        window.emit(MIDI_NOTE, wrapper).expect("TODO: panic message");
+        println!("{} - {} - {:?}", wrapper.state, wrapper.air_strength, wrapper.note);
+        window.emit(MIDI_NOTE, wrapper).expect("Could not send midi event!");
     });
     wg.wait().await;
     Ok(())
