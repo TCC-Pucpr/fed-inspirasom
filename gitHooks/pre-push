@@ -1,0 +1,11 @@
+#!/bin/bash
+# Redirect output to stderr.
+exec 1>&2
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+if [ "$branch" = "develop" ] || [ "$branch" = "release" ]; then
+  echo "Não é permitido commitar diretamente na develop ou na release! Por favor commite suas mudanças em outra branch"
+  exit 1
+fi
+exit 0
