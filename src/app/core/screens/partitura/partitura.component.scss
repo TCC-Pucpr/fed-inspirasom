@@ -7,22 +7,6 @@
     border-radius: 1rem;
 }
 
-.hr {
-    height: 1px;
-    width: 100%;
-    overflow: visible;
-
-    &_black{
-        background-color: rgba(black, 0.4);
-    }
-    &_blank {
-        background-color: rgba(black, 0);
-    }
-}
-
-.nota {
-    width: 35px;
-    height: 25px;
-    background-color: black;
-    border-radius: 12px;
+.notas {
+    display: inline-flex;
 }
