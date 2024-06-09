@@ -18,7 +18,7 @@ import { Router } from '@angular/router';
 })
 export class PartituraComponent implements OnInit {
 
-  public notasIndex: number[] = [];
+  public notasIndex: number[] = [0,1,2];
 
   constructor(
     private rustInvoker: RustDataSourceService,
