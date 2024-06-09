@@ -13,10 +13,10 @@ mod tests {
     #[test]
     fn check_if_listens() {
         connect(move |note| {
-            println!("{} - {:?}", note.velocity, note.note)
-        }).expect("TODO: panic message");
+            println!("{} - {:?}", note.air_strength, note.note)
+        }).expect("Could not connect to midi device!");
         let mut s = String::new();
-        stdin().read_line(&mut s).expect("TODO: panic message");
+        stdin().read_line(&mut s).expect("Could not read line");
     }
     
     #[ignore]
