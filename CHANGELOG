@@ -1,0 +1,11 @@
+Version 0.0.10-alpha
+    #10 Arrumar leitura das notas
+    #9 Telas de modo livre e menu gamificado
+    #8 Desenvolver menu para modo gamificado
+    #7 Desenvolver tela para modo livre
+    #6 mudando nome e outros ajustes
+    #5 Mudar nome do campo velocity no front e estado on/off para uma nota
+    #4 implementacao inicial
+    #3 Implementar comunicacao com controladores MIDI
+    #2 PoC comunicação serial em rust
+    #1 Configuração do projeto angular

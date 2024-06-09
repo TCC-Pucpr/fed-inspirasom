@@ -1,6 +1,6 @@
 use midir::{ConnectError, MidiInput, MidiInputConnection};
 
-use crate::midi_notes::MidiWrapper;
+use crate::midi_wrapper::MidiWrapper;
 
 pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(callback: F) -> Result<MidiInputConnection<()>, ConnectError<MidiInput>> {
     let midi_in = MidiInput::new("MidiConnection").expect("Error");
