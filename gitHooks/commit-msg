@@ -1,0 +1,21 @@
+#!/bin/sh
+# Redirect output to stderr.
+exec 1>&2
+
+INPUT_FILE=$1
+START_LINE=`head -n1 $INPUT_FILE`
+
+IS_MERGE_PATTERN="^Merge branch"
+
+PATTERN="^(#[0-9]*) (#[0-9]* )*"
+
+if [[ "$START_LINE" =~ $IS_MERGE_PATTERN ]]; then
+  exit 0
+fi
+
+if ! [[ "$START_LINE" =~ $PATTERN ]]; then
+  echo "Commits devem seguir o padrão '#1 commit exemplo', com espaço entre as issues!"
+  exit 1
+fi
+
+exit 0
