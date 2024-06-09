@@ -1,5 +1,6 @@
 pub mod midi_connection;
-pub mod midi_notes;
+pub mod midi_wrapper;
+mod note;
 
 #[cfg(test)]
 mod tests {
