@@ -15,6 +15,7 @@ div {
   display: block;
 }
 
+// Espaçamentos
 .m-2_3-a {
   margin: 2rem 3rem;
 }
@@ -46,4 +47,19 @@ div {
 
 .m-04-b {
   margin-bottom: 0.4rem;
+}
+
+.m-1-b {
+  margin-bottom: 1rem;
+}
+
+
+// Estilos Comuns
+.btn {
+  padding: 0.5rem 2rem;
+  background-color: cadetblue;
+  color: white;
+  width: fit-content;
+  border-radius: 4px;
+  user-select: none;
 }
