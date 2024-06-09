@@ -1,0 +1,1 @@
+Coloque esses arquivos na pasta `../.git/hooks` para validação de commits
