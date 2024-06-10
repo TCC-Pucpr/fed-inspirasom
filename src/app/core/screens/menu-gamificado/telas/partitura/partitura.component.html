@@ -1,5 +1,6 @@
 <div class="m-2_3-a">
     <div class="btn m-1-b" (click)="voltaMenu()">Voltar para o menu</div>
+    <div class="btn m-1-b" (click)="toggleScroller()">{{isScrollerRunning?'Parar Scroller':'Iniciar Scroller'}}</div>
     <div class="partitura">
         <div class="notas">
             <app-secao-nota *ngFor="let notas of notasIndex" [indexNota]="notas"></app-secao-nota>
