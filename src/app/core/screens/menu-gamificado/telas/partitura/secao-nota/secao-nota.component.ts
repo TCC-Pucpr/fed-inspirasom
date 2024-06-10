@@ -15,12 +15,12 @@ export class SecaoNotaComponent implements OnInit {
 
   public readonly defaultNumberOfLines = 11;
   public readonly offSet = 4;
-  public readonly blankrow = -10;
+  public static readonly blankRow = -10;
   public lines: number = this.defaultNumberOfLines;
 
   ngOnInit(): void {
     this.indexNota += this.offSet;
-    if(this.indexNota <= this.blankrow) this.indexNota = this.blankrow;
+    if(this.indexNota <= SecaoNotaComponent.blankRow) this.indexNota = SecaoNotaComponent.blankRow;
     if(this.indexNota >= this.defaultNumberOfLines){
       this.lines += this.indexNota - this.defaultNumberOfLines+1;
       this.indexNota = this.lines-1;
