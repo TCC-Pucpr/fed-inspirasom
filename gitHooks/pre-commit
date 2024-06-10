@@ -5,7 +5,7 @@ exec 1>&2
 regexpDev='\$dev\$'
 resultDev=$(git grep --line-number --column --cached $regexpDev)
 
-regexpTodo='TODO'
+regexpTodo='\T\O\D\O'
 resultTodo=$(git grep --line-number --column --cached $regexpTodo)
 
 # CHECK

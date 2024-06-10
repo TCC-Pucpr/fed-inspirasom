@@ -13,10 +13,12 @@ export class SecaoNotaComponent implements OnInit {
 
   @Input() indexNota: number = 0;
 
-  public readonly defaultNumberOfLines = 9;
+  public readonly defaultNumberOfLines = 11;
+  public readonly offSet = 4;
   public lines: number = this.defaultNumberOfLines;
 
   ngOnInit(): void {
+    this.indexNota += this.offSet;
     if(this.indexNota >= this.defaultNumberOfLines){
       this.lines += this.indexNota - this.defaultNumberOfLines+1;
       this.indexNota = this.lines-1;
