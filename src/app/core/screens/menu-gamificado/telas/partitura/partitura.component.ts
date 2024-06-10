@@ -30,6 +30,7 @@ export class PartituraComponent implements OnInit, OnDestroy {
     this.rustInvoker.connect_midi();
 
     const andUpdateNotes = (signal: MidiSignal) => {
+      if(signal.state == 128) return;
       this.notasIndex.push(PartituraNotas.notas[signal.note.note]);
       this.cdRef.detectChanges();
     }
