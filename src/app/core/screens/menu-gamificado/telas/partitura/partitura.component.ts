@@ -18,7 +18,10 @@ import { Router } from '@angular/router';
 })
 export class PartituraComponent implements OnInit, OnDestroy {
 
-  public notasIndex: number[] = [];
+  public readonly partituraSize = 30;
+  public notasIndex: number[] = Array.from({ length: this.partituraSize }, (x, i) => i);
+  public isScrollerRunning: boolean = false;
+  public scrollerController: any;
 
   constructor(
     private rustInvoker: RustDataSourceService,
@@ -28,22 +31,44 @@ export class PartituraComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.rustInvoker.connect_midi();
-
-    const andUpdateNotes = (signal: MidiSignal) => {
-      if(signal.state == 128) return;
-      this.notasIndex.push(PartituraNotas.notas[signal.note.note]);
-      this.cdRef.detectChanges();
-    }
-
-    this.rustInvoker.listen_for_midi_note(andUpdateNotes);
+    this.andUpdateNotes.bind(this);
+    this.rustInvoker.listen_for_midi_note(this.andUpdateNotes);
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this.rustInvoker.stop_midi();
   }
 
   public voltaMenu() {
     this.router.navigate(['menu-gamificado']);
+  }
+
+  public toggleScroller(){
+    if(this.isScrollerRunning){
+      this.stopScroller();
+    } else {
+      this.startScroller();
+    }
+  }
+
+  private startScroller(){
+    this.scrollerController = setInterval(() => {
+      this.notasIndex.concat(this.notasIndex.splice(0,1));
+      this.notasIndex.push(-10);
+    }, 100);
+    this.isScrollerRunning = true;
+  }
+
+  private stopScroller(){
+    clearInterval(this.scrollerController);
+    this.isScrollerRunning = false;
+  }  
+
+  public andUpdateNotes(signal: MidiSignal){
+    if(signal.state == 128) return;
+    if(this.partituraSize >= 30) this.notasIndex.concat(this.notasIndex.splice(0,1));
+    this.notasIndex.push(PartituraNotas.notas[signal.note.note]);
+    this.cdRef.detectChanges();
   }
 
 }
