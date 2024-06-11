@@ -21,7 +21,7 @@ Em seguida, executar `npm run tauri dev`.
 ### Código do Arduino
 
 O projeto consiste em dois repositórios, este, e o do código do Arduino,
-que pode ser encontrado acessando [link]().
+que pode ser encontrado acessando este [link](https://github.com/TCC-Pucpr/arduino-inspirasom/tree/9-criacao-da-branch-do-prototipo).
 
 Este link irá redireciona-lo para uma branch parecida com essa, onde não
 haverá mudanças a partir da data de entrega.
