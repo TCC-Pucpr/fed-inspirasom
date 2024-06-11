@@ -14,7 +14,7 @@ você consiga compilar e executar o programa, você vai precisar ter instalado n
 - Rust
 - Tauri, usando cargo para fazer a instalação
 
-Para rodar, entre no diretório raiz do projeto, a seguirvocê irá
+Para rodar, entre no diretório raiz do projeto, a seguir você irá
 executar o comando `npm install` para baixar todas as dependências.
 Em seguida, executar `npm run tauri dev`.
 
