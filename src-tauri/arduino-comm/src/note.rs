@@ -23,6 +23,7 @@ pub enum Note {
     A4,
     Bb4,
     B4,
+    C5,
     None
 }
 
@@ -34,6 +35,7 @@ impl Note {
         *self as u8
     }
     pub fn from_byte(byte: u8) -> Option<Self> {
+        println!("{}", byte);
         Note::iter().get(byte as usize - 55)
     }
     pub fn velocity_percentage(velocity: u8) -> f32 {
