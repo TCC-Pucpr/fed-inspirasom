@@ -3,7 +3,7 @@
     <div class="btn m-1-b" (click)="toggleScroller()">{{isScrollerRunning?'Parar Scroller':'Iniciar Scroller'}}</div>
     <div class="partitura">
         <div class="notas">
-            <app-secao-nota *ngFor="let notas of notasIndex" [indexNota]="notas"></app-secao-nota>
+            <app-secao-nota *ngFor="let notas of notasIndex" [dadosNota]="notas"></app-secao-nota>
         </div>
     </div>
 

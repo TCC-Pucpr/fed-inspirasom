@@ -3,7 +3,7 @@
     width: 100%;
     overflow: visible;
     color: black;
-    padding: 0 0.25rem;
+    padding: 0 0.5rem;
 
     &_black{
         background-color: rgba(black, 0.4);
@@ -15,8 +15,16 @@
 
 .centerNote {
     translate: 0 -50%;
+    position: relative;
 }
 
 .transparent {
     color: transparent;
+}
+
+.bmol {
+    position: absolute;
+    top: -6px;
+    left: -12px;
+    font-size: 30px;
 }
