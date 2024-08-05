@@ -1,0 +1,38 @@
+name: 'version check'
+
+on:
+    pull_request: 
+      branches: 
+        - phaser-release
+
+jobs:
+    check-version:
+      permissions:
+        contents: write
+      runs-on: 'ubuntu-22.04'
+      steps:
+
+        - uses: actions/checkout@v4
+        - name: install dependencies (ubuntu only)
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+        - name: setup node
+          uses: actions/setup-node@v4
+          with:
+            node-version: lts/*
+            cache: 'npm'
+
+        - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tags
+        - name: 'Get Previous tag'
+          id: previoustag
+          uses: "WyriHaximus/github-action-get-previous-tag@v1"
+          with:
+            fallback: 0.0.0
+
+        - name: checking version
+          run: npm run check-ver ${{ steps.previoustag.outputs.tag }}
+  
