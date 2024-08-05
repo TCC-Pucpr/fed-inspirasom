@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MenuGamificadoComponent } from './menu-gamificado.component';
+import { GamificadaComponent } from './gamificada.component';
 
 describe('MenuGamificadoComponent', () => {
-  let component: MenuGamificadoComponent;
-  let fixture: ComponentFixture<MenuGamificadoComponent>;
+  let component: GamificadaComponent;
+  let fixture: ComponentFixture<GamificadaComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MenuGamificadoComponent]
+      imports: [GamificadaComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(MenuGamificadoComponent);
+    fixture = TestBed.createComponent(GamificadaComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

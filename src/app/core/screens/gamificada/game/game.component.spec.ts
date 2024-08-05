@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SecaoNotaComponent } from './secao-nota.component';
+import { GameComponent } from './game.component';
 
-describe('SecaoNotaComponent', () => {
-  let component: SecaoNotaComponent;
-  let fixture: ComponentFixture<SecaoNotaComponent>;
+describe('GameComponent', () => {
+  let component: GameComponent;
+  let fixture: ComponentFixture<GameComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SecaoNotaComponent]
+      imports: [GameComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(SecaoNotaComponent);
+    fixture = TestBed.createComponent(GameComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
