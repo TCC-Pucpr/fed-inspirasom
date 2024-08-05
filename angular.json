@@ -21,6 +21,7 @@
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "assets": ["src/assets"],
+            "scripts": ["node_modules/phaser/dist/phaser.min.js"],
             "styles": [
               "src/styles.scss",
               "node_modules/primeng/resources/primeng.min.css",
