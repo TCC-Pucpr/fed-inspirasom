@@ -1,11 +1,16 @@
 {
   "name": "fed-inspirasom",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "scripts": {
-    "dev": "tauri dev",
+    "ng": "ng",
     "start": "ng serve",
-    "build": "tauri build",
-    "tauri": "tauri"
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "tauri": "tauri",
+    "native": "tauri dev",
+    "build-native": "export NO_STRIP=true && cp node_modules/phaser/dist/phaser.min.js src/assets && tauri build",
+    "ver": "node scripts/update-version.js",
+    "check-ver": "node scripts/check-version.js"
   },
   "private": true,
   "dependencies": {
