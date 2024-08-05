@@ -1,0 +1,66 @@
+*{
+  margin:0; 
+  padding:0;
+  box-sizing: border-box;
+  // overflow: hidden;
+}
+
+html, body {
+  min-height: 100vh;
+  height: 100svh;
+  margin: 0;
+}
+
+div {
+  display: block;
+}
+
+// Espaçamentos
+.m-2_3-a {
+  margin: 2rem 3rem;
+}
+
+.m-16-y {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.m-64-t {
+  margin-top: 4rem;
+}
+
+.m-64-b {
+  margin-bottom: 4rem;
+}
+
+.m-32-b {
+  margin-bottom: 2rem;
+}
+
+.m-8-r {
+  margin-right: 0.5rem;
+}
+
+.p-8-r {
+  padding-right: 0.5rem;
+}
+
+.m-04-b {
+  margin-bottom: 0.4rem;
+}
+
+.m-1-b {
+  margin-bottom: 1rem;
+}
+
+
+// Estilos Comuns
+.btn {
+  padding: 0.5rem 2rem;
+  background-color: cadetblue;
+  color: white;
+  width: fit-content;
+  border-radius: 4px;
+  user-select: none;
+  cursor: pointer;
+}

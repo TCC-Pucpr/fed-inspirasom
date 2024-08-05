@@ -1,0 +1,23 @@
+#!/bin/sh
+# Redirect output to stderr.
+exec 1>&2
+
+regexpDev='\$dev\$'
+resultDev=$(git grep --line-number --column --cached $regexpDev)
+
+regexpTodo='\T\O\D\O'
+resultTodo=$(git grep --line-number --column --cached $regexpTodo)
+
+# CHECK
+if [ $(echo $resultDev | wc -w) -gt 0 ] || [ $(echo $resultTodo | wc -w) -gt 0 ]
+then
+    echo "Snippets para desenvolvimento presentes no commit. Remova-os para commitar:"
+    echo
+    echo "$resultDev"
+    echo "$resultTodo"
+    exit 1;
+
+  else
+    exit 0;
+
+fi

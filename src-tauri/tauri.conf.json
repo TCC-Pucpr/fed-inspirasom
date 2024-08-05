@@ -3,11 +3,11 @@
     "beforeDevCommand": "npm run start",
     "beforeBuildCommand": "npm run build",
     "devPath": "http://localhost:1420",
-    "distDir": "../dist/init/browser"
+    "distDir": "../dist/fed-inspirasom/browser"
   },
   "package": {
-    "productName": "init",
-    "version": "0.0.0"
+    "productName": "fed-inspirasom",
+    "version": "0.1.0"
   },
   "tauri": {
     "allowlist": {
@@ -19,7 +19,7 @@
     },
     "windows": [
       {
-        "title": "init",
+        "title": "Inspirasom",
         "width": 800,
         "height": 600
       }
@@ -30,7 +30,7 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "com.inspirasom.dev",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
