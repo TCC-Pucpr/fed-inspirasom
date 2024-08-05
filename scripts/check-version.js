@@ -3,18 +3,31 @@ const tauriConfigFile = '../src-tauri/tauri.conf.json';
 run();
 
 function run() {
+    const regex = /\d*\.\d*\.\d*/;
     let tauriConfig = require(tauriConfigFile);
-    const tauriVersion = tauriConfig.package.version;     
-    let latestVersion = process.argv[2].split('v')[1];
-    const exec = require('child_process').exec;
+    const tauriVersion = tauriConfig.package.version;  
+
+    const matchesLatestVersion = process.argv[2].match(regex);
+    if(matchesLatestVersion.length === 0){
+        throw ('Something unexpected happened, couldn\'t retrieve version information');
+    }
+    const latestVersion = matchesLatestVersion[0];
+    
     if(process.argv[2] === '0.0.0') {
         latestVersion = process.argv[2];
     } else if(!latestVersion){
         throw (`Something went very very VERY wrong, and we got no versions from the latest release. Got tag [${process.argv[2]}], with version [${latestVersion}].\nThe correct format should be [anything really]v*.*.*`)
     }
+    
+    const exec = require('child_process').exec;
     exec(`npm version`, (err, stdout) => {
         if(err) throw ('Something unexpected happened, couldn\'t retrieve version information');
-        const packageVersion = stdout.split('\n')[1].split('\'')[3];
+        const matchesPackageVer = stdout.match(regex);
+
+        if(matchesPackageVer.length === 0){
+            throw ('Something unexpected happened, couldn\'t retrieve version information');
+        }
+        const packageVersion = matchesPackageVer[0];
 
         console.log(`.latest: ${latestVersion}`);
         console.log(`package: ${packageVersion}`);
