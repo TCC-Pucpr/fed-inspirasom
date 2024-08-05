@@ -1,13 +1,12 @@
 import { Routes, provideRouter } from "@angular/router";
 import { ApplicationConfig } from "@angular/core";
-import { PartituraComponent } from "./core/screens/menu-gamificado/telas/partitura/partitura.component";
-import { MenuGamificadoComponent } from "./core/screens/menu-gamificado/menu-gamificado.component";
+import { GamificadaComponent } from "./core/screens/gamificada/gamificada.component";
+import { MenuDashboardsComponent } from "./core/screens/menu-dashboards/menu-dashboards.component";
 
 export const routes: Routes = [
-
-    { path: 'partitura', component: PartituraComponent },
-    { path: 'menu-gamificado', component: MenuGamificadoComponent },
-    { path: '**', component: MenuGamificadoComponent }
+    { path: 'dashboards', component: MenuDashboardsComponent },
+    { path: 'gamificada', component: GamificadaComponent },
+    { path: '**', redirectTo: 'dashboards' }
 ];
 
 export const routesConfig: ApplicationConfig = {

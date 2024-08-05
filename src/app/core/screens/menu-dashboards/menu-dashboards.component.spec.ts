@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PartituraComponent } from './partitura.component';
+import { MenuDashboardsComponent } from './menu-dashboards.component';
 
-describe('PartituraComponent', () => {
-  let component: PartituraComponent;
-  let fixture: ComponentFixture<PartituraComponent>;
+describe('MenuDashboardsComponent', () => {
+  let component: MenuDashboardsComponent;
+  let fixture: ComponentFixture<MenuDashboardsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PartituraComponent]
+      imports: [MenuDashboardsComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(PartituraComponent);
+    fixture = TestBed.createComponent(MenuDashboardsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
