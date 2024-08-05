@@ -5,9 +5,11 @@ run();
 function run() {
     let tauriConfig = require(tauriConfigFile);
     const tauriVersion = tauriConfig.package.version;     
-    const latestVersion = process.argv[2].split('v')[1];
+    let latestVersion = process.argv[2].split('v')[1];
     const exec = require('child_process').exec;
-    if(!latestVersion){
+    if(process.argv[2] === '0.0.0') {
+        latestVersion = process.argv[2];
+    } else if(!latestVersion){
         throw (`Something went very very VERY wrong, and we got no versions from the latest release. Got tag [${process.argv[2]}], with version [${latestVersion}].\nThe correct format should be [anything really]v*.*.*`)
     }
     exec(`npm version`, (err, stdout) => {
