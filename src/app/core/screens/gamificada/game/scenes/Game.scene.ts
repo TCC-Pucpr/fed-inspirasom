@@ -1,3 +1,8 @@
+import { Note } from "../../../../model/Note";
+import { MusicService } from "../../../../services/music-service/music.service";
+import { EventBus } from "../events/EventBus";
+import { EventNames } from "../events/EventNames.enum";
+
 export class GameScene extends Phaser.Scene {
 
     public pressArea: Phaser.GameObjects.Rectangle; 
@@ -15,16 +20,17 @@ export class GameScene extends Phaser.Scene {
     public scoreText: Phaser.GameObjects.Text;
     public multiplierText: Phaser.GameObjects.Text;
     public chainText: Phaser.GameObjects.Text;
-
-    constructor() {
+    
+    constructor(
+    ) {
         super({key: 'game'});
     }
 
     preload() {
         this.add.image(0, 0, 'background').setOrigin(0, 0);
         this.limit = this.add.rectangle(275, 127, 2, 457).setOrigin(0,0);
-        this.pressArea = this.add.rectangle(287, 127, 80, 457).setOrigin(0,0);
-        this.wrongPressArea = this.add.rectangle(367, 127, 650, 457).setOrigin(0,0);
+        this.pressArea = this.add.rectangle(287, 127, 60, 457).setOrigin(0,0);
+        this.wrongPressArea = this.add.rectangle(347, 127, 80, 457).setOrigin(0,0);
         this.physics.add.existing(this.limit, true);
         this.physics.add.existing(this.pressArea, true);
         this.physics.add.existing(this.wrongPressArea, true);
@@ -39,13 +45,10 @@ export class GameScene extends Phaser.Scene {
         this.add.text(0, 0, 'Press [space] to hit the note', { color: 'white' }).setOrigin(0, 0);
 
         this.notes = this.physics.add.group();
-        for(let i = 0; i < 5; i++){
-            this.createNote(i);
-        }
     }
 
     create() {
-
+        EventBus.emit(EventNames.gameSceneReady, this);
     }
 
     override update() {
@@ -61,11 +64,17 @@ export class GameScene extends Phaser.Scene {
         this.chainText.setText(`Chain: ${this.chainCount}`);
     }
 
-    public poorNote(area:any, note: any) { 
+    public removeNote(limit: any, note: any): void {
+        note.destroy();
+        this.score -= 10;
+        this.multiplier = 1;
+        this.chainCount = 0;
+    }
+
+    public poorNote(area: any, note: any) { 
         if(!this.isPressed && this.inputs?.space.isDown) {
             this.isPressed = true;
             note.destroy();
-            this.createNote();
             this.score -= 20;
             this.chainCount = 1;
         }
@@ -75,10 +84,21 @@ export class GameScene extends Phaser.Scene {
         if(!this.isPressed && this.inputs?.space.isDown) {
             this.isPressed = true;
             note.destroy();
-            this.createNote();
             this.score += 10*this.multiplier;
             this.chainCount+=1;
         }
+    }
+
+    public pauseGame() {
+        this.game.pause();
+    }
+
+    public resumeGame() {
+        this.game.resume();
+    }
+
+    public get isGamePaused(): boolean {
+        return this.game.isPaused;
     }
 
     public getCurrentMultiplier(chain: number): number {
@@ -94,22 +114,14 @@ export class GameScene extends Phaser.Scene {
         return 8;
     }
 
-    public createNote(y: number = -1): void {
-        if (y === -1) {
-            y = Phaser.Math.Between(0, 16)*20;
+    public createNote(note: Note): void {
+        const isBmol = note.includes('b');
+        const y = MusicService.mapTonality(note);
+        if(isBmol) {
+            this.notes.create(980, y, 'bmolNote').setVelocityX(-100).setOrigin(1, 1).setSize(42,36).setOffset(7,5);
         } else {
-            y *= 20;
+            this.notes.create(980, y, 'note').setVelocityX(-100).setOrigin(1, 1);
         }
-        y += 203;
-        this.notes.create(980, y, 'note').setVelocityX(-100);
-    }
-
-    public removeNote(limit: any, note: any): void {
-        note.destroy();
-        this.createNote();
-        this.score -= 10;
-        this.multiplier = 1;
-        this.chainCount = 0;
     }
 
 }

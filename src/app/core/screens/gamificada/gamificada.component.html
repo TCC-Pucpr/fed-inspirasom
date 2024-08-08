@@ -1,2 +1,8 @@
 <div class="btn m-2_3-a" (click)="redirectDashboards()">Goto dashboards</div>
+
+<div class="musicControls">
+    <div class="btn" (click)="addNoteOnGame()">Adicionar Notas</div>
+    <div class="btn" (click)="isMusicPaused?resumeMusic():pauseMusic()">{{isMusicPaused?'Resume':'Pause'}}</div>
+</div>
+
 <phaser-game></phaser-game>

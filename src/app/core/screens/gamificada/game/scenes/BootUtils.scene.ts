@@ -6,7 +6,8 @@ export class BootUtils extends Phaser.Scene {
     preload() {
         this.load.setPath('assets/gameAssets');
         this.load.image('background', 'background.png');
-        this.load.svg('note', 'note.svg');
+        this.load.image('note', 'note.png');
+        this.load.image('bmolNote', 'bmol.png');
     }
 
     create() {
