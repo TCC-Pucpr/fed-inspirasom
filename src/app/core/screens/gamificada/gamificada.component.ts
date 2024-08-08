@@ -1,17 +1,17 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { GameComponent } from "./game/game.component";
-import { MusicService } from '../../services/music-service/music.service';
 import { CommonModule } from '@angular/common';
-import { MusicSheet } from '../../model/MusicSheet.model';
 import { GameScene } from './game/scenes/Game.scene';
 import { EventBus } from './game/events/EventBus';
 import { EventNames } from './game/events/EventNames.enum';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-gamificada',
   standalone: true,
-  imports: [CommonModule, GameComponent],
+  imports: [CommonModule, GameComponent, FormsModule, InputNumberModule],
   templateUrl: './gamificada.component.html',
   styleUrl: './gamificada.component.scss'
 })
@@ -20,9 +20,10 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   @ViewChild(GameComponent) phaserRef!: GameComponent;
   private gameScene: GameScene;
 
+  public row: number = 0;
+
   constructor(
-    private router: Router,
-    protected musicService: MusicService
+    private router: Router
   ) {
   }
   
@@ -40,13 +41,19 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     this.router.navigate(['dashboards']);
   }
 
-  public addNoteOnGame() {
-    this.gameScene.createNote("A3");
-    this.gameScene.createNote("Ab3");
+
+
+// --- Phaser methods
+  public addNoteOnGame(row: number = 0, isBmol: boolean) {
+    this.gameScene.createNote(row, isBmol);
   }
 
   public pauseMusic() {
     this.gameScene.pauseGame();
+  }
+
+  public resumeMusic() {
+    this.gameScene.resumeGame();
   }
 
   public get isMusicPaused(): boolean {
@@ -54,8 +61,5 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     return this.gameScene.isGamePaused;
   }
 
-  public resumeMusic() {
-    this.gameScene.resumeGame();
-  }
 
 }

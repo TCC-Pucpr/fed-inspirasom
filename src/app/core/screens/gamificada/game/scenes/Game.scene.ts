@@ -1,5 +1,3 @@
-import { Note } from "../../../../model/Note";
-import { MusicService } from "../../../../services/music-service/music.service";
 import { EventBus } from "../events/EventBus";
 import { EventNames } from "../events/EventNames.enum";
 
@@ -114,9 +112,9 @@ export class GameScene extends Phaser.Scene {
         return 8;
     }
 
-    public createNote(note: Note): void {
-        const isBmol = note.includes('b');
-        const y = MusicService.mapTonality(note);
+    public createNote(row: number, isBmol: boolean): void {
+        if( row === -1 ) return;
+        const y = 220 + row * 20;
         if(isBmol) {
             this.notes.create(980, y, 'bmolNote').setVelocityX(-100).setOrigin(1, 1).setSize(42,36).setOffset(7,5);
         } else {
