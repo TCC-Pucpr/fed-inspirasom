@@ -4,7 +4,7 @@ use strum_macros::EnumIter;
 use ts_rs::TS;
 
 #[derive(EnumIter, Debug, Clone, Copy, Serialize, TS)]
-#[ts(export, export_to="../../../src/app/core/model/Note.ts")]
+#[ts(export, export_to = "../../../src/app/core/model/Note.ts")]
 pub enum Note {
     G3,
     Ab3,
@@ -24,7 +24,7 @@ pub enum Note {
     Bb4,
     B4,
     C5,
-    None
+    None,
 }
 
 impl Note {
@@ -42,27 +42,25 @@ impl Note {
         match velocity {
             0 => 0f32,
             Self::MAX_VELOCITY => 100f32,
-            _ => velocity as f32 / Self::MAX_VELOCITY as f32
+            _ => velocity as f32 / Self::MAX_VELOCITY as f32,
         }
     }
 }
 
 #[derive(TS, Serialize, Debug, Clone, Copy)]
-#[ts(export, export_to="../../../src/app/core/model/NoteWrapper.ts")]
+#[ts(export, export_to = "../../../src/app/core/model/NoteWrapper.ts")]
 pub struct NoteWrapper {
     note: Note,
-    byte: u8
+    byte: u8,
 }
 
 impl NoteWrapper {
     pub fn new(note: u8) -> Option<Self> {
         if let Some(n) = Note::from_byte(note) {
-            Some(
-                NoteWrapper {
-                    note: n,
-                    byte: note 
-                }
-            )
+            Some(NoteWrapper {
+                note: n,
+                byte: note,
+            })
         } else {
             None
         }
@@ -73,7 +71,7 @@ impl Default for NoteWrapper {
     fn default() -> Self {
         NoteWrapper {
             note: Note::A3,
-            byte: 57
+            byte: 57,
         }
     }
 }

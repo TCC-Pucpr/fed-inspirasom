@@ -1,8 +1,8 @@
 export enum RustFunctionName {
 // dataSource service
-    greet = "greet",
-    connectMidi = "connect_midi_device",
-    stopMidi = "stop_midi"
+    connectMidi = "start_listening_midi",
+    stopMidi = "disconnect_midi",
+    listMidiDevices = "list_midi_devices"
 }
 
 export enum RustEventsName {
