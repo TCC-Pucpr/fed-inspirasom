@@ -1,4 +1,6 @@
-use crate::{constants::events_name::MIDI_NOTE, MidiState};
+use crate::{
+    constants::events_name::MIDI_NOTE, services::data_structs::midi_signal::MidiPayload, MidiState,
+};
 use arduino_comm::midi_connection::{connect, list_available_devices};
 use tauri::{State, Window};
 use waitgroup::WaitGroup;
@@ -37,8 +39,9 @@ pub async fn start_listening_midi(
             "Received input: {} - {} - {:?}",
             wrapper.state, wrapper.air_strength, wrapper.note
         );
+        let payload = MidiPayload::from_midi_wrapper(wrapper);
         window
-            .emit(MIDI_NOTE, wrapper)
+            .emit(MIDI_NOTE, payload)
             .expect("Could not send midi event!");
     });
     wg.wait().await;

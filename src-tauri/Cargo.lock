@@ -104,7 +104,6 @@ dependencies = [
  "serialport",
  "strum",
  "strum_macros",
- "ts-rs",
 ]
 
 [[package]]
@@ -757,6 +756,7 @@ name = "fed-inspirasom"
 version = "0.0.0"
 dependencies = [
  "arduino-comm",
+ "midi-reader",
  "serde",
  "serde_json",
  "tauri",
@@ -1677,6 +1677,7 @@ dependencies = [
  "midi-reader-writer",
  "midly",
  "nodi",
+ "waitgroup",
 ]
 
 [[package]]

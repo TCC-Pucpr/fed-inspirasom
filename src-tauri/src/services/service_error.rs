@@ -17,6 +17,7 @@ impl Display for ServiceError {
     }
 }
 impl Error for ServiceError {}
+
 impl ServiceError {
     pub fn new_with_message(message: String) -> Self {
         Self {

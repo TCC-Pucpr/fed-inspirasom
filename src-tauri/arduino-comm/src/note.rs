@@ -1,10 +1,8 @@
 use serde::Serialize;
-use strum::IntoEnumIterator;
+use strum::{IntoEnumIterator, IntoStaticStr};
 use strum_macros::EnumIter;
-use ts_rs::TS;
 
-#[derive(EnumIter, Debug, Clone, Copy, Serialize, TS)]
-#[ts(export, export_to = "../../../src/app/core/model/Note.ts")]
+#[derive(EnumIter, Debug, Clone, Copy, Serialize, IntoStaticStr)]
 pub enum Note {
     G3,
     Ab3,
@@ -35,7 +33,6 @@ impl Note {
         *self as u8
     }
     pub fn from_byte(byte: u8) -> Option<Self> {
-        println!("{}", byte);
         Note::iter().get(byte as usize - 55)
     }
     pub fn velocity_percentage(velocity: u8) -> f32 {
@@ -47,10 +44,9 @@ impl Note {
     }
 }
 
-#[derive(TS, Serialize, Debug, Clone, Copy)]
-#[ts(export, export_to = "../../../src/app/core/model/NoteWrapper.ts")]
+#[derive(Clone, Copy, Debug)]
 pub struct NoteWrapper {
-    note: Note,
+    pub note: Note,
     byte: u8,
 }
 
