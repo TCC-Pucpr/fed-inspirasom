@@ -5,11 +5,12 @@ use ts_rs::TS;
 #[derive(TS, Serialize, Clone)]
 #[ts(
     export,
-    export_to = "../../../src/app/core/model/MidiSignal.ts",
+    export_to = "../../src/app/core/model/MidiSignal.ts",
     rename = "MidiSignal"
 )]
 pub struct MidiPayload {
     note_index: u8,
+    is_bmol: bool,
     note_name: String,
     #[ts(rename = "airStrength")]
     velocity: u8,
@@ -20,11 +21,11 @@ pub struct MidiPayload {
 impl MidiPayload {
     pub fn from_midi_wrapper(midi_wrapper: MidiWrapper) -> Self {
         let note = midi_wrapper.note.note;
-        let note_index = note.ordinal();
         let note_name: &str = note.into();
         Self {
-            note_index,
-            note_name: String::from(note_name),
+            note_index: note.ordinal(),
+            is_bmol: note.is_bmol(),
+            note_name: note_name.to_string(),
             velocity: midi_wrapper.air_strength,
             state: midi_wrapper.state == Note::STATE_ON,
         }
@@ -38,6 +39,7 @@ impl MidiPayload {
         let note_name: &str = note.into();
         Some(Self {
             note_index: note.ordinal(),
+            is_bmol: note.is_bmol(),
             note_name: note_name.to_string(),
             velocity,
             state,

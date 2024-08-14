@@ -42,24 +42,25 @@ impl Note {
             _ => velocity as f32 / Self::MAX_VELOCITY as f32,
         }
     }
+    pub fn is_bmol(&self) -> bool {
+        let s: &str = self.into();
+        s.contains('b')
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
 pub struct NoteWrapper {
     pub note: Note,
-    byte: u8,
+    pub byte: u8,
 }
 
 impl NoteWrapper {
     pub fn new(note: u8) -> Option<Self> {
-        if let Some(n) = Note::from_byte(note) {
-            Some(NoteWrapper {
-                note: n,
-                byte: note,
-            })
-        } else {
-            None
-        }
+        let n = Note::from_byte(note)?;
+        Some(NoteWrapper {
+            note: n,
+            byte: note,
+        })
     }
 }
 
