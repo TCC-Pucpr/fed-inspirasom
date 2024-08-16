@@ -45,8 +45,9 @@ export class GraphVisualizationComponent implements OnInit {
   }
 
   protected buildGraph() {
-    const corBordas = '#c0c0c0';
-    const textColor = '#b0b0b0';
+    const documentStyle = getComputedStyle(document.documentElement);
+    const textColor = documentStyle.getPropertyValue('--primary-color-text');
+    const gridColor = documentStyle.getPropertyValue('--primary-600');
 
     const labels = this.dates;
     const data = this.scores;
@@ -80,7 +81,7 @@ export class GraphVisualizationComponent implements OnInit {
             color: textColor,
           },
           grid: {
-            color: corBordas,
+            color: gridColor,
             drawBorder: true,
           },
         },
@@ -89,7 +90,7 @@ export class GraphVisualizationComponent implements OnInit {
             color: textColor,
           },
           grid: {
-            color: corBordas,
+            color: gridColor,
             drawBorder: false,
           },
         },

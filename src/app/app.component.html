@@ -1,3 +1,6 @@
 <div class="sized">
+  <div *ngFor="let theme of themes; index as i">
+    <p-button pRipple [label]="theme" (onClick)="changeThemeEasy(i+1)"></p-button>
+  </div>
   <router-outlet></router-outlet>
 </div>
