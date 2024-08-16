@@ -1,19 +1,5 @@
-*{
-  margin:0; 
-  padding:0;
-  box-sizing: border-box;
-  // overflow: hidden;
-}
-
-html, body {
-  min-height: 100vh;
-  height: 100svh;
-  margin: 0;
-}
-
-div {
-  display: block;
-}
+@import "primeicons/primeicons.css";
+// @import "themes/light-soho.scss";
 
 // Espaçamentos
 .m-2_3-a {
@@ -60,7 +46,10 @@ div {
   background-color: cadetblue;
   color: white;
   width: fit-content;
+  height: fit-content;
+  align-items: center;
   border-radius: 4px;
   user-select: none;
   cursor: pointer;
 }
+
