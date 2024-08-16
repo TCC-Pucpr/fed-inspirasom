@@ -47,7 +47,8 @@ export class GraphVisualizationComponent implements OnInit {
   protected buildGraph() {
     const documentStyle = getComputedStyle(document.documentElement);
     const textColor = documentStyle.getPropertyValue('--primary-color-text');
-    const gridColor = documentStyle.getPropertyValue('--primary-600');
+    const gridColor = documentStyle.getPropertyValue('--primary-400');
+    const borderColor = documentStyle.getPropertyValue('--primary-800');
 
     const labels = this.dates;
     const data = this.scores;
@@ -59,7 +60,7 @@ export class GraphVisualizationComponent implements OnInit {
           label: 'Progresso',
           data,
           fill: false,
-          borderColor: '#00ff00',
+          borderColor: borderColor,
           tension: 0.1,
         }
       ],
