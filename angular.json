@@ -20,12 +20,23 @@
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
-            "assets": ["src/assets"],
+            "assets": [
+              "src/assets"
+            ],
             "scripts": ["node_modules/phaser/dist/phaser.min.js"],
             "styles": [
               "node_modules/primeng/resources/primeng.min.css",
-              "node_modules/primeng/resources/themes/saga-blue/theme.css",
-              "src/styles.scss"
+              "src/styles.scss",
+              {
+                "input": "primeng/resources/themes/saga-blue/theme.css",
+                "bundleName": "light", 
+                "inject": false
+              },
+              {
+                "input": "primeng/resources/themes/vela-blue/theme.css",
+                "bundleName": "dark", 
+                "inject": false
+              }
             ]
           },
           "configurations": {
