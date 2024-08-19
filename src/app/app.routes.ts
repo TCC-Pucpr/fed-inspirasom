@@ -2,6 +2,7 @@ import { Routes, provideRouter } from "@angular/router";
 import { ApplicationConfig } from "@angular/core";
 import { GamificadaComponent } from "./core/screens/gamificada/gamificada.component";
 import { MenuDashboardsComponent } from "./core/screens/menu-dashboards/menu-dashboards.component";
+import { provideAnimations } from "@angular/platform-browser/animations";
 
 export const routes: Routes = [
     { path: 'dashboards', component: MenuDashboardsComponent },
@@ -10,6 +11,6 @@ export const routes: Routes = [
 ];
 
 export const routesConfig: ApplicationConfig = {
-    providers: [provideRouter(routes)],
+    providers: [provideRouter(routes), provideAnimations()],
 };
   

@@ -1,55 +1,28 @@
 @import "primeicons/primeicons.css";
 // @import "themes/light-soho.scss";
 
-// Espaçamentos
-.m-2_3-a {
-  margin: 2rem 3rem;
+:root {
+  --sidebarWidth: calc(4rem + 0.5rem);
 }
 
-.m-16-y {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+.w-100 {
+  width: 100%;
 }
 
-.m-64-t {
-  margin-top: 4rem;
+.inRow {
+  display: flex;
+  flex-direction: row;
 }
 
-.m-64-b {
-  margin-bottom: 4rem;
+.inColumn {
+  display: flex;
+  flex-direction: column;
 }
 
-.m-32-b {
-  margin-bottom: 2rem;
+.squared {
+  aspect-ratio: 1/1;
 }
 
-.m-8-r {
+.m-sm-r {
   margin-right: 0.5rem;
 }
-
-.p-8-r {
-  padding-right: 0.5rem;
-}
-
-.m-04-b {
-  margin-bottom: 0.4rem;
-}
-
-.m-1-b {
-  margin-bottom: 1rem;
-}
-
-
-// Estilos Comuns
-.btn {
-  padding: 0.5rem 2rem;
-  background-color: cadetblue;
-  color: white;
-  width: fit-content;
-  height: fit-content;
-  align-items: center;
-  border-radius: 4px;
-  user-select: none;
-  cursor: pointer;
-}
-

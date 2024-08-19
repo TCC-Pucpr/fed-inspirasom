@@ -1,11 +1,12 @@
 import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable } from '@angular/core';
+import { EventEmitter, Inject, Injectable } from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ThemeService {
 
+  public onThemeChange: EventEmitter<String> = new EventEmitter();
   private theme: string = "light";
   public readonly THEME_KEY = "THEME";
 
@@ -22,13 +23,15 @@ export class ThemeService {
     }
   }
 
-  public get currentTheme(): string {
-    return this.theme;
+  public get currentTheme(): "light"|"dark" {
+    return this.theme as "light"|"dark";
   }
 
   public setTheme(theme: "light"|"dark"): void {
     localStorage.setItem(this.THEME_KEY, theme);
     this.theme = theme;
+
+    this.onThemeChange.emit(theme);
 
     const themeLink = this.document.getElementById("app-theme") as HTMLLinkElement;
     if(themeLink) {
