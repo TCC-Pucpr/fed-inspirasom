@@ -1,4 +1,12 @@
 .infoCard {
-    
-
+    display: flex;
+    background: var(--primary-color);
+    width: fit-content;
+    height: fit-content;
+    max-height: 288px;
+    padding: 6rem;
+    font-size: 80px;
+    border-radius: 0.5rem;
+    color: var(--primary-color-text);
+    user-select: none;
 }

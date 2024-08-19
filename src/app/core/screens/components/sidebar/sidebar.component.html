@@ -1,0 +1,20 @@
+<div class="sidebar-closed">
+    <button pButton class="w-100 squared" type="button" icon="pi pi-bars" (click)="barService.setVisible()"></button>
+</div>
+<div class="card flex justify-content-center">
+    <p-sidebar [(visible)]="isVisible">
+        
+        <h3>Inspirasom</h3>
+
+        <div class="navButtonList">
+            <p-button (click)="navigateDash()">Dashboard</p-button>
+            <p-button (click)="navigateGame()">Gamificado</p-button>
+        </div>
+
+        <div class="themeButtons">
+            <p-button *ngIf="themeService.currentTheme==='dark'" [rounded]="true" icon="pi pi-sun" (onClick)="themeService.setTheme('light')"></p-button>
+            <p-button *ngIf="themeService.currentTheme==='light'"[rounded]="true" icon="pi pi-moon"(onClick)="themeService.setTheme('dark')"></p-button>
+        </div>
+
+    </p-sidebar>
+</div>
