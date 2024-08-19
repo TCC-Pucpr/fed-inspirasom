@@ -2,7 +2,8 @@
 // @import "themes/light-soho.scss";
 
 :root {
-  --sidebarWidth: calc(4rem + 0.5rem);
+  --sidebarWidth: 4rem;
+  --sidebarMarginRight: 0.25rem;
 }
 
 .w-100 {

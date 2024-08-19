@@ -1,7 +1,7 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, Input, OnInit, ViewChild } from '@angular/core';
 import { ChartModule, UIChart } from 'primeng/chart';
 import { GraphData } from '../../../../model/GraphData.model';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { ThemeService } from '../../../../services/theme-service/theme.service';
 @Component({
   selector: 'app-graph-visualization',
@@ -16,17 +16,17 @@ import { ThemeService } from '../../../../services/theme-service/theme.service';
 export class GraphVisualizationComponent implements OnInit {
 
   @Input() graphData: GraphData[];
-  @ViewChild(UIChart) chart: UIChart;
+
+  public refreshChart: boolean = false;
   public dates: string[] = [];
   public scores: number[] = [];
-
-  protected refreshGraph: boolean = false;
 
   public data: any;
   public options: any;
 
   constructor(
     private themeService: ThemeService,
+    @Inject(DOCUMENT) private document: Document,
   ) {
   }
 
@@ -35,11 +35,14 @@ export class GraphVisualizationComponent implements OnInit {
       this.dates.push(data.date);
       this.scores.push(data.score);
     }
-    this.buildGraph();
+    this.buildChart();
+    setTimeout(() => {
+      this.updateChart();
+    }, 1);
   }
 
   public ngAfterViewInit(): void {
-    this.themeService.onThemeChange.subscribe(this.buildGraph);
+    this.themeService.onThemeChange.subscribe(() => { this.updateChart() });
   }
 
   //honestamente eu não sei definir a tipagem desses caras, a lib foi feita em js
@@ -54,17 +57,19 @@ export class GraphVisualizationComponent implements OnInit {
 
   }
 
-  public updateGraph() {
-    this.chart.refresh();
+  public updateChart() {
+    this.refreshChart = true;
+    setTimeout(() => {
+      this.buildChart();
+      this.refreshChart = false;  
+    }, 1);
   }
 
-  protected buildGraph() {
-    // TODO ajeitar o grafico pra ele ser re-renderizado quando o tema for mudado
-    // TODO ajeitar o primeiro render do grafico, ele ta renderizando errado
-    const documentStyle = getComputedStyle(document.documentElement);
+  protected buildChart() {
+    const documentStyle = getComputedStyle(this.document.documentElement);
     const textColor = documentStyle.getPropertyValue('--primary-color-text');
-    const borderColor = documentStyle.getPropertyValue('--primary-color-text');
-    const gridColor = documentStyle.getPropertyValue('--primary-color-text');
+    const borderColor = documentStyle.getPropertyValue('--secondary-color');
+    const gridColor = documentStyle.getPropertyValue('--primary-300');
     
     const labels = this.dates;
     const data = this.scores;
@@ -114,9 +119,6 @@ export class GraphVisualizationComponent implements OnInit {
       },
       onClick: this.test
     };
-    if(this.chart){
-      this.chart.refresh();
-    }
   }
   
 }
