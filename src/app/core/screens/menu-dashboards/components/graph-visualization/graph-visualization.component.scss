@@ -3,7 +3,8 @@
     padding: 0.5rem;
     background-color: var(--primary-color);
     width: 500px;
-    height: 250px;
+    height: 288px;
+    max-height: 288px;
     display: grid;
     grid-template-columns: 1fr;
 }

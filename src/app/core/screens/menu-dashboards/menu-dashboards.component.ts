@@ -3,16 +3,25 @@ import { Router } from '@angular/router';
 import { GraphVisualizationComponent } from "./components/graph-visualization/graph-visualization.component";
 import { GraphData } from '../../model/GraphData.model';
 import { NumericVisualizationComponent } from "./components/numeric-visualization/numeric-visualization.component";
+import { SidebarComponent } from "../components/sidebar/sidebar.component";
+import { SidebarService } from '../../services/sidebar-service/sidebar.service';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-menu-dashboards',
   standalone: true,
-  imports: [GraphVisualizationComponent, NumericVisualizationComponent],
+  imports: [
+    GraphVisualizationComponent,
+    NumericVisualizationComponent,
+    SidebarComponent,
+    ButtonModule
+],
   templateUrl: './menu-dashboards.component.html',
   styleUrl: './menu-dashboards.component.scss'
 })
 export class MenuDashboardsComponent {
 
+  public sidebarVisible: boolean = false;
   public testData: GraphData[] = [
     { date: "01/01", score: 10 },
     { date: "01/02", score: 9.5 },
@@ -24,11 +33,7 @@ export class MenuDashboardsComponent {
   ];
 
   constructor(
-    private router: Router
+    protected sidebarService: SidebarService
   ) { }
-
-  public redirectGame(): void {
-    this.router.navigate(['gamificada']);
-  }
 
 }

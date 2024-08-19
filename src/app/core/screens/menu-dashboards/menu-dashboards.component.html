@@ -1,4 +1,6 @@
-<div class="btn m-2_3-a" (click)="redirectGame()">Goto game</div>
+<app-sidebar></app-sidebar>
 
-<app-graph-visualization [graphData]="testData"></app-graph-visualization>
-<app-numeric-visualization [numericInfo]="10"></app-numeric-visualization>
+<div class="inRow dash-spacing">
+    <app-graph-visualization [graphData]="testData"></app-graph-visualization>
+    <app-numeric-visualization [numericInfo]="10"></app-numeric-visualization>
+</div>

@@ -1,27 +1,33 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { ChartModule } from 'primeng/chart';
+import { Component, Inject, Input, OnInit, ViewChild } from '@angular/core';
+import { ChartModule, UIChart } from 'primeng/chart';
 import { GraphData } from '../../../../model/GraphData.model';
-import { CommonModule } from '@angular/common';
-
+import { CommonModule, DOCUMENT } from '@angular/common';
+import { ThemeService } from '../../../../services/theme-service/theme.service';
 @Component({
   selector: 'app-graph-visualization',
   standalone: true,
-  imports: [ CommonModule, ChartModule ],
+  imports: [ 
+    CommonModule, 
+    ChartModule
+  ],
   templateUrl: './graph-visualization.component.html',
   styleUrl: './graph-visualization.component.scss'
 })
 export class GraphVisualizationComponent implements OnInit {
 
   @Input() graphData: GraphData[];
+
+  public refreshChart: boolean = false;
   public dates: string[] = [];
   public scores: number[] = [];
-
-  protected refreshGraph: boolean = false;
 
   public data: any;
   public options: any;
 
-  constructor() {
+  constructor(
+    private themeService: ThemeService,
+    @Inject(DOCUMENT) private document: Document,
+  ) {
   }
 
   public ngOnInit(): void {
@@ -29,7 +35,14 @@ export class GraphVisualizationComponent implements OnInit {
       this.dates.push(data.date);
       this.scores.push(data.score);
     }
-    this.buildGraph();
+    this.buildChart();
+    setTimeout(() => {
+      this.updateChart();
+    }, 1);
+  }
+
+  public ngAfterViewInit(): void {
+    this.themeService.onThemeChange.subscribe(() => { this.updateChart() });
   }
 
   //honestamente eu não sei definir a tipagem desses caras, a lib foi feita em js
@@ -41,15 +54,23 @@ export class GraphVisualizationComponent implements OnInit {
   }
 
   public onEdit(){
-    
+
   }
 
-  protected buildGraph() {
-    const documentStyle = getComputedStyle(document.documentElement);
-    const textColor = documentStyle.getPropertyValue('--primary-color-text');
-    const gridColor = documentStyle.getPropertyValue('--primary-400');
-    const borderColor = documentStyle.getPropertyValue('--primary-800');
+  public updateChart() {
+    this.refreshChart = true;
+    setTimeout(() => {
+      this.buildChart();
+      this.refreshChart = false;  
+    }, 1);
+  }
 
+  protected buildChart() {
+    const documentStyle = getComputedStyle(this.document.documentElement);
+    const textColor = documentStyle.getPropertyValue('--primary-color-text');
+    const borderColor = documentStyle.getPropertyValue('--secondary-color');
+    const gridColor = documentStyle.getPropertyValue('--primary-300');
+    
     const labels = this.dates;
     const data = this.scores;
 
