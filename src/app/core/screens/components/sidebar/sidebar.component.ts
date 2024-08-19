@@ -39,7 +39,9 @@ public ngOnInit(): void {
   const wrapper = document.getElementById("main-wrapper");
   if(wrapper) {
     const bodyStyles = window.getComputedStyle(document.body);
-    wrapper.style.setProperty("padding-left", bodyStyles.getPropertyValue('--sidebarWidth'));
+    const width = (bodyStyles.getPropertyValue('--sidebarWidth'));
+    const margin = (bodyStyles.getPropertyValue('--sidebarMarginRight'));
+    wrapper.style.setProperty("padding-left", `calc(${width} + ${margin})`);
   }
 }
 
