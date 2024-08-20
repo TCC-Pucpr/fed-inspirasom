@@ -20,6 +20,16 @@
   flex-direction: column;
 }
 
+.vCentered {
+  align-items: center;
+  align-content: center;
+}
+
+.hCentered {
+  justify-content: center;
+  justify-items: center;
+}
+
 .squared {
   aspect-ratio: 1/1;
 }
