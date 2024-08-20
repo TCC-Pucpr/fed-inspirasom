@@ -1,2 +1,22 @@
 <div class="btn m-2_3-a" (click)="redirectDashboards()">Goto dashboards</div>
+
+<div class="musicControls">
+    <div class="btn" (click)="addNoteOnGame(row, false)">AddNote</div>
+    <div class="card flex justify-content-center">
+        <p-inputNumber 
+            [(ngModel)]="row" 
+            [style]="{'width': '3rem'}"
+            [showButtons]="true" 
+            buttonLayout="vertical" 
+            spinnerMode="vertical" 
+            inputId="vertical"
+            decrementButtonClass="p-button-secondary"
+            incrementButtonClass="p-button-secondary" 
+            incrementButtonIcon="pi pi-plus" 
+            decrementButtonIcon="pi pi-minus"
+            [min]="0" [max]="16" />
+    </div>
+    <div class="btn" (click)="isMusicPaused?resumeMusic():pauseMusic()">{{isMusicPaused?'Resume':'Pause'}}</div>
+</div>
+
 <phaser-game></phaser-game>
