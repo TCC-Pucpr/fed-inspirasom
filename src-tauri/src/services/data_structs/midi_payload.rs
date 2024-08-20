@@ -20,6 +20,10 @@ pub enum MidiFileState {
     export_to = "../../src/app/core/model/MidiSignal.ts",
     rename = "MidiSignal"
 )]
+/// O payload para enviar dados da nota midi para o front
+///
+/// [`Self::note_index`] é o index da nota comecando no G3, ou seja, G3 é index 0 e
+/// C5 é 15. Esse campo nunca vai ser negativo
 pub struct MidiPayload {
     note_index: u8,
     is_bmol: bool,
