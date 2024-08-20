@@ -1,6 +1,6 @@
 {
   "name": "fed-inspirasom",
-  "version": "0.1.9",
+  "version": "0.1.12",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -24,8 +24,10 @@
     "@angular/platform-browser": "^17.0.0",
     "@angular/platform-browser-dynamic": "^17.0.0",
     "@angular/router": "^17.0.0",
+    "@fortawesome/fontawesome-free": "^6.6.0",
     "@tauri-apps/api": "^1",
     "chart.js": "^4.4.3",
+    "dexie": "^4.0.8",
     "phaser": "^3.80.1",
     "primeicons": "^7.0.0",
     "primeng": "^17.18.8",

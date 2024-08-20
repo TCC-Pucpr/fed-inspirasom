@@ -8,6 +8,8 @@ import { RippleModule } from 'primeng/ripple';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { DialogService, DynamicDialogModule, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { UserProfileComponent } from '../../user-profile/user-profile.component';
 
 @Component({
   selector: 'app-sidebar',
@@ -18,8 +20,12 @@ import { Router } from '@angular/router';
     ButtonModule,
     RippleModule,
     FormsModule,
-    SelectButtonModule
+    SelectButtonModule,
   ],
+  providers: [
+    DialogService
+  ],
+
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss'
 })
@@ -27,34 +33,42 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   protected isVisible: boolean;
 
+  ref: DynamicDialogRef | undefined;
+
   constructor(
     protected barService: SidebarService,
     protected themeService: ThemeService,
     private router: Router,
+    public dialogService: DialogService
   ) {
     this.barService.sidebarStatus.subscribe(state => this.isVisible = state);
   }
 
-public ngOnInit(): void {
-  const wrapper = document.getElementById("main-wrapper");
-  if(wrapper) {
-    const bodyStyles = window.getComputedStyle(document.body);
-    const width = (bodyStyles.getPropertyValue('--sidebarWidth'));
-    const margin = (bodyStyles.getPropertyValue('--sidebarMarginRight'));
-    wrapper.style.setProperty("padding-left", `calc(${width} + ${margin})`);
+  public ngOnInit(): void {
+    const wrapper = document.getElementById("main-wrapper");
+    if(wrapper) {
+      const bodyStyles = window.getComputedStyle(document.body);
+      const width = (bodyStyles.getPropertyValue('--sidebarWidth'));
+      const margin = (bodyStyles.getPropertyValue('--sidebarMarginRight'));
+      wrapper.style.setProperty("padding-left", `calc(${width} + ${margin})`);
+    }
   }
-}
 
-public ngOnDestroy(): void {
-  const wrapper = document.getElementById("main-wrapper");
-  if(wrapper) wrapper.style.setProperty("padding-left", '0px');
-}
+  public ngOnDestroy(): void {
+    const wrapper = document.getElementById("main-wrapper");
+    if(wrapper) wrapper.style.setProperty("padding-left", '0px');
+  }
+
   public navigateGame() {
     this.router.navigate(['gamificada']);
   }
 
   public navigateDash(): void {
     this.router.navigate(['dashboards']);
+  }
+
+  public test() {
+    this.ref = this.dialogService.open(UserProfileComponent, { header: 'Perfil', width: '50vw' });
   }
 
 }

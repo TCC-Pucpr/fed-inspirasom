@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "fed-inspirasom",
-    "version": "0.1.9"
+    "version": "0.1.12"
   },
   "tauri": {
     "allowlist": {
@@ -37,6 +37,9 @@
         "icons/128x128@2x.png",
         "icons/icon.icns",
         "icons/icon.ico"
+      ],
+      "resources": [
+        "resources/*"
       ]
     }
   }

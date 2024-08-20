@@ -1,6 +1,3 @@
-@import "primeicons/primeicons.css";
-// @import "themes/light-soho.scss";
-
 :root {
   --sidebarWidth: 4rem;
   --sidebarMarginRight: 0.25rem;
@@ -18,6 +15,16 @@
 .inColumn {
   display: flex;
   flex-direction: column;
+}
+
+.vCentered {
+  align-items: center;
+  align-content: center;
+}
+
+.hCentered {
+  justify-content: center;
+  justify-items: center;
 }
 
 .squared {
