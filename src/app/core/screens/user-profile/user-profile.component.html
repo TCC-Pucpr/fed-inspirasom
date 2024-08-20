@@ -1,1 +1,17 @@
-modal perfil do usuário
+<input style="display: none" type="file" (change)="onFileSelect($event)" #hiddenfileinput>
+
+<div class="inRow gapped">
+    <div class="pictureContainer m-sm-r">
+        <img id="userImg" class="profileImage" [src]="currentImage">
+        <div class="editIcon profileImage" (click)="hiddenfileinput.click()">
+            <div class="pi pi-pencil" style="font-size: 2rem"></div>
+        </div>
+    </div>
+
+    <div class="inColumn profileFields">
+        <span>nome</span>
+        <span>idade</span>
+        <span>data nscto</span>
+    </div>
+
+</div>
