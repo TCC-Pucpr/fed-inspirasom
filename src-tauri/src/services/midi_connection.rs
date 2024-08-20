@@ -1,5 +1,5 @@
 use crate::{
-    constants::events_name::MIDI_NOTE, services::data_structs::midi_signal::MidiPayload, MidiState,
+    constants::events_name::MIDI_NOTE, services::data_structs::midi_payload::MidiPayload, MidiState,
 };
 use arduino_comm::midi_connection::{connect, list_available_devices};
 use tauri::{State, Window};

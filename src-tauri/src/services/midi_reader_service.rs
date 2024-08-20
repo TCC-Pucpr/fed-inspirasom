@@ -1,17 +1,21 @@
 use std::fs;
 
-use crate::{constants::events_name::MIDI_READ_NOTE, services::service_error::ServiceError};
+use crate::{
+    app_states::midi_device_state::MidiState,
+    constants::events_name::{MIDI_READ_NOTE, MIDI_READ_STATE},
+    services::service_error::ServiceError,
+};
 
 use super::{
     data_structs::{
-        midi_signal::MidiPayload,
+        midi_payload::{MidiFileState, MidiPayload},
         music::{MidiMusic, MidiMusicList},
     },
     service_error::ServiceResult,
 };
 
-use midi_reader::reader_service::{MidiFile, PlayBackCallback};
-use tauri::{Runtime, Window};
+use midi_reader::reader_service::{MidiFile, MidiFilePlayer, PlayBackCallback};
+use tauri::{Runtime, State, Window};
 
 const MUSICS_FOLDER: &str = "musics/";
 const DATA_JSON: &str = "data.json";
@@ -29,6 +33,20 @@ impl PlayBackCallback for SheetListener {
         };
         self.window.emit(MIDI_READ_NOTE, payload).is_ok()
     }
+
+    fn on_interrupted(&self) {
+        let _ = self
+            .window
+            .emit(MIDI_READ_STATE, MidiFileState::INTERRUPTED);
+    }
+
+    fn on_pause(&self) {
+        let _ = self.window.emit(MIDI_READ_STATE, MidiFileState::PAUSED);
+    }
+
+    fn on_finished(&self) {
+        let _ = self.window.emit(MIDI_READ_STATE, MidiFileState::FINISHED);
+    }
 }
 
 #[tauri::command]
@@ -39,23 +57,86 @@ pub fn list_musics<R: Runtime>(app: tauri::AppHandle<R>) -> ServiceResult<MidiMu
 #[tauri::command]
 pub async fn start_game<R: Runtime>(
     music_id: String,
+    midi_state: State<'_, MidiState>,
     handle: tauri::AppHandle<R>,
     window: Window,
 ) -> ServiceResult<()> {
     let (_, file) = read_music_from_id(&handle, music_id)?;
-    let midi_reader = match MidiFile::from_bytes_vector(file) {
+    let file = match MidiFile::from_bytes_vector(file) {
         Ok(mr) => mr,
         Err(err) => return Err(ServiceError::new_with_message(err.to_string())),
     };
-    let sheet_listener = Box::new(SheetListener {
+    midi_state.update_midi_file(Some(file));
+    let mut midi_file = midi_state
+        .midi_file
+        .lock()
+        .map_err(|_| ServiceError::generic())?;
+    let midi_reader = if let Some(mr) = midi_file.as_mut() {
+        mr
+    } else {
+        return Err(ServiceError::generic());
+    };
+    let sheet_listener = SheetListener {
         window,
         ignore_note_errors: false,
-    });
+    };
     let res = midi_reader.read_sheet(sheet_listener);
+    midi_state.update_midi_file(None);
     if let Err(err) = res {
         Err(ServiceError::new_with_message(err.to_string()))
     } else {
         Ok(())
+    }
+}
+
+#[tauri::command]
+pub fn pause_game(midi_state: State<MidiState>) -> Result<(), ServiceError> {
+    if let Some(state) = midi_state
+        .midi_file
+        .lock()
+        .map_err(|_| ServiceError::generic())?
+        .as_mut()
+    {
+        state.pause();
+        Ok(())
+    } else {
+        Err(ServiceError::new_with_message(String::from(
+            "There is no file being played",
+        )))
+    }
+}
+
+#[tauri::command]
+pub fn resume_game(midi_state: State<MidiState>) -> Result<(), ServiceError> {
+    if let Some(state) = midi_state
+        .midi_file
+        .lock()
+        .map_err(|_| ServiceError::generic())?
+        .as_mut()
+    {
+        state.unpause();
+        Ok(())
+    } else {
+        Err(ServiceError::new_with_message(String::from(
+            "There is no file being played",
+        )))
+    }
+}
+
+#[tauri::command]
+pub fn stop_game(midi_state: State<MidiState>) -> Result<(), ServiceError> {
+    if let Some(state) = midi_state
+        .midi_file
+        .lock()
+        .map_err(|_| ServiceError::generic())?
+        .as_mut()
+    {
+        state.stop();
+        Ok(())
+    } else {
+        Err(ServiceError::new_with_message(String::from(
+            "There is no file being played",
+        )))
     }
 }
 

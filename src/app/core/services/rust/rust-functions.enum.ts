@@ -1,3 +1,10 @@
+/**
+ * Todas as funcoes do rust
+ * 
+ * chamadas via `invoke`
+ * 
+ * Todas essas são thread safe
+ */
 export enum RustFunctionName {
     // dataSource service
     /**
@@ -21,11 +28,28 @@ export enum RustFunctionName {
      */
     startGame = "start_game",
     /**
+     * Notifica o lado do rust para parar de enviar eventos de notas temporariamente
+     */
+    pauseGame = "pause_game",
+    /**
+     * Notifica o lado do rust para encerrar a emicao de eventos de notas
+     */
+    stopgame = "stop_game",
+    /**
+     * Notifica o lado do rust para voltar a emitir eventos de notas
+     */
+    resumeGame = "resume_game",
+    /**
      * Devolve a lista de todas as musicas disponiveis (`MidiMusicList`)
      */
     listMusics = "list_musics",
 }
 
+/**
+ * eventos que enviam vários sinais para o front
+ * 
+ * chamados via `listen`
+ */
 export enum RustEventsName {
     /**
      * Evento que periodicamente envia `MidiSignal` que vem do arduino.
@@ -39,5 +63,13 @@ export enum RustEventsName {
      * 
      * Chamar `RustFunctionName.startGame` para começar a emitir.
      */
-    midiReadNote = "MIDI_READ_NOTE"
+    midiReadNote = "MIDI_READ_NOTE",
+    /**
+     * Evento para receber atualizacoes de estado da musica sendo tocada
+     * 
+     * O tipo retornado é `MidiState`.
+     * 
+     * Chamar `RustFunctionName.startGame` para começar a emitir.
+     */
+    midiReadState = "MIDI_READ_STATE",
 }

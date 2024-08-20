@@ -1,2 +1,2 @@
-pub mod midi_signal;
+pub mod midi_payload;
 pub mod music;

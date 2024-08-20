@@ -16,6 +16,9 @@ fn main() {
             disconnect_midi,
             list_midi_devices,
             start_game,
+            pause_game,
+            stop_game,
+            resume_game,
             list_musics
         ])
         .run(tauri::generate_context!())

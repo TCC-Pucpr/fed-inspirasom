@@ -5,6 +5,18 @@ use ts_rs::TS;
 #[derive(TS, Serialize, Clone)]
 #[ts(
     export,
+    export_to = "../../src/app/core/model/MidiState.ts",
+    rename = "MidiState"
+)]
+pub enum MidiFileState {
+    INTERRUPTED,
+    FINISHED,
+    PAUSED,
+}
+
+#[derive(TS, Serialize, Clone)]
+#[ts(
+    export,
     export_to = "../../src/app/core/model/MidiSignal.ts",
     rename = "MidiSignal"
 )]

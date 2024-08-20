@@ -18,6 +18,13 @@ impl Display for ServiceError {
 }
 impl Error for ServiceError {}
 
+impl Default for ServiceError {
+    fn default() -> Self {
+        Self::generic()
+    }
+}
+
+#[allow(dead_code)]
 impl ServiceError {
     pub fn new_with_message(message: String) -> Self {
         Self {
@@ -29,6 +36,15 @@ impl ServiceError {
         Self {
             code,
             message: String::new(),
+        }
+    }
+    pub fn new(code: String, message: String) -> Self {
+        Self { code, message }
+    }
+    pub fn generic() -> Self {
+        Self {
+            code: String::from("0001"),
+            message: String::from("Erro inesperado"),
         }
     }
 }

@@ -757,6 +757,7 @@ version = "0.0.0"
 dependencies = [
  "arduino-comm",
  "midi-reader",
+ "paris",
  "serde",
  "serde_json",
  "tauri",
@@ -1677,6 +1678,7 @@ dependencies = [
  "midi-reader-writer",
  "midly",
  "nodi",
+ "paris",
  "waitgroup",
 ]
 
@@ -1954,6 +1956,12 @@ dependencies = [
  "libc",
  "system-deps 6.2.2",
 ]
+
+[[package]]
+name = "paris"
+version = "1.5.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fecab3723493c7851f292cb060f3ee1c42f19b8d749345d0d7eaf3fd19aa62d"
 
 [[package]]
 name = "parking_lot"
