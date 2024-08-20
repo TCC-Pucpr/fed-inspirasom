@@ -1,10 +1,8 @@
 use serde::Serialize;
-use strum::IntoEnumIterator;
+use strum::{IntoEnumIterator, IntoStaticStr};
 use strum_macros::EnumIter;
-use ts_rs::TS;
 
-#[derive(EnumIter, Debug, Clone, Copy, Serialize, TS)]
-#[ts(export, export_to="../../../src/app/core/model/Note.ts")]
+#[derive(EnumIter, Debug, Clone, Copy, Serialize, IntoStaticStr)]
 pub enum Note {
     G3,
     Ab3,
@@ -24,7 +22,7 @@ pub enum Note {
     Bb4,
     B4,
     C5,
-    None
+    None,
 }
 
 impl Note {
@@ -35,37 +33,34 @@ impl Note {
         *self as u8
     }
     pub fn from_byte(byte: u8) -> Option<Self> {
-        println!("{}", byte);
         Note::iter().get(byte as usize - 55)
     }
     pub fn velocity_percentage(velocity: u8) -> f32 {
         match velocity {
             0 => 0f32,
             Self::MAX_VELOCITY => 100f32,
-            _ => velocity as f32 / Self::MAX_VELOCITY as f32
+            _ => velocity as f32 / Self::MAX_VELOCITY as f32,
         }
+    }
+    pub fn is_bmol(&self) -> bool {
+        let s: &str = self.into();
+        s.contains('b')
     }
 }
 
-#[derive(TS, Serialize, Debug, Clone, Copy)]
-#[ts(export, export_to="../../../src/app/core/model/NoteWrapper.ts")]
+#[derive(Clone, Copy, Debug)]
 pub struct NoteWrapper {
-    note: Note,
-    byte: u8
+    pub note: Note,
+    pub byte: u8,
 }
 
 impl NoteWrapper {
     pub fn new(note: u8) -> Option<Self> {
-        if let Some(n) = Note::from_byte(note) {
-            Some(
-                NoteWrapper {
-                    note: n,
-                    byte: note 
-                }
-            )
-        } else {
-            None
-        }
+        let n = Note::from_byte(note)?;
+        Some(NoteWrapper {
+            note: n,
+            byte: note,
+        })
     }
 }
 
@@ -73,7 +68,7 @@ impl Default for NoteWrapper {
     fn default() -> Self {
         NoteWrapper {
             note: Note::A3,
-            byte: 57
+            byte: 57,
         }
     }
 }
