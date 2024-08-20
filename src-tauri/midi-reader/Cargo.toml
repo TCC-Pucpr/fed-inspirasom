@@ -1,0 +1,21 @@
+[package]
+name = "midi-reader"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+midi-reader-writer = { version = "0.1.2", features = [
+    "engine-midly-0-5",
+    "read",
+    "convert-time",
+] }
+midly = "0.5.3"
+nodi = { version = "1.0.0", features = ["midir"] }
+waitgroup = { workspace = true }
+paris = { workspace = true, optional = true, features = ["macros"] }
+
+[features]
+default = ["verbose"]
+verbose = ["paris"]
