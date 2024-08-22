@@ -51,8 +51,4 @@ export class UserProfileComponent implements OnInit {
     });
   }
 
-  public async save(elem: HTMLElement) {
-    PdfService.saveAsPdf(elem);
-  }
-
 }
