@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { EventEmitter, Inject, Injectable } from '@angular/core';
+import { DataService, StorageKeys } from '../dataService/data.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,11 +12,12 @@ export class ThemeService {
   public readonly THEME_KEY = "THEME";
 
   constructor(
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
+    private storage: DataService
   ) { }
 
   public initTheme(): void {
-    const theme = localStorage.getItem(this.THEME_KEY) as "light"|"dark"|null;
+    const theme = this.storage.get(StorageKeys.theme) as "light"|"dark"|null;
     if(theme){
       this.setTheme(theme);
     } else {
@@ -28,7 +30,7 @@ export class ThemeService {
   }
 
   public setTheme(theme: "light"|"dark"): void {
-    localStorage.setItem(this.THEME_KEY, theme);
+    this.storage.set(StorageKeys.theme, theme);
     this.theme = theme;
 
     this.onThemeChange.emit(theme);
