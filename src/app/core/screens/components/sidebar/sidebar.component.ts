@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { UserProfileComponent } from '../../user-profile/user-profile.component';
+import { PdfService } from '../../../services/pdfService/pdf.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -68,7 +69,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   public openUserProfile() {
-    this.dialogRef = this.dialogService.open(UserProfileComponent, { header: 'Perfil', width: '50vw' });
+    this.dialogRef = this.dialogService.open(UserProfileComponent, { header: 'Perfil', width: 'fit-content' });
+  }
+
+  public screenshot() {
+    const element = document.getElementById("docBody");
+    if(element) PdfService.saveAsPdf(element);
   }
 
 }

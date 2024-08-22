@@ -5,6 +5,7 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { FileUploadModule } from 'primeng/fileupload';
 import { CropperComponent } from './components/cropper/cropper.component';
 import { DataService, StorageKeys } from '../../services/dataService/data.service';
+import { PdfService } from '../../services/pdfService/pdf.service';
 
 @Component({
   selector: 'app-user-profile',
