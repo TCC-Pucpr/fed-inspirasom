@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { FileUploadModule } from 'primeng/fileupload';
+import { CropperComponent } from './components/cropper/cropper.component';
 
 @Component({
   selector: 'app-user-profile',
@@ -20,8 +22,11 @@ export class UserProfileComponent implements OnInit {
   public currentImage: string = "";
   public readonly PFP_KEY = "PFP_KEY";
 
-  constructor() {
-  }
+  private dialogRef: DynamicDialogRef | undefined;
+
+  constructor(
+    public dialogService: DialogService
+  ) { }
 
   public ngOnInit(): void {
     const saved = localStorage.getItem(this.PFP_KEY);
@@ -33,23 +38,14 @@ export class UserProfileComponent implements OnInit {
   }
 
   public onFileSelect(event: any) {
-    console.log(event.target.files[0]);
-    this.currentImage = URL.createObjectURL(event.target.files[0]);
-
-    fetch(this.currentImage)
-      .then(response => response.blob())
-      .then(blob => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64data = reader.result as string;
-          this.currentImage = base64data; 
-          localStorage.setItem(this.PFP_KEY, base64data);
-        };
-        reader.readAsDataURL(blob);
-      })
-      .catch(error => {
-        console.error("Error converting blob to base64:", error);
-      });
+    const imageURL = URL.createObjectURL(event.target.files[0]);
+    this.dialogRef = this.dialogService.open(CropperComponent, { header: 'Selecione a região', width: 'fit-content', data: { url: imageURL } });
+    
+    this.dialogRef.onClose.subscribe((url: string) => {
+      if(!url) return;
+      this.currentImage = url;
+      localStorage.setItem(this.PFP_KEY, url);
+    });
   }
 
 }
