@@ -4,6 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { FileUploadModule } from 'primeng/fileupload';
 import { CropperComponent } from './components/cropper/cropper.component';
+import { DataService, StorageKeys } from '../../services/dataService/data.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -25,11 +26,12 @@ export class UserProfileComponent implements OnInit {
   private dialogRef: DynamicDialogRef | undefined;
 
   constructor(
-    public dialogService: DialogService
+    public dialogService: DialogService,
+    private storage: DataService
   ) { }
 
   public ngOnInit(): void {
-    const saved = localStorage.getItem(this.PFP_KEY);
+    const saved = this.storage.get(StorageKeys.profile_picture);
     if(saved){
       this.currentImage = saved;
     } else {
@@ -44,7 +46,7 @@ export class UserProfileComponent implements OnInit {
     this.dialogRef.onClose.subscribe((url: string) => {
       if(!url) return;
       this.currentImage = url;
-      localStorage.setItem(this.PFP_KEY, url);
+      this.storage.set(StorageKeys.profile_picture, url);
     });
   }
 
