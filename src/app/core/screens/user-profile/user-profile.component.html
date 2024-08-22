@@ -1,6 +1,6 @@
 <input style="display: none" type="file" (change)="onFileSelect($event)" accept="image/*" #hiddenfileinput>
 
-<div class="inRow gapped">
+<div class="inRow gapped" #teste>
     <div class="pictureContainer m-sm-r">
         <img id="userImg" class="profileImage" [src]="currentImage">
         <div class="editIcon profileImage" (click)="hiddenfileinput.click()">
@@ -14,4 +14,5 @@
         <span>data nscto</span>
     </div>
 
+    <button pButton (click)="save(teste)"> teste </button>
 </div>

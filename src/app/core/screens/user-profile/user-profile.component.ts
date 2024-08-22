@@ -5,6 +5,7 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { FileUploadModule } from 'primeng/fileupload';
 import { CropperComponent } from './components/cropper/cropper.component';
 import { DataService, StorageKeys } from '../../services/dataService/data.service';
+import { PdfService } from '../../services/pdfService/pdf.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -48,6 +49,10 @@ export class UserProfileComponent implements OnInit {
       this.currentImage = url;
       this.storage.set(StorageKeys.profile_picture, url);
     });
+  }
+
+  public async save(elem: HTMLElement) {
+    PdfService.saveAsPdf(elem);
   }
 
 }

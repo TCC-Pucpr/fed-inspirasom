@@ -68,7 +68,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   public openUserProfile() {
-    this.dialogRef = this.dialogService.open(UserProfileComponent, { header: 'Perfil', width: '50vw' });
+    this.dialogRef = this.dialogService.open(UserProfileComponent, { header: 'Perfil', width: 'fit-content' });
   }
 
 }
