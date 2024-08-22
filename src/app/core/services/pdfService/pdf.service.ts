@@ -21,8 +21,6 @@ export class PdfService {
       let orientation : 'l' | 'p' = element.scrollWidth > element.scrollHeight ? 'l': 'p';
       const pdfSize = [element.scrollWidth+(margin*2), element.scrollHeight+(margin*2)];
       const imageSizing = [element.scrollWidth, element.scrollHeight]
-
-      console.log(pdfSize);
       
       const doc = new jsPDF(orientation, 'px', pdfSize, true);
       doc.addImage(image, "png", margin, margin, imageSizing[0], imageSizing[1]);
