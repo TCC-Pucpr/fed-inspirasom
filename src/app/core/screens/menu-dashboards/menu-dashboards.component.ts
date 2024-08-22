@@ -1,20 +1,22 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { GraphVisualizationComponent } from "./components/graph-visualization/graph-visualization.component";
+import { ChartVisualizationComponent } from "./components/chart-visualization/chart-visualization.component";
 import { GraphData } from '../../model/GraphData.model';
 import { NumericVisualizationComponent } from "./components/numeric-visualization/numeric-visualization.component";
 import { SidebarComponent } from "../components/sidebar/sidebar.component";
 import { SidebarService } from '../../services/sidebar-service/sidebar.service';
 import { ButtonModule } from 'primeng/button';
+import { ListVisualizationComponent } from "./components/list-visualization/list-visualization.component";
 
 @Component({
   selector: 'app-menu-dashboards',
   standalone: true,
   imports: [
-    GraphVisualizationComponent,
+    ChartVisualizationComponent,
     NumericVisualizationComponent,
     SidebarComponent,
-    ButtonModule
+    ButtonModule,
+    ListVisualizationComponent
 ],
   templateUrl: './menu-dashboards.component.html',
   styleUrl: './menu-dashboards.component.scss'

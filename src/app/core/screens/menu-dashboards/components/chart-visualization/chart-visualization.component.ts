@@ -1,21 +1,21 @@
 import { Component, Inject, Input, OnInit, ViewChild } from '@angular/core';
-import { ChartModule, UIChart } from 'primeng/chart';
-import { GraphData } from '../../../../model/GraphData.model';
+import { ChartModule } from 'primeng/chart';
+import { GraphData as ChartData } from '../../../../model/GraphData.model';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { ThemeService } from '../../../../services/theme-service/theme.service';
 @Component({
-  selector: 'app-graph-visualization',
+  selector: 'app-chart-visualization',
   standalone: true,
   imports: [ 
     CommonModule, 
     ChartModule
   ],
-  templateUrl: './graph-visualization.component.html',
-  styleUrl: './graph-visualization.component.scss'
+  templateUrl: './chart-visualization.component.html',
+  styleUrl: './chart-visualization.component.scss'
 })
-export class GraphVisualizationComponent implements OnInit {
+export class ChartVisualizationComponent implements OnInit {
 
-  @Input() graphData: GraphData[];
+  @Input() chartData: ChartData[];
 
   public refreshChart: boolean = false;
   public dates: string[] = [];
@@ -31,7 +31,7 @@ export class GraphVisualizationComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    for(let data of this.graphData){
+    for(let data of this.chartData){
       this.dates.push(data.date);
       this.scores.push(data.score);
     }
