@@ -86,11 +86,12 @@ export class CropperComponent implements AfterViewInit {
   protected reset(){
     this.cropper.clear();
     this.cropper.crop();
-    const data = this.cropper.getContainerData();
-    this.cropper.zoomTo(.5, {
-      x: data.width / 2,
-      y: data.height / 2,
-    });
+    this.cropper.zoomTo(0);
+    const containerData = this.cropper.getContainerData();
+    const imageData = this.cropper.getImageData();
+    const calculatedX = (containerData.width - imageData.width)/2;
+    const calculatedY = (containerData.height - imageData.height)/2;
+    this.cropper.moveTo(calculatedX, calculatedY);
   }
 
 }
