@@ -1,5 +1,16 @@
 <app-sidebar></app-sidebar>
 
-<div class="inRow dash-spacing">
-    <app-graph-visualization [graphData]="testData"></app-graph-visualization>
+<div class="centerDashboard">
+    <div class="inRow spacingDashboard heightLimit">
+        <app-chart-visualization [chartData]="testData"></app-chart-visualization>
+        <div class="secondColumn spacingDashboard">
+            <div class="numericDisplays spacingDashboard">
+                <app-numeric-visualization [numericInfo]="100"></app-numeric-visualization>
+                <app-numeric-visualization [numericInfo]="10"></app-numeric-visualization>
+            </div>
+            <div class="listDisplay">
+                <app-list-visualization></app-list-visualization>
+            </div>
+        </div>
+    </div>
 </div>

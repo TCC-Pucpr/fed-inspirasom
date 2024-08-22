@@ -1,3 +1,29 @@
-.dash-spacing {
+.spacingDashboard {
     gap: 1rem;
+}
+
+.secondColumn {
+    display: flex;
+    flex-direction: column;
+}
+
+.numericDisplays {
+    display: flex;
+    flex-direction: row;
+}
+
+.listDisplay {
+    height: 100%;
+}
+
+.heightLimit {
+    height: fit-content;
+}
+
+.centerDashboard {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
 }

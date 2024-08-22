@@ -11,8 +11,8 @@
             inputId="vertical"
             decrementButtonClass="p-button-primary"
             incrementButtonClass="p-button-primary" 
-            incrementButtonIcon="pi pi-plus" 
-            decrementButtonIcon="pi pi-minus"
+            incrementButtonIcon="fa-solid fa-plus" 
+            decrementButtonIcon="fa-solid fa-minus"
             [min]="0" [max]="16" />
     </div>
     <button pButton (click)="isMusicPaused?resumeMusic():pauseMusic()">{{isMusicPaused?'Resume':'Pause'}}</button>
