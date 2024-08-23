@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { SidebarModule } from 'primeng/sidebar';
 import { SidebarService } from '../../../services/sidebar-service/sidebar.service';
@@ -8,8 +8,9 @@ import { RippleModule } from 'primeng/ripple';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { DialogService, DynamicDialogModule, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { UserProfileComponent } from '../../user-profile/user-profile.component';
+import { PdfService } from '../../../services/pdfService/pdf.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -32,8 +33,7 @@ import { UserProfileComponent } from '../../user-profile/user-profile.component'
 export class SidebarComponent implements OnInit, OnDestroy {
 
   protected isVisible: boolean;
-
-  ref: DynamicDialogRef | undefined;
+  private dialogRef: DynamicDialogRef | undefined;
 
   constructor(
     protected barService: SidebarService,
@@ -47,6 +47,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     const wrapper = document.getElementById("main-wrapper");
     if(wrapper) {
+      // coloca um padding na esquerda quando a sidebar existir
       const bodyStyles = window.getComputedStyle(document.body);
       const width = (bodyStyles.getPropertyValue('--sidebarWidth'));
       const margin = (bodyStyles.getPropertyValue('--sidebarMarginRight'));
@@ -67,8 +68,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.router.navigate(['dashboards']);
   }
 
-  public test() {
-    this.ref = this.dialogService.open(UserProfileComponent, { header: 'Perfil', width: '50vw' });
+  public openUserProfile() {
+    this.dialogRef = this.dialogService.open(UserProfileComponent, { header: 'Perfil', width: 'fit-content' });
+  }
+
+  public get isShowingScreenshot(): boolean {
+    return this.router.url.includes('dashboard');
+  }
+
+  public screenshot() {
+    const element = document.getElementById("docBody");
+    if(element) PdfService.saveAsPdf(element);
   }
 
 }

@@ -1,5 +1,5 @@
 <div class="sidebar-closed">
-    <button pButton class="w-100 squared" type="button" icon="pi pi-bars" (click)="barService.setVisible()"></button>
+    <button pButton class="w-100 squared" type="button" icon="fa-solid fa-bars" (click)="barService.setVisible()"></button>
 </div>
 <div class="card flex justify-content-center">
     <p-sidebar [(visible)]="isVisible">
@@ -7,14 +7,16 @@
         <h3>Inspirasom</h3>
 
         <div class="navButtonList">
-            <p-button label="Dashboard" icon="pi pi-chart-bar" iconPos="left" (click)="navigateDash()"></p-button>
-            <p-button label="Gamificado" icon="pi pi-play" iconPos="left" (click)="navigateGame()"></p-button>
-            <p-button label="Perfil" icon="pi pi-user" iconPos="left" (click)="test()"></p-button>
+            <p-button label="Dashboard" icon="fa-solid fa-chart-line" iconPos="left" (click)="navigateDash()"></p-button>
+            <p-button label="Gamificado" icon="fa-solid fa-gamepad" iconPos="left" (click)="navigateGame()"></p-button>
+            <p-button label="Perfil" icon="fa-solid fa-user" iconPos="left" (click)="openUserProfile()"></p-button>
         </div>
 
         <div class="themeButtons">
-            <p-button *ngIf="themeService.currentTheme==='dark'" [rounded]="true" icon="pi pi-sun" (onClick)="themeService.setTheme('light')"></p-button>
-            <p-button *ngIf="themeService.currentTheme==='light'"[rounded]="true" icon="pi pi-moon"(onClick)="themeService.setTheme('dark')"></p-button>
+            <p-button *ngIf="themeService.currentTheme==='dark'" [rounded]="true" icon="fa-regular fa-sun" (onClick)="themeService.setTheme('light')"></p-button>
+            <p-button *ngIf="themeService.currentTheme==='light'"[rounded]="true" icon="fa-regular fa-moon"(onClick)="themeService.setTheme('dark')"></p-button>
+
+            <button *ngIf="isShowingScreenshot" pButton [rounded]="true" icon="fa-regular fa-camera-retro" (click)="screenshot()"></button>
         </div>
 
     </p-sidebar>

@@ -2,6 +2,8 @@
     position: fixed;
     bottom: 2rem;
     left: 2rem;
+    display: flex;
+    gap: 0.5rem;
 }
 
 .navButtonList {
@@ -19,4 +21,5 @@
     height: 100vh;
     width: calc(var(--sidebarWidth) - 0.5rem);
     background-color: var(--primary-500);
+    z-index: 100;
 }

@@ -43,7 +43,7 @@ function run() {
         const packageSplit = packageVersion.split('.');
 
         for(let i = 0; i < latestVersionSplit.length; i++){
-            if(packageSplit[i] < latestVersionSplit[i]){
+            if(parseInt(packageSplit[i]) < parseInt(latestVersionSplit[i])){
                 throwVersionError();
                 return;
             }
