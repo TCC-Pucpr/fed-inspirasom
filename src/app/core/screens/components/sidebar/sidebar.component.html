@@ -16,7 +16,7 @@
             <p-button *ngIf="themeService.currentTheme==='dark'" [rounded]="true" icon="fa-regular fa-sun" (onClick)="themeService.setTheme('light')"></p-button>
             <p-button *ngIf="themeService.currentTheme==='light'"[rounded]="true" icon="fa-regular fa-moon"(onClick)="themeService.setTheme('dark')"></p-button>
 
-            <button pButton [rounded]="true" icon="fa-regular fa-camera-retro" (click)="screenshot()"></button>
+            <button *ngIf="isShowingScreenshot" pButton [rounded]="true" icon="fa-regular fa-camera-retro" (click)="screenshot()"></button>
         </div>
 
     </p-sidebar>

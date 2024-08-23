@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { SidebarModule } from 'primeng/sidebar';
 import { SidebarService } from '../../../services/sidebar-service/sidebar.service';
@@ -70,6 +70,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   public openUserProfile() {
     this.dialogRef = this.dialogService.open(UserProfileComponent, { header: 'Perfil', width: 'fit-content' });
+  }
+
+  public get isShowingScreenshot(): boolean {
+    return this.router.url.includes('dashboard');
   }
 
   public screenshot() {
