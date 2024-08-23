@@ -1,4 +1,7 @@
-use std::fs;
+use std::{
+    fs,
+    ops::{Deref, DerefMut},
+};
 
 use crate::{
     app_states::midi_device_state::MidiState,
@@ -14,7 +17,7 @@ use super::{
     service_error::ServiceResult,
 };
 
-use midi_reader::reader_service::{MidiFile, MidiFilePlayer, PlayBackCallback};
+use midi_reader::midi_file::{MidiFile, MidiFilePlayer, PlayBackCallback, ReadingState};
 use tauri::{Runtime, State, Window};
 
 const MUSICS_FOLDER: &str = "musics/";
@@ -61,41 +64,43 @@ pub async fn start_game<R: Runtime>(
     handle: tauri::AppHandle<R>,
     window: Window,
 ) -> ServiceResult<()> {
+    if let Ok(Some(state)) = midi_state.midi_file.lock().as_deref() {
+        match state.current_state() {
+            ReadingState::Paused | ReadingState::Playing => {
+                return Err(ServiceError::new_with_str("Already playing"));
+            }
+            _ => {}
+        }
+    };
     let (_, file) = read_music_from_id(&handle, music_id)?;
-    let file = match MidiFile::from_bytes_vector(file) {
-        Ok(mr) => mr,
-        Err(err) => return Err(ServiceError::new_with_message(err.to_string())),
-    };
-    midi_state.update_midi_file(Some(file));
-    let mut midi_file = midi_state
-        .midi_file
-        .lock()
-        .map_err(|_| ServiceError::generic())?;
-    let midi_reader = if let Some(mr) = midi_file.as_mut() {
-        mr
-    } else {
-        return Err(ServiceError::generic());
-    };
     let sheet_listener = SheetListener {
         window,
         ignore_note_errors: false,
     };
-    let res = midi_reader.read_sheet(sheet_listener);
-    midi_state.update_midi_file(None);
-    if let Err(err) = res {
-        Err(ServiceError::new_with_message(err.to_string()))
+    let p = if let Ok(mut f) = midi_state.midi_file.lock() {
+        let mut m = MidiFile::from_bytes_vector(file).unwrap();
+        if let Ok(r) = m.create_sheet_player(sheet_listener) {
+            *f = Some(m);
+            r
+        } else {
+            return Err(ServiceError::generic());
+        }
     } else {
-        Ok(())
-    }
+        return Err(ServiceError::generic());
+    };
+    p.play()
+        .map_err(|_| ServiceError::new_with_code(String::from("0002")))?;
+    midi_state.reset_midi_file();
+    Ok(())
 }
 
 #[tauri::command]
-pub fn pause_game(midi_state: State<MidiState>) -> Result<(), ServiceError> {
+pub fn pause_game(midi_state: State<MidiState>) -> ServiceResult<()> {
     if let Some(state) = midi_state
         .midi_file
         .lock()
         .map_err(|_| ServiceError::generic())?
-        .as_mut()
+        .deref_mut()
     {
         state.pause();
         Ok(())
@@ -107,12 +112,12 @@ pub fn pause_game(midi_state: State<MidiState>) -> Result<(), ServiceError> {
 }
 
 #[tauri::command]
-pub fn resume_game(midi_state: State<MidiState>) -> Result<(), ServiceError> {
+pub fn resume_game(midi_state: State<MidiState>) -> ServiceResult<()> {
     if let Some(state) = midi_state
         .midi_file
         .lock()
         .map_err(|_| ServiceError::generic())?
-        .as_mut()
+        .deref_mut()
     {
         state.unpause();
         Ok(())
@@ -124,7 +129,7 @@ pub fn resume_game(midi_state: State<MidiState>) -> Result<(), ServiceError> {
 }
 
 #[tauri::command]
-pub fn stop_game(midi_state: State<MidiState>) -> Result<(), ServiceError> {
+pub fn stop_game(midi_state: State<MidiState>) -> ServiceResult<()> {
     if let Some(state) = midi_state
         .midi_file
         .lock()
@@ -133,6 +138,30 @@ pub fn stop_game(midi_state: State<MidiState>) -> Result<(), ServiceError> {
     {
         state.stop();
         Ok(())
+    } else {
+        Err(ServiceError::new_with_message(String::from(
+            "There is no file being played",
+        )))
+    }
+}
+
+#[tauri::command]
+pub fn music_length(music_id: String, handle: tauri::AppHandle) -> ServiceResult<u64> {
+    let (_, f) = read_music_from_id(&handle, music_id)?;
+    let midi_file = MidiFile::from_bytes_vector(f).map_err(|_| ServiceError::generic())?;
+    Ok(midi_file.file_length().as_secs())
+}
+
+#[tauri::command]
+pub fn remaining_time(midi_state: State<MidiState>) -> ServiceResult<u64> {
+    if let Some(state) = midi_state
+        .midi_file
+        .lock()
+        .map_err(|_| ServiceError::generic())?
+        .deref()
+    {
+        let dur = state.remaining_time();
+        Ok(dur.as_secs())
     } else {
         Err(ServiceError::new_with_message(String::from(
             "There is no file being played",

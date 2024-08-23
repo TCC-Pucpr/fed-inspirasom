@@ -24,7 +24,7 @@ export enum RustFunctionName {
     /**
      * (musicId: String)
      * 
-     * Comeca a enviar o evento midiReadNote
+     * Comeca a enviar o evento midiReadNote e midiReadState
      */
     startGame = "start_game",
     /**
@@ -43,6 +43,16 @@ export enum RustFunctionName {
      * Devolve a lista de todas as musicas disponiveis (`MidiMusicList`)
      */
     listMusics = "list_musics",
+    /**
+     * (musicId: String)
+     * 
+     * Calcula e devolve a duracao total da musica
+     */
+    musicLength = "music_length",
+    /**
+     * Retorna a quantidade de tempo que ainda falta para terminar a musica em segundos.
+     */
+    remainingTime = "remaining_time"
 }
 
 /**

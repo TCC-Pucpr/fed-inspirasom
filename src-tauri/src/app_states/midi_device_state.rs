@@ -1,4 +1,4 @@
-use midi_reader::reader_service::MidiFile;
+use midi_reader::midi_file::{MidiFile, MidiFilePlayer};
 use std::sync::Mutex;
 use waitgroup::{WaitGroup, Worker};
 
@@ -35,12 +35,22 @@ impl MidiState {
         }
     }
 
-    pub fn update_midi_file(&self, midi_file: Option<MidiFile>) -> bool {
+    #[allow(dead_code)]
+    pub fn create_new_file(&self, bytes: Vec<u8>) -> bool {
         if let Ok(mut m) = self.midi_file.lock() {
-            *m = midi_file;
+            *m = match MidiFile::from_bytes_vector(bytes) {
+                Ok(mr) => Some(mr),
+                Err(_) => return false,
+            };
             true
         } else {
             false
+        }
+    }
+
+    pub fn reset_midi_file(&self) {
+        if let Ok(mut m) = self.midi_file.lock() {
+            *m = None
         }
     }
 }
