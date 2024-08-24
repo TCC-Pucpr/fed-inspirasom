@@ -13,6 +13,7 @@ impl Display for NoPortsError {
 
 impl Error for NoPortsError {}
 
+#[allow(dead_code)]
 pub fn midi_connection() -> Result<MidiOutputConnection> {
     let midi_out = MidiOutput::new("midi_out").unwrap();
     let port = midi_out.ports();

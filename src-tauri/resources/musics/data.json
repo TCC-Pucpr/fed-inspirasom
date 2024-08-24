@@ -3,7 +3,8 @@
         {
             "name": "Zelda Ocarina of Time - Great Fairy Fountain",
             "id": "0001",
-            "directory": "/zelda_fairy.mid"
+            "directory": "/zelda_fairy.mid",
+            "duration": null
         }
     ]
 }

@@ -19,7 +19,9 @@ fn main() {
             pause_game,
             stop_game,
             resume_game,
-            list_musics
+            list_musics,
+            music_length,
+            remaining_time
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
