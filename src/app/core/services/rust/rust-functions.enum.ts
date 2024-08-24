@@ -8,9 +8,29 @@
 export enum RustFunctionName {
     // dataSource service
     /**
-     * Conecta ao dispositivo midi
+     * Conecta a um dispositivo midi especifico
+     * 
+     * O unico parametro desta função é o nome do dispositivo, que é obtido
+     * na função `listMidiDevices`
+     *
+     * Retorna erro caso ja tiver conectado a algum dispositivo.
      */
     connectMidi = "start_listening_midi",
+    /**
+     * Tenta conectar a um dispositivo midi padrão
+     * 
+     * Esse dispositivo padrão é o nosso próprio, que vamos 
+     * saber qual que é o nome.
+     * 
+     * Retorna erro se não encontrou.
+     */
+    quickConnectMidi = "quick_midi_connect",
+    /**
+     * Desconecta do dispositivo atualmente conectado
+     * 
+     * Retorna `true` se desconectou, ou `false` se nao tem nenhum dispositivo conectado
+     */
+    disconnectMidi = "disconnect_midi",
     /**
      * Desconecta do dispositivo midi previamente conectado.
      * Faz nada se nao tiver conectado

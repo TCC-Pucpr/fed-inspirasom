@@ -1,17 +1,21 @@
-use std::error::Error;
+use midir::{MidiInput, MidiInputConnection, MidiInputPort};
 
-use midir::{ConnectError, MidiInput, MidiInputConnection, MidiInputPort};
-
-use crate::midi_wrapper::MidiWrapper;
+use crate::{
+    errors::{Errors, MidiConnectionResult, MidiDeviceConnectionError},
+    midi_wrapper::MidiWrapper,
+};
 
 const PORT_NAME: &str = "USB MidiKliK";
 const CLIENT_NAME: &str = "InspiraSomMidiIn";
 const INSPIRE_PORT_NAME: &str = "InspireMidiPort";
 
-pub fn list_available_devices() -> Result<Vec<String>, String> {
-    let midi_in =
-        MidiInput::new(CLIENT_NAME).map_err(|_| String::from("Unable to list devices"))?;
+pub fn list_available_devices() -> MidiConnectionResult<Vec<String>> {
+    let midi_in = MidiInput::new(CLIENT_NAME)
+        .map_err(|_| MidiDeviceConnectionError::from(Errors::Unknown))?;
     let ports = midi_in.ports();
+    if ports.is_empty() {
+        return Err(MidiDeviceConnectionError::from(Errors::NoPortsFound));
+    }
     let mut names = Vec::with_capacity(ports.len());
     for p in ports {
         if let Ok(n) = midi_in.port_name(&p) {
@@ -24,14 +28,13 @@ pub fn list_available_devices() -> Result<Vec<String>, String> {
 pub fn connect_to_port_with_name<F: Fn(MidiWrapper) + Send + 'static>(
     name: &str,
     callback: F,
-) -> Result<MidiInputConnection<()>, ConnectError<String>> {
-    let midi_in = MidiInput::new(CLIENT_NAME).map_err(|_| {
-        ConnectError::new(
-            midir::ConnectErrorKind::Other("Could not connect to port"),
-            name.to_string(),
-        )
-    })?;
+) -> MidiConnectionResult<MidiInputConnection<()>> {
+    let midi_in = MidiInput::new(CLIENT_NAME)
+        .map_err(|_| MidiDeviceConnectionError::from(Errors::Unknown))?;
     let ports = midi_in.ports();
+    if ports.is_empty() {
+        return Err(MidiDeviceConnectionError::from(Errors::NoPortsFound));
+    }
     for p in ports {
         if let Ok(n) = midi_in.port_name(&p) {
             if n == name {
@@ -39,20 +42,17 @@ pub fn connect_to_port_with_name<F: Fn(MidiWrapper) + Send + 'static>(
             }
         }
     }
-    Err(ConnectError::new(
-        midir::ConnectErrorKind::InvalidPort,
-        name.to_string(),
-    ))
+    Err(MidiDeviceConnectionError::from(Errors::PortNotFound))
 }
 
 pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(
     callback: F,
-) -> Result<MidiInputConnection<()>, ConnectError<MidiInput>> {
+) -> MidiConnectionResult<MidiInputConnection<()>> {
     let midi_in = MidiInput::new(CLIENT_NAME).expect("AAA");
     let ports = midi_in.ports();
     let input_port = match ports.len() {
         0 => {
-            panic!("Nao possui portas!")
+            return Err(MidiDeviceConnectionError::from(Errors::NoPortsFound));
         }
         1 => {
             let port = ports[0].to_owned();
@@ -78,24 +78,29 @@ pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(
         }
     };
     if let Some(p) = input_port {
-        let port_name = midi_in.port_name(&p).expect("AAA");
+        let port_name = if let Ok(p) = midi_in.port_name(&p) {
+            p
+        } else {
+            return Err(MidiDeviceConnectionError::from(Errors::PortNotFound));
+        };
         println!("Porta selecionada: {}", port_name);
-        Ok(start_listening_port(&p, callback).expect("AAA"))
+        if let Ok(c) = start_listening_port(&p, callback) {
+            Ok(c)
+        } else {
+            Err(MidiDeviceConnectionError::from(Errors::Unknown))
+        }
     } else {
-        Err(ConnectError::new(
-            midir::ConnectErrorKind::InvalidPort,
-            midi_in,
-        ))
+        Err(MidiDeviceConnectionError::from(Errors::PortNotFound))
     }
 }
 
-#[inline]
 fn start_listening_port<F: Fn(MidiWrapper) + Send + 'static>(
     port: &MidiInputPort,
     callback: F,
-) -> Result<MidiInputConnection<()>, Box<dyn Error>> {
-    let midi_in = MidiInput::new(CLIENT_NAME)?;
-    midi_in
+) -> MidiConnectionResult<MidiInputConnection<()>> {
+    let midi_in = MidiInput::new(CLIENT_NAME)
+        .map_err(|_| MidiDeviceConnectionError::from(Errors::Unknown))?;
+    let con = midi_in
         .connect(
             port,
             INSPIRE_PORT_NAME,
@@ -107,5 +112,6 @@ fn start_listening_port<F: Fn(MidiWrapper) + Send + 'static>(
             },
             (),
         )
-        .map_err(|_| Box::from("Could not connect to midi port"))
+        .map_err(|_| MidiDeviceConnectionError::from(Errors::PortNotFound))?;
+    Ok(con)
 }

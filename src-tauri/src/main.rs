@@ -13,6 +13,7 @@ fn main() {
         .manage(MidiState::new())
         .invoke_handler(tauri::generate_handler![
             start_listening_midi,
+            quick_midi_connect,
             disconnect_midi,
             list_midi_devices,
             start_game,

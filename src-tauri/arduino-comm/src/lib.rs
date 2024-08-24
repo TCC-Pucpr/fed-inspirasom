@@ -1,3 +1,4 @@
+pub mod errors;
 pub mod midi_connection;
 pub mod midi_wrapper;
 pub mod note;
