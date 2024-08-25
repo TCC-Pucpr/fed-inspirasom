@@ -1,6 +1,6 @@
 use midi_reader_writer::midly_0_5::exports::Smf;
-#[cfg(verbose)]
-use paris::{info, warn, Logger};
+#[cfg(feature = "verbose")]
+use paris::warn;
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt::Display;
@@ -233,7 +233,7 @@ impl<P: PlayBackCallback> Connection for GamePlayer<P> {
                 _ => {}
             }
         } else {
-            #[cfg(verbose)]
+            #[cfg(feature = "verbose")]
             {
                 warn!("Weak reference to reading state returned None, cancelling playback...")
             }

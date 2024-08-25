@@ -7,7 +7,7 @@ pub(crate) type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 #[cfg(test)]
 mod tests {
-    #[cfg(verbose)]
+    #[cfg(feature = "verbose")]
     use paris::info;
 
     use crate::reader_service::{MidiFile, MidiFilePlayer, PlayBackCallback};
@@ -17,7 +17,7 @@ mod tests {
     impl PlayBackCallback for Callback {
         #[allow(unused_variables)]
         fn on_note(&self, on: bool, key: u8, vel: u8) -> bool {
-            #[cfg(verbose)]
+            #[cfg(feature = "verbose")]
             {
                 info!(
                     "on_note called: note_on: {} | key: {} | velocity: {}",
@@ -28,21 +28,21 @@ mod tests {
         }
 
         fn on_interrupted(&self) {
-            #[cfg(verbose)]
+            #[cfg(feature = "verbose")]
             {
                 info!("on_interrupted called")
             }
         }
 
         fn on_pause(&self) {
-            #[cfg(verbose)]
+            #[cfg(feature = "verbose")]
             {
                 info!("on_pause called")
             }
         }
 
         fn on_finished(&self) {
-            #[cfg(verbose)]
+            #[cfg(feature = "verbose")]
             {
                 info!("on_finished called")
             }
