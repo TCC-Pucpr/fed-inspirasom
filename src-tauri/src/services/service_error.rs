@@ -32,6 +32,12 @@ impl ServiceError {
             message,
         }
     }
+    pub fn new_with_str(message: &str) -> Self {
+        Self {
+            code: String::new(),
+            message: String::from(message),
+        }
+    }
     pub fn new_with_code(code: String) -> Self {
         Self {
             code,

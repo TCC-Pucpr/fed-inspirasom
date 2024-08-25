@@ -2,7 +2,7 @@ import { Component, Inject, Input, OnInit, ViewChild } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
 import { GraphData as ChartData } from '../../../../model/GraphData.model';
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { ThemeService } from '../../../../services/theme-service/theme.service';
+import { ThemeService } from '../../../../services/themeService/theme.service';
 @Component({
   selector: 'app-chart-visualization',
   standalone: true,
