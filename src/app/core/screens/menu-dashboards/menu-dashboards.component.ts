@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
 import { ChartVisualizationComponent } from "./components/chart-visualization/chart-visualization.component";
 import { GraphData } from '../../model/GraphData.model';
 import { NumericVisualizationComponent } from "./components/numeric-visualization/numeric-visualization.component";
 import { SidebarComponent } from "../components/sidebar/sidebar.component";
-import { SidebarService } from '../../services/sidebar-service/sidebar.service';
+import { SidebarService } from '../../services/sidebarService/sidebar.service';
 import { ButtonModule } from 'primeng/button';
 import { ListVisualizationComponent } from "./components/list-visualization/list-visualization.component";
 

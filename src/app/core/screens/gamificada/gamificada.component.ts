@@ -6,7 +6,7 @@ import { EventBus } from './game/events/EventBus';
 import { EventNames } from './game/events/EventNames.enum';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { FormsModule } from '@angular/forms';
-import { SidebarService } from '../../services/sidebar-service/sidebar.service';
+import { SidebarService } from '../../services/sidebarService/sidebar.service';
 import { SidebarComponent } from "../components/sidebar/sidebar.component";
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';

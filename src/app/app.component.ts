@@ -4,7 +4,7 @@ import { RouterOutlet } from '@angular/router';
 import { RustDataSourceService } from './core/services/rust/dataSource/rust-dataSource.service';
 
 import { ButtonModule } from 'primeng/button';
-import { ThemeService } from './core/services/theme-service/theme.service';
+import { ThemeService } from './core/services/themeService/theme.service';
 
 @Component({
   selector: 'app-root',
