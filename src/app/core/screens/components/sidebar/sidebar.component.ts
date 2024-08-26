@@ -68,6 +68,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.router.navigate(['dashboards']);
   }
 
+  public navigateMenuGamificada(): void {
+    this.router.navigate(['menu-gamificada']);
+  }
+
   public openUserProfile() {
     this.dialogRef = this.dialogService.open(UserProfileComponent, { header: 'Perfil', width: 'fit-content' });
   }

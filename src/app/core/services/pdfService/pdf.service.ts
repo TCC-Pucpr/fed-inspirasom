@@ -32,7 +32,6 @@ export class PdfService {
    */
 
   public static async saveAsPdf(element: HTMLElement): Promise<void> {
-    console.log(element);
     const doc = await this.getAsPdfDoc(element);
     const downlaodButton = document.createElement('a');
     downlaodButton.href=doc.output('datauristring');
