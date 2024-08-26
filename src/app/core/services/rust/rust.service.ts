@@ -24,4 +24,8 @@ export class RustService {
       callback(event.payload as MidiSignal)
     });
    }
+
+   public async getMusicList(): Promise<any> {
+    return await invoke(RustFunctionName.listMusics) as any;
+   }
 }

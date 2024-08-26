@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SidebarComponent } from "../components/sidebar/sidebar.component";
 import { ButtonModule } from 'primeng/button';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { PreferenciasGamificadaComponent } from './components/preferencias-gamificada/preferencias-gamificada.component';
+import { RustService } from '../../services/rust/rust.service';
 
 @Component({
   selector: 'app-menu-gamificada',
@@ -18,13 +19,23 @@ import { PreferenciasGamificadaComponent } from './components/preferencias-gamif
   templateUrl: './menu-gamificada.component.html',
   styleUrl: './menu-gamificada.component.scss'
 })
-export class MenuGamificadaComponent {
+export class MenuGamificadaComponent implements OnInit {
 
   constructor(
     private router: Router,
-    public dialogService: DialogService
+    public dialogService: DialogService,
+    private rust: RustService
   ) {
 
+  }
+
+  public ngOnInit(): void {
+    this.listMusics();
+  }
+
+  public async listMusics() {
+    const list = await this.rust.getMusicList();
+    console.log(list);
   }
 
   public openPreferenciasGamificada(): void {

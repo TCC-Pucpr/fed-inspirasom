@@ -9,7 +9,7 @@ export const routes: Routes = [
     { path: 'dashboards', component: MenuDashboardsComponent },
     { path: 'gamificada', component: GamificadaComponent },
     { path: 'menu-gamificada', component: MenuGamificadaComponent },
-    { path: '**', redirectTo: 'dashboards' }
+    { path: '**', redirectTo: 'menu-gamificada' }
 ];
 
 export const routesConfig: ApplicationConfig = {
