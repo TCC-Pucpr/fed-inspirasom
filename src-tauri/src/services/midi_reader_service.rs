@@ -99,7 +99,7 @@ pub async fn start_game<R: Runtime>(
     logger.done().info(msg);
     let sheet_listener = SheetListener {
         window,
-        ignore_note_errors: false,
+        ignore_note_errors: true,
     };
     logger.loading("Loading file bytes...");
     let p = if let Ok(mut f) = midi_state.midi_file.lock() {
