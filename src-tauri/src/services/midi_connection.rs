@@ -18,7 +18,7 @@ pub fn disconnect_midi(state: State<MidiState>) -> bool {
 }
 
 #[tauri::command]
-pub fn list_midi_devices() -> ServiceResult<Vec<String>> {
+pub async fn list_midi_devices() -> ServiceResult<Vec<String>> {
     let mut logger = Logger::new();
     logger.loading("Looking for available midi devices...");
     match list_available_devices() {

@@ -67,7 +67,7 @@ impl PlayBackCallback for SheetListener {
 }
 
 #[tauri::command]
-pub fn list_musics<R: Runtime>(app: tauri::AppHandle<R>) -> ServiceResult<MidiMusicList> {
+pub async fn list_musics<R: Runtime>(app: tauri::AppHandle<R>) -> ServiceResult<MidiMusicList> {
     let list = music_list(&app);
     info!("List fetched: {:?}", list);
     list
@@ -134,7 +134,7 @@ pub async fn start_game<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn pause_game(midi_state: State<MidiState>) -> ServiceResult<()> {
+pub async fn pause_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
     logger.loading("Pause called, acquiring midi file state...");
     if let Some(state) = midi_state
@@ -157,7 +157,7 @@ pub fn pause_game(midi_state: State<MidiState>) -> ServiceResult<()> {
 }
 
 #[tauri::command]
-pub fn resume_game(midi_state: State<MidiState>) -> ServiceResult<()> {
+pub async fn resume_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
     logger.loading("Resume called, acquiring midi file state...");
     if let Some(state) = midi_state
@@ -182,7 +182,7 @@ pub fn resume_game(midi_state: State<MidiState>) -> ServiceResult<()> {
 }
 
 #[tauri::command]
-pub fn stop_game(midi_state: State<MidiState>) -> ServiceResult<()> {
+pub async fn stop_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
     logger.loading("Stop called, acquiring midi file state...");
     if let Some(state) = midi_state
@@ -207,7 +207,7 @@ pub fn stop_game(midi_state: State<MidiState>) -> ServiceResult<()> {
 }
 
 #[tauri::command]
-pub fn music_length(music_id: String, handle: tauri::AppHandle) -> ServiceResult<u64> {
+pub async fn music_length(music_id: String, handle: tauri::AppHandle) -> ServiceResult<u64> {
     let mut logger = Logger::new();
     logger.loading("Calculating midi file length...");
     let (_, f) = match read_music_from_id(&handle, music_id) {
@@ -233,7 +233,7 @@ pub fn music_length(music_id: String, handle: tauri::AppHandle) -> ServiceResult
 }
 
 #[tauri::command]
-pub fn remaining_time(midi_state: State<MidiState>) -> ServiceResult<u64> {
+pub async fn remaining_time(midi_state: State<'_, MidiState>) -> ServiceResult<u64> {
     let mut logger = Logger::new();
     logger.loading("Reading remaining time...");
     if let Some(state) = midi_state
