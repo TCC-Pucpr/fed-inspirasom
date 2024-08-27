@@ -3,7 +3,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-mod errors;
+pub mod errors;
 mod game_connection;
 mod midi_connection;
 pub mod midi_file;

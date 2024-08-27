@@ -17,7 +17,10 @@ use super::{
     service_error::ServiceResult,
 };
 
-use midi_reader::midi_file::{MidiFile, MidiFilePlayer, PlayBackCallback, ReadingState};
+use midi_reader::{
+    errors::Interrupted,
+    midi_file::{MidiFile, MidiFilePlayer, PlayBackCallback, ReadingState},
+};
 use paris::{error, info, warn, Logger};
 use tauri::{Runtime, State, Window};
 
@@ -123,9 +126,13 @@ pub async fn start_game<R: Runtime>(
             logger.done().info("Music finished playing");
         }
         Err(err) => {
-            let msg = format!("Error while playing song: {}", err);
-            logger.done().error(msg.clone());
-            return Err(ServiceError::from(msg));
+            if let Some(e) = err.downcast_ref::<Interrupted>() {
+                logger.done().info(e.to_string());
+            } else {
+                let msg = format!("Error while playing song: {}", err);
+                logger.done().error(msg.clone());
+                return Err(ServiceError::from(msg));
+            }
         }
     };
     midi_state.reset_midi_file();
