@@ -125,7 +125,7 @@ pub async fn start_game<R: Runtime>(
         Err(err) => {
             let msg = format!("Error while playing song: {}", err);
             logger.done().error(msg.clone());
-            return Err(ServiceError::new("0002".to_string(), msg));
+            return Err(ServiceError::from(msg));
         }
     };
     midi_state.reset_midi_file();
@@ -140,7 +140,10 @@ pub async fn pause_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     if let Some(state) = midi_state
         .midi_file
         .lock()
-        .map_err(|_| ServiceError::generic())?
+        .map_err(|_| {
+            logger.done().error("Error while acquiring midi file state");
+            ServiceError::generic()
+        })?
         .deref_mut()
     {
         state.pause();
@@ -163,7 +166,10 @@ pub async fn resume_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> 
     if let Some(state) = midi_state
         .midi_file
         .lock()
-        .map_err(|_| ServiceError::generic())?
+        .map_err(|_| {
+            logger.done().error("Error while acquiring midi file state");
+            ServiceError::generic()
+        })?
         .deref_mut()
     {
         state.unpause();
@@ -188,7 +194,10 @@ pub async fn stop_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     if let Some(state) = midi_state
         .midi_file
         .lock()
-        .map_err(|_| ServiceError::generic())?
+        .map_err(|_| {
+            logger.done().error("Error while acquiring midi file state");
+            ServiceError::generic()
+        })?
         .as_mut()
     {
         state.stop();
@@ -239,7 +248,10 @@ pub async fn remaining_time(midi_state: State<'_, MidiState>) -> ServiceResult<u
     if let Some(state) = midi_state
         .midi_file
         .lock()
-        .map_err(|_| ServiceError::generic())?
+        .map_err(|_| {
+            logger.done().error("Error while acquiring midi file state");
+            ServiceError::generic()
+        })?
         .deref()
     {
         let dur = state.remaining_time().as_secs();
@@ -316,6 +328,7 @@ fn music<R: Runtime>(handle: &tauri::AppHandle<R>, music_name: &str) -> Option<V
     None
 }
 
+#[inline]
 fn format_resources_music_dir(file_name: &str) -> String {
     format!("{}{}{}", RESOURCES_FOLDER, MUSICS_FOLDER, file_name)
 }
