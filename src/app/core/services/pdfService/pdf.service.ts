@@ -33,11 +33,11 @@ export class PdfService {
 
   public static async saveAsPdf(element: HTMLElement): Promise<void> {
     const doc = await this.getAsPdfDoc(element);
-    const downlaodButton = document.createElement('a');
-    downlaodButton.href=doc.output('datauristring');
-    downlaodButton.download='document.pdf';
-    downlaodButton.click();
-    document.body.removeChild(downlaodButton);
+    const downloadButton = document.createElement('a');
+    downloadButton.href=doc.output('datauristring');
+    downloadButton.download='document.pdf';
+    downloadButton.click();
+    downloadButton.remove();
   }
 
 }

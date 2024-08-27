@@ -8,17 +8,18 @@
 
         <div class="navButtonList">
             <button pButton label="Dashboard" icon="fa-solid fa-chart-line" iconPos="left" (click)="navigateDash()"></button>
-            <button pButton label="Gamificado" icon="fa-solid fa-gamepad" iconPos="left" (click)="navigateGame()"></button>
-            <button pButton label="Menu gamificado" icon="fa-solid fa-list" iconPos="left" (click)="navigateMenuGamificada()"></button>
+            <button pButton label="Menu gamificado" icon="fa-solid fa-gamepad" iconPos="left" (click)="navigateMenuGamificada()"></button>
             <button pButton label="Perfil" icon="fa-solid fa-user" iconPos="left" (click)="openUserProfile()"></button>
         </div>
 
         <div class="themeButtons">
-            <button pButton *ngIf="themeService.currentTheme==='dark'" [rounded]="true" icon="fa-regular fa-sun" (onClick)="themeService.setTheme('light')"></button>
-            <button pButton *ngIf="themeService.currentTheme==='light'"[rounded]="true" icon="fa-regular fa-moon"(onClick)="themeService.setTheme('dark')"></button>
+            <button pButton *ngIf="themeService.currentTheme==='dark'" [rounded]="true" icon="fa-regular fa-sun" (click)="themeService.setTheme('light')"></button>
+            <button pButton *ngIf="themeService.currentTheme==='light'"[rounded]="true" icon="fa-regular fa-moon"(click)="themeService.setTheme('dark')"></button>
 
             <button pButton *ngIf="isShowingScreenshot" [rounded]="true" icon="fa-regular fa-camera-retro" (click)="screenshot()"></button>
         </div>
 
     </p-sidebar>
 </div>
+
+<app-overlay [shouldAppear]="isOverlayVisible"></app-overlay>

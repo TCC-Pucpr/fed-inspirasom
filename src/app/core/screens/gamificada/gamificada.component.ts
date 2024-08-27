@@ -10,6 +10,9 @@ import { SidebarService } from '../../services/sidebarService/sidebar.service';
 import { SidebarComponent } from "../components/sidebar/sidebar.component";
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
+import { ActivatedRoute, Router } from '@angular/router';
+import { RustService } from '../../services/rust/rust.service';
+import { MidiSignal } from '../../model/MidiSignal';
 
 @Component({
   selector: 'app-gamificada',
@@ -32,25 +35,42 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   private gameScene: GameScene;
 
   public row: number = 0;
+  private processNotes = (note: any) => {
+    console.log(note);
+    this.addNoteOnGame(note);
+  }
 
   constructor(
-    protected sidebarService: SidebarService
+    protected sidebarService: SidebarService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private rust: RustService
   ) {
   }
   
-  ngOnInit(): void {
+  public async ngOnInit(): Promise<void> {
+    const musicId = this.route.snapshot.queryParamMap.get('id');
+    if(!musicId) this.router.navigate(['menu-gamificada']);    
+    await this.rust.startMusic(musicId!);
+    await this.rust.getMidiNotes(this.processNotes);
+
     EventBus.on(EventNames.gameSceneReady, (scene: GameScene) => {
       this.gameScene = scene;
     });
   }
 
-  ngOnDestroy(): void {
+  public async ngOnDestroy(): Promise<void> {
     this.phaserRef.game.destroy(true, false);
+    await this.rust.stopMusic();
+  }
+
+  public returnToGameMenu(): void {
+    this.router.navigate(['menu-gamificada']);
   }
 
 // --- Phaser methods
-  public addNoteOnGame(row: number = 0, isBmol: boolean) {
-    this.gameScene.createNote(row, isBmol);
+  public addNoteOnGame(note: MidiSignal) {
+    this.gameScene.createNote(note.note_index, note.is_bmol);
   }
 
   public pauseMusic() {

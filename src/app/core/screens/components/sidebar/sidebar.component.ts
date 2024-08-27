@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { UserProfileComponent } from '../../user-profile/user-profile.component';
 import { PdfService } from '../../../services/pdfService/pdf.service';
+import { OverlayComponent } from "../overlay/overlay.component";
 
 @Component({
   selector: 'app-sidebar',
@@ -22,7 +23,8 @@ import { PdfService } from '../../../services/pdfService/pdf.service';
     RippleModule,
     FormsModule,
     SelectButtonModule,
-  ],
+    OverlayComponent
+],
   providers: [
     DialogService
   ],
@@ -33,7 +35,7 @@ import { PdfService } from '../../../services/pdfService/pdf.service';
 export class SidebarComponent implements OnInit, OnDestroy {
 
   protected isVisible: boolean;
-  private dialogRef: DynamicDialogRef | undefined;
+  protected isOverlayVisible: boolean = false;
 
   constructor(
     protected barService: SidebarService,
@@ -73,16 +75,20 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   public openUserProfile() {
-    this.dialogRef = this.dialogService.open(UserProfileComponent, { header: 'Perfil', width: 'fit-content' });
+    this.dialogService.open(UserProfileComponent, { header: 'Perfil', width: 'fit-content' });
   }
 
   public get isShowingScreenshot(): boolean {
     return this.router.url.includes('dashboard');
   }
 
-  public screenshot() {
+  public async screenshot() {
+    this.isOverlayVisible = true;
     const element = document.getElementById("docBody");
-    if(element) PdfService.saveAsPdf(element);
+    if(element) {
+      await PdfService.saveAsPdf(element);
+    }
+    this.isOverlayVisible = false;
   }
 
 }

@@ -5,6 +5,9 @@ import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { PreferenciasGamificadaComponent } from './components/preferencias-gamificada/preferencias-gamificada.component';
 import { RustService } from '../../services/rust/rust.service';
+import { MidiMusic } from '../../model/MidiMusic';
+import { CommonModule } from '@angular/common';
+import { MusicService } from '../../services/musicService/music.service';
 
 @Component({
   selector: 'app-menu-gamificada',
@@ -12,6 +15,7 @@ import { RustService } from '../../services/rust/rust.service';
   imports: [
     SidebarComponent,
     ButtonModule,
+    CommonModule
   ],
   providers: [
     DialogService
@@ -21,25 +25,29 @@ import { RustService } from '../../services/rust/rust.service';
 })
 export class MenuGamificadaComponent implements OnInit {
 
+  protected musicList: MidiMusic[];
+
   constructor(
     private router: Router,
     public dialogService: DialogService,
-    private rust: RustService
+    private musicService: MusicService
   ) {
 
   }
 
-  public ngOnInit(): void {
-    this.listMusics();
-  }
-
-  public async listMusics() {
-    const list = await this.rust.getMusicList();
-    console.log(list);
+  public async ngOnInit(): Promise<void> {
+    this.musicList = this.musicService.getMusicList();
+    if(!this.musicList) {
+      this.musicList = await this.musicService.fetchMusicList();
+    }
   }
 
   public openPreferenciasGamificada(): void {
     this.dialogService.open(PreferenciasGamificadaComponent, { header: 'Preferencias'} );
+  }
+
+  public selectMusic(music: MidiMusic): void {
+    this.router.navigate(['gamificada'], { queryParams: { id: music.id }});
   }
 
 }

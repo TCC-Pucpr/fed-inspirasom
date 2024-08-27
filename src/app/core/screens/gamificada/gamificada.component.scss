@@ -1,11 +1,17 @@
-.musicOptions {
+.returnButton {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem,
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    transform: rotate(-90deg);
+    font-size: 20px;
 }
 
-.musicControls {
+.centerElements {
     display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    flex-direction: column;
+    gap: 1rem;
 }

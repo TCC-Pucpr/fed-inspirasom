@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { RustEventsName, RustFunctionName } from './rust-functions.enum';
 import { MidiSignal } from "../../model/MidiSignal";
 import { listen } from "@tauri-apps/api/event";
+import { MidiMusicList } from '../../model/MidiMusicList';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +26,22 @@ export class RustService {
     });
    }
 
-   public async getMusicList(): Promise<any> {
-    return await invoke(RustFunctionName.listMusics) as any;
+   public async getMusicList(): Promise<MidiMusicList> {
+    return await invoke(RustFunctionName.listMusics);
+   }
+
+   public async startMusic(musicId: String): Promise<void> {
+    await invoke(RustFunctionName.startGame, { musicId }).then(_ => {});
+   }
+
+   public async stopMusic(): Promise<void> {
+    await invoke(RustFunctionName.stopgame).then(_ => {});
+   }
+
+   public async getMidiNotes(callback: (signal: any) => void) {
+    return listen(RustEventsName.midiReadNote, (event) => {
+      console.log(event);
+      callback(event as any)
+    });
    }
 }
