@@ -45,13 +45,13 @@ export class GameScene extends Phaser.Scene {
         this.add.text(0, 0, 'Press [space] to hit the note, press [ESC] to pause', { color: 'white' }).setOrigin(0, 0);
 
         this.notes = this.physics.add.group();
+
+        this.createNote(5, false);
     }
 
     create() {
         EventBus.emit(EventNames.gameSceneReady, this);
-        EventBus.on(EventNames.resumeGame, (_: any) => {
-            this.scene.stop('pause');
-        });
+        EventBus.on(EventNames.resumeGame, this.resumeGame);
         const escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
         escKey?.on('down', this.pauseGame);
     }
@@ -97,11 +97,12 @@ export class GameScene extends Phaser.Scene {
     public pauseGame = () => {
         this.scene.launch("pause");
         this.scene.moveAbove("game", "pause");
-        // this.game.pause();
+        this.scene.pause();
     }
 
-    public resumeGame() {
-        this.game.resume();
+    public resumeGame = () => {
+        this.scene.stop("pause");
+        this.scene.resume("game");
     }
 
     public get isGamePaused(): boolean {
