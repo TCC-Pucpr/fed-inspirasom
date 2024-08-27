@@ -32,5 +32,7 @@ export class PauseScene extends Phaser.Scene {
             EventBus.emit(EventNames.exitGame);
         });
         
+        const escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+        escKey?.on('down', (_: any) => { EventBus.emit(EventNames.resumeGame); });
     }
 }

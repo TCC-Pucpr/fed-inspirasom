@@ -34,6 +34,14 @@ export class RustService {
     await invoke(RustFunctionName.startGame, { musicId }).then(_ => {});
    }
 
+   public async pauseMusic() {
+    await invoke(RustFunctionName.pauseGame);
+   }
+
+   public async resumeMusic() {
+    await invoke(RustFunctionName.resumeGame);
+   }
+
    public async stopMusic(): Promise<void> {
     await invoke(RustFunctionName.stopgame).then(_ => {});
    }

@@ -51,16 +51,25 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   public async ngOnInit(): Promise<void> {
     const musicId = this.route.snapshot.queryParamMap.get('id');
     if(!musicId) this.router.navigate(['menu-gamificada']);    
-    // await this.rust.startMusic(musicId!);
-    // await this.rust.getMidiNotes(this.processNotes);
+    await this.rust.startMusic(musicId!);
+    await this.rust.getMidiNotes(this.processNotes);
 
     EventBus.on(EventNames.gameSceneReady, (scene: GameScene) => {
       this.gameScene = scene;
     });
 
     EventBus.on(EventNames.exitGame, (_: any) => {
+      this.ngOnDestroy();
       this.router.navigate(['menu-gamificada']);
-    })
+    });
+
+    EventBus.on(EventNames.pauseGame, (_: any) => {
+      this.rust.pauseMusic();
+    });
+
+    EventBus.on(EventNames.resumeGame, (_: any) => {
+      this.rust.resumeMusic();
+    });
   }
 
   public async ngOnDestroy(): Promise<void> {

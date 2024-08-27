@@ -12,14 +12,14 @@ export class GameScene extends Phaser.Scene {
     public score: number;
     public multiplier: number;
     public chainCount: number;
-    
-    private keys: any;
 
     public inputs: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
     public isPressed: boolean | undefined = false;
     public scoreText: Phaser.GameObjects.Text;
     public multiplierText: Phaser.GameObjects.Text;
     public chainText: Phaser.GameObjects.Text;
+
+    public isPaused: boolean = false;
     
     constructor(
     ) {
@@ -45,10 +45,8 @@ export class GameScene extends Phaser.Scene {
         this.add.text(0, 0, 'Press [space] to hit the note, press [ESC] to pause', { color: 'white' }).setOrigin(0, 0);
 
         this.notes = this.physics.add.group();
-
-        this.createNote(5, false);
     }
-
+    
     create() {
         EventBus.emit(EventNames.gameSceneReady, this);
         EventBus.on(EventNames.resumeGame, this.resumeGame);
@@ -95,14 +93,20 @@ export class GameScene extends Phaser.Scene {
     }
 
     public pauseGame = () => {
+        this.isPaused = true;
         this.scene.launch("pause");
-        this.scene.moveAbove("game", "pause");
+        this.scene.bringToTop("pause");
         this.scene.pause();
     }
 
     public resumeGame = () => {
-        this.scene.stop("pause");
-        this.scene.resume("game");
+        try{
+            // por algum motivo esse bring to top não funciona na segunda vez, mas com o try catch ele vai de boa, tipo ???
+            this.isPaused = false;
+            this.scene.bringToTop();
+            this.scene.pause("pause");
+            this.scene.resume();
+        } catch (error){ }
     }
 
     public get isGamePaused(): boolean {
