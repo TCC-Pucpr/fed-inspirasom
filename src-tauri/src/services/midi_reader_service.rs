@@ -21,6 +21,7 @@ use midi_reader::midi_file::{MidiFile, MidiFilePlayer, PlayBackCallback, Reading
 use paris::{error, info, warn, Logger};
 use tauri::{Runtime, State, Window};
 
+const RESOURCES_FOLDER: &str = "resources/";
 const MUSICS_FOLDER: &str = "musics/";
 const DATA_JSON: &str = "data.json";
 
@@ -282,13 +283,17 @@ fn read_music_from_id<R: Runtime>(
 fn music_list<R: Runtime>(handle: &tauri::AppHandle<R>) -> ServiceResult<MidiMusicList> {
     if let Some(p) = handle
         .path_resolver()
-        .resolve_resource(String::from(MUSICS_FOLDER) + DATA_JSON)
+        .resolve_resource(format_resources_music_dir(DATA_JSON))
     {
         info!("Resources folder found, reading music list...");
         return match MidiMusicList::from_path_resource(&p) {
             Ok(l) => Ok(l),
             Err(err) => {
-                let msg = format!("Error while reading json file: {}", err);
+                let msg = format!(
+                    "Error while reading json file: {} on directory: {}",
+                    err,
+                    p.display()
+                );
                 error!("{}", msg);
                 Err(ServiceError::new_with_message(msg))
             }
@@ -302,11 +307,15 @@ fn music_list<R: Runtime>(handle: &tauri::AppHandle<R>) -> ServiceResult<MidiMus
 fn music<R: Runtime>(handle: &tauri::AppHandle<R>, music_name: &str) -> Option<Vec<u8>> {
     if let Some(p) = handle
         .path_resolver()
-        .resolve_resource(String::from(MUSICS_FOLDER) + music_name)
+        .resolve_resource(format_resources_music_dir(music_name))
     {
         if let Ok(vec) = fs::read(&p) {
             return Some(vec);
         }
     };
     None
+}
+
+fn format_resources_music_dir(file_name: &str) -> String {
+    format!("{}{}{}", RESOURCES_FOLDER, MUSICS_FOLDER, file_name)
 }
