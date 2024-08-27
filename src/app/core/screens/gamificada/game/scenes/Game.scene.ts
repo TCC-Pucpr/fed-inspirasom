@@ -12,6 +12,8 @@ export class GameScene extends Phaser.Scene {
     public score: number;
     public multiplier: number;
     public chainCount: number;
+    
+    private keys: any;
 
     public inputs: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
     public isPressed: boolean | undefined = false;
@@ -40,13 +42,18 @@ export class GameScene extends Phaser.Scene {
         this.scoreText = this.add.text(50, 50, '', { color: 'white' }).setOrigin(0, 0);
         this.multiplierText = this.add.text(50, 75, '', { color: 'white' }).setOrigin(0, 0);
         this.chainText = this.add.text(50, 100, '', { color: 'white' }).setOrigin(0, 0);
-        this.add.text(0, 0, 'Press [space] to hit the note', { color: 'white' }).setOrigin(0, 0);
+        this.add.text(0, 0, 'Press [space] to hit the note, press [ESC] to pause', { color: 'white' }).setOrigin(0, 0);
 
         this.notes = this.physics.add.group();
     }
 
     create() {
         EventBus.emit(EventNames.gameSceneReady, this);
+        EventBus.on(EventNames.resumeGame, (_: any) => {
+            this.scene.stop('pause');
+        });
+        const escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+        escKey?.on('down', this.pauseGame);
     }
 
     override update() {
@@ -87,8 +94,10 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    public pauseGame() {
-        this.game.pause();
+    public pauseGame = () => {
+        this.scene.launch("pause");
+        this.scene.moveAbove("game", "pause");
+        // this.game.pause();
     }
 
     public resumeGame() {

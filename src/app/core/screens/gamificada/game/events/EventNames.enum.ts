@@ -1,3 +1,5 @@
 export enum EventNames {
-    "gameSceneReady" = "gameSceneReady" 
+    "gameSceneReady" = "gameSceneReady",
+    "exitGame" = "exitGame",
+    "resumeGame" = "resumeGame"
 }
