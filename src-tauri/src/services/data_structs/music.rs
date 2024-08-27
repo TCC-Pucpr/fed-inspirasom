@@ -1,4 +1,4 @@
-use std::{error::Error, fs::File, io::BufReader, path::PathBuf};
+use std::{error::Error, fmt::Display, fs::File, io::BufReader, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -40,5 +40,15 @@ impl MidiMusicList {
         let buf_reader = BufReader::new(file);
         let res = serde_json::from_reader(buf_reader)?;
         Ok(res)
+    }
+}
+
+impl Display for MidiMusic {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "id: {} | Music name: {} | directory: {} | duration: {:?}",
+            self.id, self.name, self.directory, self.duration
+        )
     }
 }

@@ -1,6 +1,4 @@
 use midi_reader_writer::midly_0_5::exports::Smf;
-#[cfg(verbose)]
-use paris::{info, warn, Logger};
 use std::sync::{Arc, Mutex};
 
 use std::time::Duration;
