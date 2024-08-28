@@ -4,6 +4,7 @@ use nodi::{
     timers::{sleep, Ticker},
     Timer,
 };
+use paris::info;
 
 use crate::{
     midi_file::{PlayBackCallback, ReadingState},
@@ -70,12 +71,20 @@ impl<P: PlayBackCallback> Timer for MidiPauserTimer<P> {
                             }
                             emitted_pause = true;
                             drop(m);
+                            #[cfg(feature = "verbose")]
+                            {
+                                info!("Sleeping timer for {}", check_delay_duration.as_micros());
+                            }
                             self.count_sleep(check_delay_duration)
                         }
                         ReadingState::Playing => break,
                         _ => return,
                     };
                 }
+            }
+            #[cfg(feature = "verbose")]
+            {
+                info!("Sleeping timer for {}", check_delay_duration.as_micros());
             }
             self.count_sleep(check_delay_duration);
             ms -= check_delay_duration;
