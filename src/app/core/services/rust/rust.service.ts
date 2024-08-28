@@ -10,6 +10,8 @@ import { MidiMusicList } from '../../model/MidiMusicList';
 })
 export class RustService {
 
+  private listeningMidiNotes: any;
+
   constructor() { }
 
   public connect_midi() {
@@ -46,10 +48,14 @@ export class RustService {
     await invoke(RustFunctionName.stopgame).then(_ => {});
    }
 
-   public async getMidiNotes(callback: (signal: any) => void) {
-    return listen(RustEventsName.midiReadNote, (event) => {
-      console.log(event);
-      callback(event as any)
+   public async listenMidiNotes(callback: (signal: MidiSignal) => void) {
+    this.listeningMidiNotes = listen(RustEventsName.midiReadNote, (event) => {
+      callback(event.payload as MidiSignal);
     });
+    return this.listeningMidiNotes;
+   }
+
+   public async unlistenMidiNotes() {
+    this.listeningMidiNotes.then((_: any) => { });
    }
 }

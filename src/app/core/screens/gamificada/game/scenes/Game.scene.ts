@@ -129,11 +129,14 @@ export class GameScene extends Phaser.Scene {
     public createNote(row: number, isBmol: boolean): void {
         if( row === -1 ) return;
         const y = 220 + row * 20;
-        if(isBmol) {
-            this.notes.create(980, y, 'bmolNote').setVelocityX(-100).setOrigin(1, 1).setSize(42,36).setOffset(7,5);
-        } else {
-            this.notes.create(980, y, 'note').setVelocityX(-100).setOrigin(1, 1);
-        }
+        // TODO encontrar uma forma de não ter problemas usando funções com coisas do phaser como callbacks
+        try{
+            if(isBmol) {
+                this.notes.create(980, y, 'bmolNote').setVelocityX(-100).setOrigin(1, 1).setSize(42,36).setOffset(7,5);
+            } else {
+                this.notes.create(980, y, 'note').setVelocityX(-100).setOrigin(1, 1);
+            }
+        } catch(error) { }
     }
 
 }
