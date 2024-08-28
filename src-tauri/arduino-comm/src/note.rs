@@ -28,7 +28,6 @@ pub enum Note {
     Bb4,
     B4,
     C5,
-    None,
 }
 
 impl Note {
@@ -49,7 +48,7 @@ impl Note {
             return None;
         };
         let note_iter = Note::iter();
-        return if i >= note_iter.len() {
+        if i >= note_iter.len() {
             #[cfg(feature = "verbose")]
             {
                 error!("{}", INVALID_BYTE_MSG)
@@ -57,7 +56,7 @@ impl Note {
             None
         } else {
             note_iter.get(i)
-        };
+        }
     }
     pub fn velocity_percentage(velocity: u8) -> f32 {
         match velocity {

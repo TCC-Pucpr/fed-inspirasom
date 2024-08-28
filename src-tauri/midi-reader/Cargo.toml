@@ -17,5 +17,4 @@ waitgroup = { workspace = true }
 paris = { workspace = true, optional = true, features = ["macros"] }
 
 [features]
-default = ["verbose"]
 verbose = ["paris"]

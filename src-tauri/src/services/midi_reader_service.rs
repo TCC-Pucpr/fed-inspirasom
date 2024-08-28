@@ -159,7 +159,7 @@ pub async fn start_game<R: Runtime>(
 #[tauri::command]
 pub async fn pause_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
-    logger.loading("Pause called, acquiring midi file state...");
+    logger.info("Pause called, acquiring midi file state...");
     if let Some(state) = midi_state
         .midi_file
         .lock()
@@ -185,7 +185,7 @@ pub async fn pause_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
 #[tauri::command]
 pub async fn resume_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
-    logger.loading("Resume called, acquiring midi file state...");
+    logger.info("Resume called, acquiring midi file state...");
     if let Some(state) = midi_state
         .midi_file
         .lock()
@@ -213,7 +213,7 @@ pub async fn resume_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> 
 #[tauri::command]
 pub async fn stop_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
-    logger.loading("Stop called, acquiring midi file state...");
+    logger.info("Stop called, acquiring midi file state...");
     if let Some(state) = midi_state
         .midi_file
         .lock()

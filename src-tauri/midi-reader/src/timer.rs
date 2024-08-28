@@ -4,6 +4,7 @@ use nodi::{
     timers::{sleep, Ticker},
     Timer,
 };
+#[cfg(feature = "verbose")]
 use paris::info;
 
 use crate::{
@@ -11,7 +12,7 @@ use crate::{
     ArcMutex,
 };
 
-const GAME_PAUSE_CHECK_DELAY_MS: u32 = 70;
+const GAME_PAUSE_CHECK_DELAY_MS: u32 = 15;
 
 #[derive(Debug)]
 pub struct MidiPauserTimer<P: PlayBackCallback> {
@@ -47,7 +48,7 @@ impl<P: PlayBackCallback> MidiPauserTimer<P> {
 }
 
 impl<P: PlayBackCallback> Timer for MidiPauserTimer<P> {
-    fn sleep_duration(&mut self, n_ticks: u32) -> std::time::Duration {
+    fn sleep_duration(&mut self, n_ticks: u32) -> Duration {
         self.ticker.sleep_duration(n_ticks)
     }
 
@@ -56,8 +57,16 @@ impl<P: PlayBackCallback> Timer for MidiPauserTimer<P> {
     }
 
     fn sleep(&mut self, n_ticks: u32) {
-        let mut ms = self.sleep_duration(n_ticks);
+        let mut ms = self.sleep_duration(5);
         let check_delay_duration = Duration::from_micros(self.check_delay.into());
+        #[cfg(feature = "verbose")]
+        {
+            info!("Starting to sleep, the full duration of this will be {} ms, and will be sleeping for {} ms before checking state",
+                ms.as_micros(),
+                check_delay_duration.as_micros()
+            );
+            info!("Also, the amount of ticks is: {}", n_ticks);
+        }
         while ms > check_delay_duration {
             let mut emitted_pause = false;
             loop {
@@ -65,11 +74,19 @@ impl<P: PlayBackCallback> Timer for MidiPauserTimer<P> {
                     match *m {
                         ReadingState::Paused => {
                             if !emitted_pause {
+                                #[cfg(feature = "verbose")]
+                                {
+                                    info!("Pause state reached!");
+                                }
                                 if let Ok(c) = self.pause_callback.deref().lock() {
+                                    #[cfg(feature = "verbose")]
+                                    {
+                                        info!("Calling on pause");
+                                    }
                                     c.on_pause();
+                                    emitted_pause = true;
                                 }
                             }
-                            emitted_pause = true;
                             drop(m);
                             #[cfg(feature = "verbose")]
                             {
@@ -84,10 +101,20 @@ impl<P: PlayBackCallback> Timer for MidiPauserTimer<P> {
             }
             #[cfg(feature = "verbose")]
             {
-                info!("Sleeping timer for {}", check_delay_duration.as_micros());
+                info!(
+                    "[Playing] Sleeping timer for {}",
+                    check_delay_duration.as_micros()
+                );
             }
             self.count_sleep(check_delay_duration);
             ms -= check_delay_duration;
+            #[cfg(feature = "verbose")]
+            {
+                info!(
+                    "Finished sleeping, remaining time is now {}",
+                    ms.as_micros()
+                );
+            }
             if ms > check_delay_duration && ms > Duration::ZERO {
                 sleep(ms);
             }
