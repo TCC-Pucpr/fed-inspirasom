@@ -13,6 +13,9 @@ import { RippleModule } from 'primeng/ripple';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RustService } from '../../services/rust/rust.service';
 import { MidiSignal } from '../../model/MidiSignal';
+import { PauseScene } from './game/scenes/Pause.scene';
+import { MusicService } from '../../services/musicService/music.service';
+import { MidiMusic } from '../../model/MidiMusic';
 
 @Component({
   selector: 'app-gamificada',
@@ -33,34 +36,39 @@ export class GamificadaComponent implements OnInit, OnDestroy {
 
   @ViewChild(GameComponent) phaserRef!: GameComponent;
   private gameScene: GameScene;
+  private pauseScene: PauseScene;
 
   public row: number = 0;
-  private processNotes = (note: any) => {
-    console.log(note);
-    this.addNoteOnGame(note);
-  }
+
+  private musicData: MidiMusic;
 
   constructor(
     protected sidebarService: SidebarService,
     private router: Router,
     private route: ActivatedRoute,
-    private rust: RustService
+    private rust: RustService,
+    private musicService: MusicService
   ) {
   }
   
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
     const musicId = this.route.snapshot.queryParamMap.get('id');
     if(!musicId) this.router.navigate(['menu-gamificada']);    
-    await this.rust.startMusic(musicId!);
-    await this.rust.getMidiNotes(this.processNotes);
-
+    this.rust.startMusic(musicId!);
+    this.rust.listenMidiNotes((note: any) => { this.addNoteOnGame(note)});
+    this.musicData = this.musicService.getMusicById(musicId!);
+    
     EventBus.on(EventNames.gameSceneReady, (scene: GameScene) => {
       this.gameScene = scene;
     });
 
+    EventBus.on(EventNames.pauseSceneReady, (scene: PauseScene) => {
+      this.pauseScene = scene;
+      this.setMusicName(this.musicData.name);
+    });
+
     EventBus.on(EventNames.exitGame, (_: any) => {
-      this.ngOnDestroy();
-      this.router.navigate(['menu-gamificada']);
+      this.returnToGameMenu();
     });
 
     EventBus.on(EventNames.pauseGame, (_: any) => {
@@ -70,11 +78,17 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     EventBus.on(EventNames.resumeGame, (_: any) => {
       this.rust.resumeMusic();
     });
+
   }
 
   public async ngOnDestroy(): Promise<void> {
     this.phaserRef.game.destroy(true, false);
     await this.rust.stopMusic();
+    await this.rust.unlistenMidiNotes();
+    EventBus.off(EventNames.gameSceneReady);
+    EventBus.off(EventNames.exitGame);
+    EventBus.off(EventNames.pauseGame);
+    EventBus.off(EventNames.resumeGame);
   }
 
   public returnToGameMenu(): void {
@@ -82,7 +96,7 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   }
 
 // --- Phaser methods
-  public addNoteOnGame(note: MidiSignal) {
+  public addNoteOnGame = (note: MidiSignal) => {
     this.gameScene.createNote(note.note_index, note.is_bmol);
   }
 
@@ -97,6 +111,10 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   public get isMusicPaused(): boolean {
     if(!this.gameScene) return true;
     return this.gameScene.isGamePaused;
+  }
+
+  public setMusicName(musicName: string) {
+    this.pauseScene.musicName = musicName;
   }
 
 
