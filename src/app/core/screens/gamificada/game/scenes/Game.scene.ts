@@ -26,7 +26,7 @@ export class GameScene extends Phaser.Scene {
         super({key: 'game'});
     }
 
-    preload() {
+    public preload() {
         this.add.image(0, 0, 'background').setOrigin(0, 0);
         this.limit = this.add.rectangle(275, 127, 2, 457).setOrigin(0,0);
         this.pressArea = this.add.rectangle(287, 127, 60, 457).setOrigin(0,0);
@@ -47,14 +47,16 @@ export class GameScene extends Phaser.Scene {
         this.notes = this.physics.add.group();
     }
     
-    create() {
+    public create() {
         EventBus.emit(EventNames.gameSceneReady, this);
         EventBus.on(EventNames.resumeGame, this.resumeGame);
+        EventBus.on(EventNames.pauseGame, this.pauseGame);
         const escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
-        escKey?.on('down', this.pauseGame);
+        escKey?.on('down', () => { EventBus.emit(EventNames.pauseGame); });
+        this.scene.launch("pause");
     }
 
-    override update() {
+    public override update() {
         this.physics.overlap(this.notes, this.limit, this.removeNote, undefined, this);
         this.physics.overlap(this.notes, this.pressArea, this.scoredNote, undefined, this);
         this.physics.overlap(this.notes, this.wrongPressArea, this.poorNote, undefined, this);
@@ -94,18 +96,15 @@ export class GameScene extends Phaser.Scene {
 
     public pauseGame = () => {
         this.isPaused = true;
-        this.scene.launch("pause");
         this.scene.bringToTop("pause");
-        this.scene.pause();
+        this.scene.pause("game");
     }
 
     public resumeGame = () => {
         try{
-            // por algum motivo esse bring to top não funciona na segunda vez, mas com o try catch ele vai de boa, tipo ???
             this.isPaused = false;
-            this.scene.bringToTop();
-            this.scene.pause("pause");
-            this.scene.resume();
+            this.scene.bringToTop("game");
+            this.scene.resume("game");
         } catch (error){ }
     }
 
