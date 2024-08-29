@@ -1,6 +1,12 @@
+#[cfg(feature = "verbose")]
+use paris::error;
 use serde::Serialize;
 use strum::{IntoEnumIterator, IntoStaticStr};
 use strum_macros::EnumIter;
+
+#[cfg(feature = "verbose")]
+const INVALID_BYTE_MSG: &str =
+    "Note from byte cannot be created because note cannot be played in the ocarina!";
 
 #[derive(EnumIter, Debug, Clone, Copy, Serialize, IntoStaticStr)]
 pub enum Note {
@@ -22,7 +28,6 @@ pub enum Note {
     Bb4,
     B4,
     C5,
-    None,
 }
 
 impl Note {
@@ -33,7 +38,25 @@ impl Note {
         *self as u8
     }
     pub fn from_byte(byte: u8) -> Option<Self> {
-        Note::iter().get(byte as usize - 55)
+        let i = if let Some(u) = (byte as usize).checked_sub(55) {
+            u
+        } else {
+            #[cfg(feature = "verbose")]
+            {
+                error!("{}", INVALID_BYTE_MSG)
+            }
+            return None;
+        };
+        let note_iter = Note::iter();
+        if i >= note_iter.len() {
+            #[cfg(feature = "verbose")]
+            {
+                error!("{}", INVALID_BYTE_MSG)
+            }
+            None
+        } else {
+            note_iter.get(i)
+        }
     }
     pub fn velocity_percentage(velocity: u8) -> f32 {
         match velocity {

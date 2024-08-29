@@ -46,7 +46,7 @@ export enum RustFunctionName {
     /**
      * (musicId: String)
      * 
-     * Calcula e devolve a duracao total da musica
+     * Calcula e devolve a duracao total da musica em segundos
      */
     musicLength = "music_length",
     /**

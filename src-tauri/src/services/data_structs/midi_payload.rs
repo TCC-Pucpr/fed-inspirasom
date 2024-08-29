@@ -50,10 +50,7 @@ impl MidiPayload {
     }
 
     pub fn from_note(note: u8, velocity: u8, state: bool) -> Option<Self> {
-        let note = match Note::from_byte(note) {
-            Some(n) => n,
-            None => return None,
-        };
+        let note = Note::from_byte(note)?;
         let note_name: &str = note.into();
         Some(Self {
             note_index: note.ordinal(),

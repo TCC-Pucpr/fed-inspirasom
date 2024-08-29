@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { RustDataSourceService } from './core/services/rust/dataSource/rust-dataSource.service';
+import { RustService } from './core/services/rust/rust.service';
 
 import { ButtonModule } from 'primeng/button';
 import { ThemeService } from './core/services/themeService/theme.service';
@@ -9,14 +9,18 @@ import { ThemeService } from './core/services/themeService/theme.service';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, ButtonModule],
+  imports: [
+    CommonModule, 
+    RouterOutlet, 
+    ButtonModule
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit {
 
     constructor(
-        private rustInvoker: RustDataSourceService,
+        private rustInvoker: RustService,
         protected themeService: ThemeService
     ) { }
     

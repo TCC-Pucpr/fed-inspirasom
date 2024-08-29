@@ -1,17 +1,17 @@
-.returnButton {
-    display: flex;
-    position: fixed;
-    top: 1rem;
-    left: 1rem;
-    transform: rotate(-90deg);
-    font-size: 20px;
-}
-
 .centerElements {
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100vh;
     flex-direction: column;
+    gap: 1rem;
+}
+
+.musicList {
+    display: flex;
+    flex-direction: column;
+    width: 80vw;
+    width: 50vh;
+    overflow: scroll;
     gap: 1rem;
 }

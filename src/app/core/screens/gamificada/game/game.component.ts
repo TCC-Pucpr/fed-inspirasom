@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import Phaser from 'phaser';
-import { MenuScene } from './scenes/Menu.scene';
+import { PauseScene } from './scenes/Pause.scene';
 import { GameScene } from './scenes/Game.scene';
 import { BootUtils } from './scenes/BootUtils.scene';
 
@@ -28,7 +28,7 @@ export class GameComponent implements OnInit {
       parent: "phaser-game-component",
       scene: [
         BootUtils,
-        MenuScene,
+        PauseScene,
         GameScene
       ],
       physics: {

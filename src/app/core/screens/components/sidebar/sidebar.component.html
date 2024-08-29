@@ -7,17 +7,19 @@
         <h3>Inspirasom</h3>
 
         <div class="navButtonList">
-            <p-button label="Dashboard" icon="fa-solid fa-chart-line" iconPos="left" (click)="navigateDash()"></p-button>
-            <p-button label="Gamificado" icon="fa-solid fa-gamepad" iconPos="left" (click)="navigateGame()"></p-button>
-            <p-button label="Perfil" icon="fa-solid fa-user" iconPos="left" (click)="openUserProfile()"></p-button>
+            <button pButton label="Dashboard" icon="fa-solid fa-chart-line" iconPos="left" (click)="navigateDash()"></button>
+            <button pButton label="Menu gamificado" icon="fa-solid fa-gamepad" iconPos="left" (click)="navigateMenuGamificada()"></button>
+            <button pButton label="Perfil" icon="fa-solid fa-user" iconPos="left" (click)="openUserProfile()"></button>
         </div>
 
         <div class="themeButtons">
-            <p-button *ngIf="themeService.currentTheme==='dark'" [rounded]="true" icon="fa-regular fa-sun" (onClick)="themeService.setTheme('light')"></p-button>
-            <p-button *ngIf="themeService.currentTheme==='light'"[rounded]="true" icon="fa-regular fa-moon"(onClick)="themeService.setTheme('dark')"></p-button>
+            <button pButton *ngIf="themeService.currentTheme==='dark'" [rounded]="true" icon="fa-regular fa-sun" (click)="themeService.setTheme('light')"></button>
+            <button pButton *ngIf="themeService.currentTheme==='light'"[rounded]="true" icon="fa-regular fa-moon"(click)="themeService.setTheme('dark')"></button>
 
-            <button *ngIf="isShowingScreenshot" pButton [rounded]="true" icon="fa-regular fa-camera-retro" (click)="screenshot()"></button>
+            <button pButton *ngIf="isShowingScreenshot" [rounded]="true" icon="fa-regular fa-camera-retro" (click)="screenshot()"></button>
         </div>
 
     </p-sidebar>
 </div>
+
+<app-overlay [shouldAppear]="isOverlayVisible"></app-overlay>

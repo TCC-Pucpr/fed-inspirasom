@@ -100,6 +100,7 @@ name = "arduino-comm"
 version = "0.1.0"
 dependencies = [
  "midir 0.10.0",
+ "paris",
  "serde",
  "serialport",
  "strum",

@@ -17,10 +17,14 @@ use super::{
     service_error::ServiceResult,
 };
 
-use midi_reader::midi_file::{MidiFile, MidiFilePlayer, PlayBackCallback, ReadingState};
+use midi_reader::{
+    errors::Interrupted,
+    midi_file::{MidiFile, MidiFilePlayer, PlayBackCallback, ReadingState},
+};
 use paris::{error, info, warn, Logger};
 use tauri::{Runtime, State, Window};
 
+const RESOURCES_FOLDER: &str = "resources/";
 const MUSICS_FOLDER: &str = "musics/";
 const DATA_JSON: &str = "data.json";
 
@@ -34,12 +38,12 @@ impl PlayBackCallback for SheetListener {
         let payload = match MidiPayload::from_note(key, vel, on) {
             Some(p) => p,
             None => {
-                if self.ignore_note_errors {
+                return if self.ignore_note_errors {
                     warn!("Midi music sent invalid note, skipping note...");
-                    return true;
+                    true
                 } else {
                     error!("Midi music sent invalid note, throwing error!");
-                    return false;
+                    false
                 }
             }
         };
@@ -54,22 +58,33 @@ impl PlayBackCallback for SheetListener {
             .emit(MIDI_READ_STATE, MidiFileState::INTERRUPTED);
     }
 
-    fn on_pause(&self) {
-        info!("Emitting Paused Midi State");
-        let _ = self.window.emit(MIDI_READ_STATE, MidiFileState::PAUSED);
-    }
-
     fn on_finished(&self) {
         info!("Emitting Finished Midi State");
         let _ = self.window.emit(MIDI_READ_STATE, MidiFileState::FINISHED);
     }
+
+    fn on_pause(&self) {
+        info!("Emitting Paused Midi State");
+        let _ = self.window.emit(MIDI_READ_STATE, MidiFileState::PAUSED);
+    }
 }
 
 #[tauri::command]
-pub fn list_musics<R: Runtime>(app: tauri::AppHandle<R>) -> ServiceResult<MidiMusicList> {
-    let list = music_list(&app);
-    info!("List fetched: {:?}", list);
-    list
+pub async fn list_musics<R: Runtime>(app: tauri::AppHandle<R>) -> ServiceResult<MidiMusicList> {
+    let mut logger = Logger::new();
+    logger.loading("Fetching music list...");
+    match music_list(&app) {
+        Ok(l) => {
+            let msg = format!("List fetched: {:?}", l);
+            logger.done().info(msg);
+            Ok(l)
+        }
+        Err(err) => {
+            let msg = format!("Error while fetching music list: {}", err);
+            logger.done().error(msg);
+            Err(ServiceError::from(err))
+        }
+    }
 }
 
 #[tauri::command]
@@ -90,12 +105,18 @@ pub async fn start_game<R: Runtime>(
             _ => {}
         }
     };
-    let (music, file) = read_music_from_id(&handle, music_id)?;
+    let (music, file) = match read_music_from_id(&handle, music_id) {
+        Ok(m) => m,
+        Err(err) => {
+            logger.done().error(err.clone());
+            return Err(ServiceError::from(err));
+        }
+    };
     let msg = format!("Music found: {}", music);
     logger.done().info(msg);
     let sheet_listener = SheetListener {
         window,
-        ignore_note_errors: false,
+        ignore_note_errors: true,
     };
     logger.loading("Loading file bytes...");
     let p = if let Ok(mut f) = midi_state.midi_file.lock() {
@@ -104,27 +125,30 @@ pub async fn start_game<R: Runtime>(
             *f = Some(m);
             r
         } else {
-            let msg = String::from("Error occurred while creating a sheet player");
-            logger.done().error(msg.clone());
-            return Err(ServiceError::from(msg));
+            const MSG: &str = "Error occurred while creating a sheet player";
+            logger.done().error(MSG);
+            return Err(ServiceError::from(MSG));
         }
     } else {
-        let msg =
-            String::from("Error occurred while unlocking midi file state, this is very suspicious");
-        logger.done().error(msg.clone());
-        return Err(ServiceError::from(msg));
+        const MSG: &str = "Error occurred while unlocking midi file state, this is very suspicious";
+        logger.done().error(MSG);
+        return Err(ServiceError::from(MSG));
     };
     logger
         .done()
-        .loading("Successfully loaded file, now playing...");
+        .info("Successfully loaded file, now playing...");
     match p.play() {
         Ok(_) => {
             logger.done().info("Music finished playing");
         }
         Err(err) => {
-            let msg = format!("Error while playing song: {}", err);
-            logger.done().error(msg.clone());
-            return Err(ServiceError::new("0002".to_string(), msg));
+            if let Some(e) = err.downcast_ref::<Interrupted>() {
+                logger.info(e.to_string());
+            } else {
+                let msg = format!("Error while playing song: {}", err);
+                logger.error(msg.clone());
+                return Err(ServiceError::from(msg));
+            }
         }
     };
     midi_state.reset_midi_file();
@@ -133,13 +157,16 @@ pub async fn start_game<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn pause_game(midi_state: State<MidiState>) -> ServiceResult<()> {
+pub async fn pause_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
-    logger.loading("Pause called, acquiring midi file state...");
+    logger.info("Pause called, acquiring midi file state...");
     if let Some(state) = midi_state
         .midi_file
         .lock()
-        .map_err(|_| ServiceError::generic())?
+        .map_err(|_| {
+            logger.done().error("Error while acquiring midi file state");
+            ServiceError::generic()
+        })?
         .deref_mut()
     {
         state.pause();
@@ -156,13 +183,16 @@ pub fn pause_game(midi_state: State<MidiState>) -> ServiceResult<()> {
 }
 
 #[tauri::command]
-pub fn resume_game(midi_state: State<MidiState>) -> ServiceResult<()> {
+pub async fn resume_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
-    logger.loading("Resume called, acquiring midi file state...");
+    logger.info("Resume called, acquiring midi file state...");
     if let Some(state) = midi_state
         .midi_file
         .lock()
-        .map_err(|_| ServiceError::generic())?
+        .map_err(|_| {
+            logger.done().error("Error while acquiring midi file state");
+            ServiceError::generic()
+        })?
         .deref_mut()
     {
         state.unpause();
@@ -181,13 +211,16 @@ pub fn resume_game(midi_state: State<MidiState>) -> ServiceResult<()> {
 }
 
 #[tauri::command]
-pub fn stop_game(midi_state: State<MidiState>) -> ServiceResult<()> {
+pub async fn stop_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
-    logger.loading("Stop called, acquiring midi file state...");
+    logger.info("Stop called, acquiring midi file state...");
     if let Some(state) = midi_state
         .midi_file
         .lock()
-        .map_err(|_| ServiceError::generic())?
+        .map_err(|_| {
+            logger.done().error("Error while acquiring midi file state");
+            ServiceError::generic()
+        })?
         .as_mut()
     {
         state.stop();
@@ -206,15 +239,15 @@ pub fn stop_game(midi_state: State<MidiState>) -> ServiceResult<()> {
 }
 
 #[tauri::command]
-pub fn music_length(music_id: String, handle: tauri::AppHandle) -> ServiceResult<u64> {
+pub async fn music_length(music_id: String, handle: tauri::AppHandle) -> ServiceResult<u64> {
     let mut logger = Logger::new();
     logger.loading("Calculating midi file length...");
     let (_, f) = match read_music_from_id(&handle, music_id) {
         Ok(f) => f,
         Err(err) => {
             let msg = format!("Error while fetching midi file bytes: {}", err);
-            logger.done().error(msg);
-            return Err(err);
+            logger.done().error(msg.clone());
+            return Err(ServiceError::new_with_message(msg));
         }
     };
     let midi_file = match MidiFile::from_bytes_vector(f) {
@@ -232,13 +265,16 @@ pub fn music_length(music_id: String, handle: tauri::AppHandle) -> ServiceResult
 }
 
 #[tauri::command]
-pub fn remaining_time(midi_state: State<MidiState>) -> ServiceResult<u64> {
+pub async fn remaining_time(midi_state: State<'_, MidiState>) -> ServiceResult<u64> {
     let mut logger = Logger::new();
     logger.loading("Reading remaining time...");
     if let Some(state) = midi_state
         .midi_file
         .lock()
-        .map_err(|_| ServiceError::generic())?
+        .map_err(|_| {
+            logger.done().error("Error while acquiring midi file state");
+            ServiceError::generic()
+        })?
         .deref()
     {
         let dur = state.remaining_time().as_secs();
@@ -258,55 +294,65 @@ pub fn remaining_time(midi_state: State<MidiState>) -> ServiceResult<u64> {
 fn read_music_from_id<R: Runtime>(
     handle: &tauri::AppHandle<R>,
     music_id: String,
-) -> ServiceResult<(MidiMusic, Vec<u8>)> {
+) -> Result<(MidiMusic, Vec<u8>), String> {
     let list = music_list(handle)?;
     if let Some(m) = list.files.iter().find(|e| e.id == music_id) {
-        if let Some(vec) = music(handle, &m.directory) {
-            info!("Successfully obtained music with id {}", music_id);
-            return Ok((m.to_owned(), vec));
-        } else {
-            let msg = format!(
-                "Error while fetching music with id {} or the music does not exist",
-                music_id
-            );
-            error!("{}", msg);
-            return Err(ServiceError::new_with_message(msg));
+        match music(handle, &m.directory) {
+            Ok(vec) => Ok((m.to_owned(), vec)),
+            Err(err) => {
+                let msg = format!(
+                    "Music with id {} found, but error while loading .mid file: {}",
+                    music_id, err
+                );
+                Err(msg)
+            }
         }
-    };
-    Err(ServiceError::new_with_message(format!(
-        "Music with id {} does not exist",
-        music_id
-    )))
+    } else {
+        Err(format!("Music with id {} does not exist", music_id))
+    }
 }
 
-fn music_list<R: Runtime>(handle: &tauri::AppHandle<R>) -> ServiceResult<MidiMusicList> {
+fn music_list<R: Runtime>(handle: &tauri::AppHandle<R>) -> Result<MidiMusicList, String> {
     if let Some(p) = handle
         .path_resolver()
-        .resolve_resource(String::from(MUSICS_FOLDER) + DATA_JSON)
+        .resolve_resource(format_resources_music_dir(DATA_JSON))
     {
-        info!("Resources folder found, reading music list...");
         return match MidiMusicList::from_path_resource(&p) {
             Ok(l) => Ok(l),
             Err(err) => {
-                let msg = format!("Error while reading json file: {}", err);
-                error!("{}", msg);
-                Err(ServiceError::new_with_message(msg))
+                let msg = format!(
+                    "Error while reading json file: {} on directory: {}",
+                    err,
+                    p.display()
+                );
+                Err(msg)
             }
         };
     };
     let msg = "Could not fetch music list".to_string();
-    error!("{}", msg);
-    Err(ServiceError::new_with_message(msg))
+    Err(msg)
 }
 
-fn music<R: Runtime>(handle: &tauri::AppHandle<R>, music_name: &str) -> Option<Vec<u8>> {
+fn music<R: Runtime>(handle: &tauri::AppHandle<R>, music_name: &str) -> Result<Vec<u8>, String> {
     if let Some(p) = handle
         .path_resolver()
-        .resolve_resource(String::from(MUSICS_FOLDER) + music_name)
+        .resolve_resource(format_resources_music_dir(music_name))
     {
-        if let Ok(vec) = fs::read(&p) {
-            return Some(vec);
-        }
+        return if let Ok(vec) = fs::read(&p) {
+            Ok(vec)
+        } else {
+            let msg = format!(
+                "Music file {} is not present in path {}",
+                music_name,
+                p.display()
+            );
+            Err(msg)
+        };
     };
-    None
+    Err(String::from("Could not get path resolver"))
+}
+
+#[inline]
+fn format_resources_music_dir(file_name: &str) -> String {
+    format!("{}{}{}", RESOURCES_FOLDER, MUSICS_FOLDER, file_name)
 }

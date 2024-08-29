@@ -1,0 +1,10 @@
+<app-sidebar></app-sidebar>
+
+<div class="centerElements">
+    <div class="musicList">
+        <div *ngFor="let music of musicList">
+            <button pButton (click)="selectMusic(music)">{{music.name}}</button>
+        </div>
+    </div>
+    <button pButton label="Preferencias" (click)="openPreferenciasGamificada()"></button>
+</div>
