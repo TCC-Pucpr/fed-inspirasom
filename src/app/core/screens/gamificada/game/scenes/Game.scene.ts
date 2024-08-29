@@ -51,15 +51,17 @@ export class GameScene extends Phaser.Scene {
         EventBus.emit(EventNames.gameSceneReady, this);
         EventBus.on(EventNames.resumeGame, this.resumeGame);
         EventBus.on(EventNames.pauseGame, this.pauseGame);
-        const escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
-        escKey?.on('down', () => { EventBus.emit(EventNames.pauseGame); });
+        const escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)!;
+        escKey.on('down', () => { EventBus.emit(EventNames.pauseGame); });
         this.scene.launch("pause");
     }
 
     public override update() {
-        this.physics.overlap(this.notes, this.limit, this.removeNote, undefined, this);
-        this.physics.overlap(this.notes, this.pressArea, this.scoredNote, undefined, this);
-        this.physics.overlap(this.notes, this.wrongPressArea, this.poorNote, undefined, this);
+        if(this.notes.getLength() > 0){
+            this.physics.overlap(this.notes.getFirstAlive(), this.limit, this.removeNote, undefined, this);
+            this.physics.overlap(this.notes.getFirstAlive(), this.pressArea, this.scoredNote, undefined, this);
+            this.physics.overlap(this.notes.getFirstAlive(), this.wrongPressArea, this.poorNote, undefined, this);
+        }
         if(this.isPressed && this.inputs?.space.isUp) {
             this.isPressed = false;
         }
@@ -69,14 +71,14 @@ export class GameScene extends Phaser.Scene {
         this.chainText.setText(`Chain: ${this.chainCount}`);
     }
 
-    public removeNote(limit: any, note: any): void {
+    public removeNote(note: any, limit: any): void {
         note.destroy();
         this.score -= 10;
         this.multiplier = 1;
         this.chainCount = 0;
     }
 
-    public poorNote(area: any, note: any) { 
+    public poorNote(note: any, area: any) { 
         if(!this.isPressed && this.inputs?.space.isDown) {
             this.isPressed = true;
             note.destroy();
@@ -85,7 +87,7 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    public scoredNote(area: any, note: any){
+    public scoredNote(note: any, area: any){
         if(!this.isPressed && this.inputs?.space.isDown) {
             this.isPressed = true;
             note.destroy();
