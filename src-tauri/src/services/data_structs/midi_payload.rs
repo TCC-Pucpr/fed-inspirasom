@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use arduino_comm::{midi_wrapper::MidiWrapper, note::Note};
 use serde::Serialize;
 use ts_rs::TS;
@@ -48,10 +50,7 @@ impl MidiPayload {
     }
 
     pub fn from_note(note: u8, velocity: u8, state: bool) -> Option<Self> {
-        let note = match Note::from_byte(note) {
-            Some(n) => n,
-            None => return None,
-        };
+        let note = Note::from_byte(note)?;
         let note_name: &str = note.into();
         Some(Self {
             note_index: note.ordinal(),
@@ -60,5 +59,16 @@ impl MidiPayload {
             velocity,
             state,
         })
+    }
+}
+
+impl Display for MidiPayload {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let state = if self.state { "on" } else { "off" };
+        write!(
+            f,
+            "Note index: {} | isBmol: {} | Note name: {} | velocity: {} | state: {}",
+            self.note_index, self.is_bmol, self.note_name, self.velocity, state
+        )
     }
 }

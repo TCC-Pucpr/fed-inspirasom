@@ -44,6 +44,12 @@ impl ServiceError {
             message: String::new(),
         }
     }
+    pub fn new_with_code_str(code: &str) -> Self {
+        Self {
+            code: code.to_string(),
+            message: String::new(),
+        }
+    }
     pub fn new(code: String, message: String) -> Self {
         Self { code, message }
     }
@@ -52,5 +58,17 @@ impl ServiceError {
             code: String::from("0001"),
             message: String::from("Erro inesperado"),
         }
+    }
+}
+
+impl From<&str> for ServiceError {
+    fn from(value: &str) -> Self {
+        Self::new_with_str(value)
+    }
+}
+
+impl From<String> for ServiceError {
+    fn from(value: String) -> Self {
+        Self::new_with_message(value)
     }
 }

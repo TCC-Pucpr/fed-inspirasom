@@ -6,8 +6,8 @@
     "distDir": "../dist/fed-inspirasom/browser"
   },
   "package": {
-    "productName": "fed-inspirasom",
-    "version": "0.1.21"
+    "productName": "Inspira Som",
+    "version": "0.1.22"
   },
   "tauri": {
     "allowlist": {
