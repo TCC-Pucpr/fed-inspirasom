@@ -1,6 +1,8 @@
 #[cfg(feature = "verbose")]
 use paris::error;
 use serde::Serialize;
+use std::cmp::PartialEq;
+use std::iter::Iterator;
 use strum::{IntoEnumIterator, IntoStaticStr};
 use strum_macros::EnumIter;
 
@@ -35,22 +37,15 @@ impl Note {
     pub const STATE_ON: u8 = 144;
     const MAX_VELOCITY: u8 = 127;
 
-    pub fn notes_with_no_accidents() -> Vec<Note> {
-        let mut v = vec![];
-        for n in Note::iter() {
-            if !n.is_bmol() {
-                v.push(n);
-            }
-        }
-        v
-    }
-
     pub fn ordinal(&self) -> u8 {
-        let f = Self::notes_with_no_accidents().iter().find(move |&i| {
-            i == self
+        let mut iter = Note::iter().filter(move |x1| !x1.is_bmol());
+        let self_string: &str = self.into();
+        let self_string = self_string.replace("b", "");
+        let i = iter.position(move |x| {
+            let other_string: &str = x.into();
+            self_string == other_string
         });
-        let len = Self::iter().len() as isize;
-        (((*self as isize) - len) * -1) as u8
+        i.unwrap() as u8
     }
     pub fn from_byte(byte: u8) -> Option<Self> {
         #[cfg(feature = "verbose")]
@@ -87,16 +82,6 @@ impl Note {
     pub fn is_bmol(&self) -> bool {
         let s: &str = self.into();
         s.contains('b')
-    }
-
-    pub fn accidents(&self) -> u8 {
-        let mut c: u8 = 0;
-        for n in Note::iter() {
-            if n.is_bmol() {
-                c += 1
-            }
-        }
-        c
     }
 }
 
