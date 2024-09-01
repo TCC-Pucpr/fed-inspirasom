@@ -1,6 +1,6 @@
-use crate::Result;
 use nodi::midir::{MidiOutput, MidiOutputConnection};
 use std::{error::Error, fmt::Display};
+use utils::GenericResult;
 
 #[derive(Debug, Clone)]
 struct NoPortsError;
@@ -14,7 +14,7 @@ impl Display for NoPortsError {
 impl Error for NoPortsError {}
 
 #[allow(dead_code)]
-pub fn midi_connection() -> Result<MidiOutputConnection> {
+pub fn midi_connection() -> GenericResult<MidiOutputConnection> {
     let midi_out = MidiOutput::new("midi_out").unwrap();
     let port = midi_out.ports();
     let p = match port.len() {

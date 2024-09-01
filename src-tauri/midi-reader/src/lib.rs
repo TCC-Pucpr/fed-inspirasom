@@ -1,8 +1,3 @@
-use std::{
-    error::Error,
-    sync::{Arc, Mutex},
-};
-
 pub mod errors;
 mod game_connection;
 mod midi_connection;
@@ -11,9 +6,6 @@ mod midi_length_calc;
 mod player_wrapper;
 mod test_callback;
 mod timer;
-
-pub(crate) type Result<T> = std::result::Result<T, Box<dyn Error>>;
-pub(crate) type ArcMutex<P> = Arc<Mutex<P>>;
 
 #[cfg(test)]
 mod tests {

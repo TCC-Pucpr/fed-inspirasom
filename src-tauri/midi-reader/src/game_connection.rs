@@ -1,22 +1,18 @@
-use std::{
-    collections::HashSet,
-    ops::Deref
-    ,
-};
+use std::collections::HashSet;
 
 use crate::midi_file::{PlayBackCallback, ReadingState};
-use crate::ArcMutex;
 use midly::MidiMessage;
 use nodi::{Connection, MidiEvent};
+use utils::mutable_arc::MutableArc;
 
 pub(crate) struct GamePlayer<P: PlayBackCallback> {
-    callback: ArcMutex<P>,
+    callback: MutableArc<P>,
     on_notes: HashSet<u8>,
-    reading_state: ArcMutex<ReadingState>,
+    reading_state: MutableArc<ReadingState>,
 }
 
 impl<P: PlayBackCallback> GamePlayer<P> {
-    pub fn new(callback: ArcMutex<P>, reading_state: ArcMutex<ReadingState>) -> Self {
+    pub fn new(callback: MutableArc<P>, reading_state: MutableArc<ReadingState>) -> Self {
         Self {
             callback,
             on_notes: HashSet::new(),
@@ -27,9 +23,9 @@ impl<P: PlayBackCallback> GamePlayer<P> {
 
 impl<P: PlayBackCallback> Connection for GamePlayer<P> {
     fn play(&mut self, event: MidiEvent) -> bool {
-        if let Ok(m) = self.reading_state.lock() {
+        if let Some(m) = self.reading_state.get_data() {
             match *m {
-                ReadingState::Stoped => {
+                ReadingState::Stoped | ReadingState::NotRunning => {
                     return false;
                 }
                 _ => {}
@@ -39,7 +35,7 @@ impl<P: PlayBackCallback> Connection for GamePlayer<P> {
             MidiMessage::NoteOff { key, vel } => {
                 let k: u8 = key.into();
                 self.on_notes.remove(&k);
-                if let Ok(c) = self.callback.deref().lock() {
+                if let Some(c) = self.callback.get_data() {
                     c.on_note(false, k, vel.into())
                 } else {
                     false
@@ -48,7 +44,7 @@ impl<P: PlayBackCallback> Connection for GamePlayer<P> {
             MidiMessage::NoteOn { key, vel } => {
                 let k: u8 = key.into();
                 self.on_notes.insert(k);
-                if let Ok(c) = self.callback.deref().lock() {
+                if let Some(c) = self.callback.get_data() {
                     c.on_note(true, k, vel.into())
                 } else {
                     false
@@ -59,7 +55,7 @@ impl<P: PlayBackCallback> Connection for GamePlayer<P> {
     }
 
     fn all_notes_off(&mut self) {
-        if let Ok(c) = self.callback.deref().lock() {
+        if let Some(c) = self.callback.get_data() {
             for note in &self.on_notes {
                 c.on_note(false, *note, 0);
             }

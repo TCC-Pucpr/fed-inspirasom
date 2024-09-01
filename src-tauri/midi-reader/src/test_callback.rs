@@ -1,10 +1,15 @@
+#[cfg(test)]
 use crate::midi_file::PlayBackCallback;
+#[cfg(test)]
 use nodi::{Connection, MidiEvent};
 #[cfg(feature = "verbose")]
+#[cfg(test)]
 use paris::info;
 
+#[cfg(test)]
 pub(crate) struct TestCallback;
 
+#[cfg(test)]
 impl PlayBackCallback for TestCallback {
     #[allow(unused_variables)]
     fn on_note(&self, on: bool, key: u8, vel: u8) -> bool {
@@ -40,6 +45,7 @@ impl PlayBackCallback for TestCallback {
     }
 }
 
+#[cfg(test)]
 impl Connection for TestCallback {
     fn play(&mut self, event: MidiEvent) -> bool {
         #[cfg(feature = "paris")]

@@ -1,18 +1,18 @@
-use nodi::{Player, Sheet};
-
 use crate::{
     errors::Interrupted,
     game_connection::GamePlayer,
     midi_file::{PlayBackCallback, ReadingState},
     timer::MidiPauserTimer,
-    ArcMutex, Result,
 };
+use nodi::{Player, Sheet};
+use utils::GenericResult;
+use utils::mutable_arc::MutableArc;
 
 pub struct PlayerWrapper<P: PlayBackCallback> {
     timer: MidiPauserTimer<P>,
     game_player: GamePlayer<P>,
-    reading_state: ArcMutex<ReadingState>,
-    callback: ArcMutex<P>,
+    reading_state: MutableArc<ReadingState>,
+    callback: MutableArc<P>,
     sheet: Sheet,
 }
 
@@ -20,8 +20,8 @@ impl<P: PlayBackCallback> PlayerWrapper<P> {
     pub(crate) fn new(
         timer: MidiPauserTimer<P>,
         game_player: GamePlayer<P>,
-        reading_state: ArcMutex<ReadingState>,
-        callback: ArcMutex<P>,
+        reading_state: MutableArc<ReadingState>,
+        callback: MutableArc<P>,
         sheet: Sheet,
     ) -> Self {
         Self {
@@ -32,20 +32,18 @@ impl<P: PlayBackCallback> PlayerWrapper<P> {
             callback,
         }
     }
-    pub fn play(self) -> Result<()> {
+    pub fn play(self) -> GenericResult<()> {
         let sheet = &self.sheet;
         let mut player = Player::new(self.timer, self.game_player);
         let play_result = player.play(&sheet);
-        if let Ok(mut m) = self.reading_state.lock() {
-            *m = ReadingState::NotRunning;
-        }
+        self.reading_state.set_data(ReadingState::NotRunning);
         if !play_result {
-            if let Ok(c) = self.callback.lock() {
+            if let Some(c) = self.callback.get_data() {
                 c.on_interrupted();
             }
             Err(Interrupted.into())
         } else {
-            if let Ok(c) = self.callback.lock() {
+            if let Some(c) = self.callback.get_data() {
                 c.on_finished();
             }
             Ok(())
