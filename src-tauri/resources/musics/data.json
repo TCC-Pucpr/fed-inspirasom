@@ -1,40 +1,52 @@
 {
-    "files": [
-        {
-            "name": "Zelda Ocarina of Time - Great Fairy Fountain",
-            "id": "0001",
-            "directory": "/zelda_fairy.mid",
-            "duration": null
-        },
-        {
-            "name": "Never Gonna give You Up - Rick Astley",
-            "id": "0002",
-            "directory": "/Never-Gonna-Give-You-Up-1.mid",
-            "duration": null
-        },
-        {
-            "name": "All Stars - Smash Mouth",
-            "id": "0003",
-            "directory": "/SMASH MOUTH.All star.mid",
-            "duration": null
-        },
-        {
-            "name": "Super Mario Galaxy - Gusty Garden Galaxy",
-            "id": "0004",
-            "directory": "/Super Mario Galaxy - Gusty Garden Galaxy.mid",
-            "duration": null
-        },
-        {
-            "name": "Africa - Toto",
-            "id": "0005",
-            "directory": "/toto-africa.mid",
-            "duration": null
-        },
-        {
-            "name": "Mii Channel",
-            "id": "0006",
-            "directory": "/Wii Channels - Mii Channel.mid",
-            "duration": null
-        }
-    ]
+  "files": [
+    {
+      "name": "Musica de teste",
+      "id": "0011",
+      "directory": "/teste.mid",
+      "duration": 8
+    },
+    {
+      "name": "Musica de teste 2",
+      "id": "0011",
+      "directory": "/teste2.mid",
+      "duration": 8
+    },
+    {
+      "name": "Zelda Ocarina of Time - Great Fairy Fountain",
+      "id": "0001",
+      "directory": "/zelda_fairy.mid",
+      "duration": null
+    },
+    {
+      "name": "Never Gonna give You Up - Rick Astley",
+      "id": "0002",
+      "directory": "/Never-Gonna-Give-You-Up-1.mid",
+      "duration": null
+    },
+    {
+      "name": "All Stars - Smash Mouth",
+      "id": "0003",
+      "directory": "/SMASH MOUTH.All star.mid",
+      "duration": null
+    },
+    {
+      "name": "Super Mario Galaxy - Gusty Garden Galaxy",
+      "id": "0004",
+      "directory": "/Super Mario Galaxy - Gusty Garden Galaxy.mid",
+      "duration": null
+    },
+    {
+      "name": "Africa - Toto",
+      "id": "0005",
+      "directory": "/toto-africa.mid",
+      "duration": null
+    },
+    {
+      "name": "Mii Channel",
+      "id": "0006",
+      "directory": "/Wii Channels - Mii Channel.mid",
+      "duration": null
+    }
+  ]
 }

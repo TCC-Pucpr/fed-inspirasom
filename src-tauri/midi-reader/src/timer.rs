@@ -57,7 +57,7 @@ impl<P: PlayBackCallback> Timer for MidiPauserTimer<P> {
     }
 
     fn sleep(&mut self, n_ticks: u32) {
-        let mut ms = self.sleep_duration(5);
+        let mut ms = self.sleep_duration(n_ticks);
         let check_delay_duration = Duration::from_micros(self.check_delay.into());
         #[cfg(feature = "verbose")]
         {

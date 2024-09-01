@@ -5,15 +5,15 @@ use std::time::Duration;
 
 use crate::errors::{InvalidMidiFile, PlaybackError};
 use crate::game_connection::GamePlayer;
+use crate::midi_connection::midi_connection;
 use crate::midi_length_calc::calc_midi_sheet_length;
 use crate::player_wrapper::PlayerWrapper;
 use crate::timer::MidiPauserTimer;
-use midly::{Format, Timing};
-use nodi::timers::Ticker;
-use nodi::Sheet;
-use std::fs;
-
 use crate::Result;
+use midly::Format;
+use nodi::timers::Ticker;
+use nodi::{Player, Sheet};
+use std::fs;
 
 pub trait MidiFilePlayer
 where
@@ -86,15 +86,42 @@ impl MidiFile {
         }
     }
     pub fn current_state(&self) -> ReadingState {
-        return if let Ok(s) = self.reading_state.lock().as_deref() {
+        if let Ok(s) = self.reading_state.lock().as_deref() {
             s.clone()
         } else {
             ReadingState::NotRunning
+        }
+    }
+
+    pub fn normal_play_file(file_location: &str) {
+        let file = fs::read(file_location).unwrap();
+        let Smf { header, tracks } = Smf::parse(&file).unwrap();
+        let timer = Ticker::try_from(header.timing).unwrap();
+
+        let sheet = match header.format {
+            Format::SingleTrack | Format::Sequential => Sheet::sequential(&tracks),
+            Format::Parallel => Sheet::parallel(&tracks),
         };
+
+        let m_con = midi_connection().unwrap();
+
+        let mut player = Player::new(timer, m_con);
+
+        player.play(&sheet);
     }
 }
 
 impl MidiFilePlayer for MidiFile {
+    fn is_still_playing(&self) -> bool {
+        if let Ok(m) = self.reading_state.lock() {
+            return match *m {
+                ReadingState::NotRunning | ReadingState::Stoped => false,
+                _ => true,
+            };
+        }
+        false
+    }
+
     fn from_file(file_location: &str) -> Result<Self> {
         let file = fs::read(file_location)?;
         Self::from_bytes_vector(file)
@@ -102,10 +129,7 @@ impl MidiFilePlayer for MidiFile {
 
     fn from_bytes_vector(vector: Vec<u8>) -> Result<Self> {
         let smf = Smf::parse(&vector)?;
-        let timer = match smf.header.timing {
-            Timing::Metrical(n) => Ticker::new(n.as_int()),
-            Timing::Timecode(_, _) => return Err(InvalidMidiFile.into()),
-        };
+        let timer = Ticker::try_from(smf.header.timing).map_err(|_e| InvalidMidiFile)?;
         let sheet = match smf.header.format {
             Format::Parallel => Sheet::parallel(&smf.tracks),
             Format::SingleTrack | Format::Sequential => Sheet::sequential(&smf.tracks),
@@ -156,15 +180,5 @@ impl MidiFilePlayer for MidiFile {
 
     fn file_length(&self) -> Duration {
         self.file_length
-    }
-
-    fn is_still_playing(&self) -> bool {
-        if let Ok(m) = self.reading_state.lock() {
-            return match *m {
-                ReadingState::NotRunning | ReadingState::Stoped => false,
-                _ => true,
-            };
-        }
-        false
     }
 }

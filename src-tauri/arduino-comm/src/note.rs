@@ -8,7 +8,7 @@ use strum_macros::EnumIter;
 const INVALID_BYTE_MSG: &str =
     "Note from byte cannot be created because note cannot be played in the ocarina!";
 
-#[derive(EnumIter, Debug, Clone, Copy, Serialize, IntoStaticStr)]
+#[derive(EnumIter, Debug, Clone, Copy, Serialize, IntoStaticStr, PartialEq)]
 pub enum Note {
     G3,
     Ab3,
@@ -34,10 +34,29 @@ impl Note {
     pub const STATE_OFF: u8 = 128;
     pub const STATE_ON: u8 = 144;
     const MAX_VELOCITY: u8 = 127;
+
+    pub fn notes_with_no_accidents() -> Vec<Note> {
+        let mut v = vec![];
+        for n in Note::iter() {
+            if !n.is_bmol() {
+                v.push(n);
+            }
+        }
+        v
+    }
+
     pub fn ordinal(&self) -> u8 {
-        *self as u8
+        let f = Self::notes_with_no_accidents().iter().find(move |&i| {
+            i == self
+        });
+        let len = Self::iter().len() as isize;
+        (((*self as isize) - len) * -1) as u8
     }
     pub fn from_byte(byte: u8) -> Option<Self> {
+        #[cfg(feature = "verbose")]
+        {
+            error!("Received byte: {}", byte)
+        }
         let i = if let Some(u) = (byte as usize).checked_sub(55) {
             u
         } else {
@@ -68,6 +87,16 @@ impl Note {
     pub fn is_bmol(&self) -> bool {
         let s: &str = self.into();
         s.contains('b')
+    }
+
+    pub fn accidents(&self) -> u8 {
+        let mut c: u8 = 0;
+        for n in Note::iter() {
+            if n.is_bmol() {
+                c += 1
+            }
+        }
+        c
     }
 }
 

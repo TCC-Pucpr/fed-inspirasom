@@ -50,6 +50,7 @@ impl MidiPayload {
     }
 
     pub fn from_note(note: u8, velocity: u8, state: bool) -> Option<Self> {
+        let s = if velocity == 0 { false } else { state };
         let note = Note::from_byte(note)?;
         let note_name: &str = note.into();
         Some(Self {
@@ -57,7 +58,7 @@ impl MidiPayload {
             is_bmol: note.is_bmol(),
             note_name: note_name.to_string(),
             velocity,
-            state,
+            state: s,
         })
     }
 }
