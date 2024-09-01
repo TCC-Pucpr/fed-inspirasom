@@ -5,11 +5,11 @@ use std::time::Duration;
 
 use crate::errors::{InvalidMidiFile, PlaybackError};
 use crate::game_connection::GamePlayer;
-use crate::midi_connection::midi_connection;
 use crate::midi_length_calc::calc_midi_sheet_length;
 use crate::player_wrapper::PlayerWrapper;
+use crate::test_callback::TestCallback;
 use crate::timer::MidiPauserTimer;
-use crate::Result;
+use crate::{ArcMutex, Result};
 use midly::Format;
 use nodi::timers::Ticker;
 use nodi::{Player, Sheet};
@@ -93,19 +93,28 @@ impl MidiFile {
         }
     }
 
-    pub fn normal_play_file(file_location: &str) {
+    pub(crate) fn normal_play_file(file_location: &str) {
         let file = fs::read(file_location).unwrap();
         let Smf { header, tracks } = Smf::parse(&file).unwrap();
         let timer = Ticker::try_from(header.timing).unwrap();
+
+        let p = TestCallback;
+
+        let timer = MidiPauserTimer::new(
+            timer,
+            ArcMutex::new(Mutex::new(ReadingState::Playing)),
+            ArcMutex::new(Mutex::new(p)),
+            ArcMutex::new(Mutex::new(Duration::ZERO)),
+        );
 
         let sheet = match header.format {
             Format::SingleTrack | Format::Sequential => Sheet::sequential(&tracks),
             Format::Parallel => Sheet::parallel(&tracks),
         };
 
-        let m_con = midi_connection().unwrap();
+        let con = TestCallback;
 
-        let mut player = Player::new(timer, m_con);
+        let mut player = Player::new(timer, con);
 
         player.play(&sheet);
     }
@@ -163,7 +172,13 @@ impl MidiFilePlayer for MidiFile {
         let sheet = self.sheet.to_owned();
         let s = Arc::clone(&self.reading_state);
         let timer = self.create_timer(Arc::clone(&self.reading_state), Arc::clone(&callback_arc));
-        Ok(PlayerWrapper::new(timer, conn, s, sheet))
+        Ok(PlayerWrapper::new(
+            timer,
+            conn,
+            s,
+            Arc::clone(&callback_arc),
+            sheet,
+        ))
     }
 
     fn pause(&mut self) {

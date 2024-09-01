@@ -1,22 +1,22 @@
 use std::{
     collections::HashSet,
-    ops::Deref,
-    sync::{Arc, Mutex},
+    ops::Deref
+    ,
 };
 
+use crate::midi_file::{PlayBackCallback, ReadingState};
+use crate::ArcMutex;
 use midly::MidiMessage;
 use nodi::{Connection, MidiEvent};
 
-use crate::midi_file::{PlayBackCallback, ReadingState};
-
 pub(crate) struct GamePlayer<P: PlayBackCallback> {
-    callback: Arc<Mutex<P>>,
+    callback: ArcMutex<P>,
     on_notes: HashSet<u8>,
-    reading_state: Arc<Mutex<ReadingState>>,
+    reading_state: ArcMutex<ReadingState>,
 }
 
 impl<P: PlayBackCallback> GamePlayer<P> {
-    pub fn new(callback: Arc<Mutex<P>>, reading_state: Arc<Mutex<ReadingState>>) -> Self {
+    pub fn new(callback: ArcMutex<P>, reading_state: ArcMutex<ReadingState>) -> Self {
         Self {
             callback,
             on_notes: HashSet::new(),

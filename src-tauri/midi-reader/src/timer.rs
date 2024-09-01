@@ -1,5 +1,10 @@
-use std::{ops::Deref, time::Duration};
+use std::ops::{Deref, Not};
+use std::time::Duration;
 
+use crate::{
+    midi_file::{PlayBackCallback, ReadingState},
+    ArcMutex,
+};
 use nodi::{
     timers::{sleep, Ticker},
     Timer,
@@ -7,12 +12,7 @@ use nodi::{
 #[cfg(feature = "verbose")]
 use paris::info;
 
-use crate::{
-    midi_file::{PlayBackCallback, ReadingState},
-    ArcMutex,
-};
-
-const GAME_PAUSE_CHECK_DELAY_MS: u32 = 15;
+const GAME_PAUSE_CHECK_DELAY_MS: u32 = 4_000;
 
 #[derive(Debug)]
 pub struct MidiPauserTimer<P: PlayBackCallback> {
@@ -43,7 +43,49 @@ impl<P: PlayBackCallback> MidiPauserTimer<P> {
         if let Ok(mut t) = self.elapsed_time.lock() {
             *t += duration;
         }
-        sleep(duration)
+        if !duration.is_zero() {
+            sleep(duration)
+        }
+    }
+
+    fn current_state(&self) -> ReadingState {
+        if let Ok(m) = self.reading_state.lock() {
+            let rs = m.clone();
+            drop(m);
+            rs
+        } else {
+            ReadingState::Stoped
+        }
+    }
+
+    fn on_pause(&self) {
+        if let Ok(c) = self.pause_callback.deref().lock() {
+            #[cfg(feature = "verbose")]
+            {
+                info!("Calling on pause");
+            }
+            c.on_pause();
+        }
+    }
+
+    fn check_pause_and_sleep(&self, emitted_pause: &mut bool, dur: Duration) -> ReadingState {
+        let cs = self.current_state();
+        if cs == ReadingState::Paused {
+            if emitted_pause.not() {
+                #[cfg(feature = "verbose")]
+                {
+                    info!("Pause state reached!");
+                }
+                self.on_pause();
+                *emitted_pause = true;
+            }
+            #[cfg(feature = "verbose")]
+            {
+                info!("Sleeping timer for {}", dur.as_micros());
+            }
+            self.count_sleep(dur)
+        };
+        cs
     }
 }
 
@@ -57,8 +99,16 @@ impl<P: PlayBackCallback> Timer for MidiPauserTimer<P> {
     }
 
     fn sleep(&mut self, n_ticks: u32) {
-        let mut ms = self.sleep_duration(n_ticks);
+        let mut ms = self.ticker.sleep_duration(n_ticks);
+        if ms.is_zero() {
+            return;
+        }
         let check_delay_duration = Duration::from_micros(self.check_delay.into());
+
+        if ms < check_delay_duration {
+            self.check_pause_and_sleep(&mut false, ms);
+            return;
+        }
         #[cfg(feature = "verbose")]
         {
             info!("Starting to sleep, the full duration of this will be {} ms, and will be sleeping for {} ms before checking state",
@@ -70,33 +120,10 @@ impl<P: PlayBackCallback> Timer for MidiPauserTimer<P> {
         while ms > check_delay_duration {
             let mut emitted_pause = false;
             loop {
-                if let Ok(m) = self.reading_state.lock() {
-                    match *m {
-                        ReadingState::Paused => {
-                            if !emitted_pause {
-                                #[cfg(feature = "verbose")]
-                                {
-                                    info!("Pause state reached!");
-                                }
-                                if let Ok(c) = self.pause_callback.deref().lock() {
-                                    #[cfg(feature = "verbose")]
-                                    {
-                                        info!("Calling on pause");
-                                    }
-                                    c.on_pause();
-                                    emitted_pause = true;
-                                }
-                            }
-                            drop(m);
-                            #[cfg(feature = "verbose")]
-                            {
-                                info!("Sleeping timer for {}", check_delay_duration.as_micros());
-                            }
-                            self.count_sleep(check_delay_duration)
-                        }
-                        ReadingState::Playing => break,
-                        _ => return,
-                    };
+                match self.check_pause_and_sleep(&mut emitted_pause, check_delay_duration) {
+                    ReadingState::Playing => break,
+                    ReadingState::Stoped | ReadingState::NotRunning => return,
+                    ReadingState::Paused => {}
                 }
             }
             #[cfg(feature = "verbose")]
@@ -107,7 +134,6 @@ impl<P: PlayBackCallback> Timer for MidiPauserTimer<P> {
                 );
             }
             self.count_sleep(check_delay_duration);
-            ms -= check_delay_duration;
             #[cfg(feature = "verbose")]
             {
                 info!(
@@ -115,9 +141,11 @@ impl<P: PlayBackCallback> Timer for MidiPauserTimer<P> {
                     ms.as_micros()
                 );
             }
-            if ms > check_delay_duration && ms > Duration::ZERO {
-                sleep(ms);
+            let next_dur = ms.saturating_sub(check_delay_duration);
+            if next_dur.is_zero() {
+                self.count_sleep(ms);
             }
+            ms = next_dur;
         }
     }
 }

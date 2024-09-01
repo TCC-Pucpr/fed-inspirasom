@@ -15,6 +15,7 @@ midly = "0.5.3"
 nodi = { version = "1.0.0", features = ["midir"] }
 waitgroup = { workspace = true }
 paris = { workspace = true, optional = true, features = ["macros"] }
+utils = { path = "../utils" }
 
 [features]
 verbose = ["paris"]

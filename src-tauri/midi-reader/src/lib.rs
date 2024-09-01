@@ -18,16 +18,17 @@ pub(crate) type ArcMutex<P> = Arc<Mutex<P>>;
 #[cfg(test)]
 mod tests {
     use crate::midi_file::MidiFile;
+    #[cfg(feature = "verbose")]
     use paris::info;
 
     #[test]
-    #[cfg(feature = "verbose")]
     fn midi_read_test() {
         // let file = "C:\\Users\\KnightLeo\\Downloads\\The Legend of Zelda Ocarina of Time - Great Fairy Fountain.mid";
         // let mut reader = MidiFile::from_file(file).unwrap();
+        #[cfg(feature = "verbose")]
         info!("AAAAAAAAA");
         MidiFile::normal_play_file(
-            "/home/knightleo/Documents/TCC/fed-inspirasom/src-tauri/resources/musics/teste2.mid",
+            "/home/knight_leo/Documents/TCC/fed-inspirasom/src-tauri/resources/musics/teste2.mid",
         );
     }
 }

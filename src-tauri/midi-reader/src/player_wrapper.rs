@@ -12,6 +12,7 @@ pub struct PlayerWrapper<P: PlayBackCallback> {
     timer: MidiPauserTimer<P>,
     game_player: GamePlayer<P>,
     reading_state: ArcMutex<ReadingState>,
+    callback: ArcMutex<P>,
     sheet: Sheet,
 }
 
@@ -20,6 +21,7 @@ impl<P: PlayBackCallback> PlayerWrapper<P> {
         timer: MidiPauserTimer<P>,
         game_player: GamePlayer<P>,
         reading_state: ArcMutex<ReadingState>,
+        callback: ArcMutex<P>,
         sheet: Sheet,
     ) -> Self {
         Self {
@@ -27,6 +29,7 @@ impl<P: PlayBackCallback> PlayerWrapper<P> {
             game_player,
             sheet,
             reading_state,
+            callback,
         }
     }
     pub fn play(self) -> Result<()> {
@@ -37,8 +40,14 @@ impl<P: PlayBackCallback> PlayerWrapper<P> {
             *m = ReadingState::NotRunning;
         }
         if !play_result {
+            if let Ok(c) = self.callback.lock() {
+                c.on_interrupted();
+            }
             Err(Interrupted.into())
         } else {
+            if let Ok(c) = self.callback.lock() {
+                c.on_finished();
+            }
             Ok(())
         }
     }
