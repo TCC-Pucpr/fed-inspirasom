@@ -2,13 +2,13 @@
   "files": [
     {
       "name": "Musica de teste",
-      "id": "0011",
+      "id": "1100",
       "directory": "/teste.mid",
       "duration": 8
     },
     {
       "name": "Musica de teste 2",
-      "id": "0011",
+      "id": "1200",
       "directory": "/teste2.mid",
       "duration": 8
     },

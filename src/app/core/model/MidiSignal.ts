@@ -6,4 +6,6 @@
  * [`Self::note_index`] é o index da nota comecando no G3, ou seja, G3 é index 0 e
  * C5 é 15. Esse campo nunca vai ser negativo
  */
-export type MidiSignal = { note_index: number, is_bmol: boolean, note_name: string, airStrength: number, on: boolean, };
+
+//temporario, o nome da ultima variavel dps leo
+export type MidiSignal = { note_index: number, is_bmol: boolean, note_name: string, airStrength: number, state: boolean, };
