@@ -38,7 +38,7 @@ impl Note {
     const MAX_VELOCITY: u8 = 127;
 
     pub fn ordinal(&self) -> u8 {
-        let mut iter = Note::iter().filter(move |x1| !x1.is_bmol());
+        let mut iter = Note::iter().filter(move |x1| !x1.is_bmol()).rev();
         let self_string: &str = self.into();
         let self_string = self_string.replace("b", "");
         let i = iter.position(move |x| {
