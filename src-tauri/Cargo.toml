@@ -25,7 +25,7 @@ paris = "1.5.15"
 custom-protocol = ["tauri/custom-protocol"]
 
 [workspace]
-members = ["arduino-comm", "midi-reader"]
+members = ["arduino-comm", "midi-reader", "utils"]
 
 [workspace.dependencies]
 ts-rs = "9.0.1"

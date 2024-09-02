@@ -5,8 +5,6 @@ export class PauseScene extends Phaser.Scene {
 
     public musicName: string;
     private titleText: Phaser.GameObjects.Text;
-    private escKey: Phaser.Input.Keyboard.Key;
-    private hasEscBeenReleased: boolean = false;
 
     constructor() {
         super({key: 'pause'});
@@ -36,8 +34,6 @@ export class PauseScene extends Phaser.Scene {
         quitButton.on('pointerdown', () => {
             EventBus.emit(EventNames.exitGame);
         });
-        
-        this.escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)!;
         EventBus.emit(EventNames.pauseSceneReady, this);
     }
 

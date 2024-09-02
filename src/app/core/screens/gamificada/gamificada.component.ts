@@ -97,7 +97,7 @@ export class GamificadaComponent implements OnInit, OnDestroy {
 
 // --- Phaser methods
   public addNoteOnGame = (note: MidiSignal) => {
-    this.gameScene.createNote(note.note_index, note.is_bmol);
+    if(note.state) this.gameScene?.createNote(note.note_index, note.is_bmol);
   }
 
   public pauseMusic() {
