@@ -30,9 +30,7 @@ pub struct MidiPayload {
     note_index: u8,
     is_bmol: bool,
     note_name: String,
-    #[ts(rename = "airStrength")]
     velocity: u8,
-    #[ts(rename = "on")]
     state: bool,
 }
 
