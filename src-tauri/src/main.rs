@@ -3,10 +3,13 @@
 
 use app_states::midi_device_state::MidiState;
 use services::{midi_connection::*, midi_reader_service::*};
+use tauri::Manager;
 
 mod app_states;
 mod constants;
 mod services;
+
+pub const RESOURCES_FOLDER: &str = "resources/";
 
 fn main() {
     tauri::Builder::default()
@@ -23,6 +26,10 @@ fn main() {
             music_length,
             remaining_time
         ])
+        .setup(move |app| {
+            // app.manage(StoreState::from(app as &App));
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

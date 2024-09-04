@@ -2,20 +2,20 @@ use midi_reader_writer::midly_0_5::exports::Smf;
 
 use std::time::Duration;
 
-use crate::errors::{InvalidMidiFile, PlaybackError};
+use crate::errors::{MidiReaderError, MidiReaderResult};
 use crate::game_connection::GamePlayer;
 use crate::midi_length_calc::calc_midi_sheet_length;
 use crate::player_wrapper::PlayerWrapper;
 #[cfg(test)]
 use crate::test_callback::TestCallback;
-use crate::timer::MidiPauserTimer;
+use crate::timer::MidiPauseTimer;
+use anyhow::anyhow;
 use midly::Format;
 use nodi::timers::Ticker;
 #[cfg(test)]
 use nodi::Player;
 use nodi::Sheet;
 use std::fs;
-use utils::GenericResult;
 use utils::mutable_arc::MutableArc;
 
 pub trait MidiFilePlayer
@@ -23,13 +23,13 @@ where
     Self: Sized,
 {
     fn is_still_playing(&self) -> bool;
-    fn from_file(file_location: &str) -> GenericResult<Self>;
-    fn from_bytes_vector(vector: Vec<u8>) -> GenericResult<Self>;
-    fn play_music<P: PlayBackCallback>(&mut self, play_back_callback: P) -> GenericResult<()>;
+    fn from_file(file_location: &str) -> MidiReaderResult<Self>;
+    fn from_bytes_vector(vector: Vec<u8>) -> MidiReaderResult<Self>;
+    fn play_music<P: PlayBackCallback>(&mut self, play_back_callback: P) -> MidiReaderResult<()>;
     fn create_sheet_player<P: PlayBackCallback>(
         &mut self,
         play_back_callback: P,
-    ) -> GenericResult<PlayerWrapper<P>>;
+    ) -> MidiReaderResult<PlayerWrapper<P>>;
     fn pause(&mut self);
     fn unpause(&mut self);
     fn stop(&mut self);
@@ -68,8 +68,8 @@ impl MidiFile {
         &self,
         reading_state: MutableArc<ReadingState>,
         pause_callback: MutableArc<P>,
-    ) -> MidiPauserTimer<P> {
-        MidiPauserTimer::new(
+    ) -> MidiPauseTimer<P> {
+        MidiPauseTimer::new(
             self.ticker,
             reading_state,
             pause_callback,
@@ -102,7 +102,7 @@ impl MidiFile {
 
         let p = TestCallback;
 
-        let timer = MidiPauserTimer::new(
+        let timer = MidiPauseTimer::new(
             timer,
             MutableArc::from(ReadingState::Playing),
             MutableArc::from(p),
@@ -134,14 +134,17 @@ impl MidiFilePlayer for MidiFile {
         }
     }
 
-    fn from_file(file_location: &str) -> GenericResult<Self> {
-        let file = fs::read(file_location)?;
+    fn from_file(file_location: &str) -> MidiReaderResult<Self> {
+        let file = fs::read(file_location)
+            .map_err(move |_| MidiReaderError::FileDoesNotExist(file_location.to_string()))?;
         Self::from_bytes_vector(file)
     }
 
-    fn from_bytes_vector(vector: Vec<u8>) -> GenericResult<Self> {
-        let smf = Smf::parse(&vector)?;
-        let timer = Ticker::try_from(smf.header.timing).map_err(|_e| InvalidMidiFile)?;
+    fn from_bytes_vector(vector: Vec<u8>) -> MidiReaderResult<Self> {
+        let smf =
+            Smf::parse(&vector).map_err(move |e| MidiReaderError::InvalidMidiFile(anyhow!(e)))?;
+        let timer = Ticker::try_from(smf.header.timing)
+            .map_err(|e| MidiReaderError::InvalidMidiFile(anyhow!(e)))?;
         let sheet = match smf.header.format {
             Format::Parallel => Sheet::parallel(&smf.tracks),
             Format::SingleTrack | Format::Sequential => Sheet::sequential(&smf.tracks),
@@ -155,7 +158,7 @@ impl MidiFilePlayer for MidiFile {
         })
     }
 
-    fn play_music<P: PlayBackCallback>(&mut self, play_back_callback: P) -> GenericResult<()> {
+    fn play_music<P: PlayBackCallback>(&mut self, play_back_callback: P) -> MidiReaderResult<()> {
         let _ = play_back_callback;
         unimplemented!()
     }
@@ -163,10 +166,10 @@ impl MidiFilePlayer for MidiFile {
     fn create_sheet_player<P: PlayBackCallback>(
         &mut self,
         play_back_callback: P,
-    ) -> GenericResult<PlayerWrapper<P>> {
+    ) -> MidiReaderResult<PlayerWrapper<P>> {
         if let Some(m) = self.reading_state.get_data() {
             if *m != ReadingState::NotRunning {
-                return Err(PlaybackError.into());
+                return Err(MidiReaderError::AlreadyPlaying);
             }
         }
         let callback_arc = MutableArc::from(play_back_callback);

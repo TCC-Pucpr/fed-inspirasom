@@ -1,8 +1,17 @@
-use std::fmt::Display;
-
+use anyhow::anyhow;
 use arduino_comm::{midi_wrapper::MidiWrapper, note::Note};
 use serde::Serialize;
+use std::fmt::Display;
+use thiserror::Error;
 use ts_rs::TS;
+
+#[derive(Debug, Error)]
+#[error("Invalid note {byte} received")]
+pub struct MidiNoteError {
+    byte: u8,
+    #[source]
+    source: anyhow::Error,
+}
 
 #[derive(TS, Serialize, Clone)]
 #[ts(
@@ -23,9 +32,6 @@ pub enum MidiFileState {
     rename = "MidiSignal"
 )]
 /// O payload para enviar dados da nota midi para o front
-///
-/// [`Self::note_index`] é o index da nota comecando no G3, ou seja, G3 é index 0 e
-/// C5 é 15. Esse campo nunca vai ser negativo
 pub struct MidiPayload {
     note_index: u8,
     is_bmol: bool,
@@ -47,11 +53,14 @@ impl MidiPayload {
         }
     }
 
-    pub fn from_note(note: u8, velocity: u8, state: bool) -> Option<Self> {
+    pub fn from_note(note: u8, velocity: u8, state: bool) -> Result<Self, MidiNoteError> {
         let s = if velocity == 0 { false } else { state };
-        let note = Note::from_byte(note)?;
+        let note = Note::from_byte(note).map_err(|e| MidiNoteError {
+            byte: note,
+            source: anyhow!(e),
+        })?;
         let note_name: &str = note.into();
-        Some(Self {
+        Ok(Self {
             note_index: note.ordinal(),
             is_bmol: note.is_bmol(),
             note_name: note_name.to_string(),

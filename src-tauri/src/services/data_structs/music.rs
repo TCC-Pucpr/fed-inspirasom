@@ -1,7 +1,18 @@
-use std::{error::Error, fmt::Display, fs::File, io::BufReader, path::PathBuf};
-
+use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
+use std::{fmt::Display, fs::File, io::BufReader, path::PathBuf};
+use thiserror::Error;
 use ts_rs::TS;
+
+pub type MidiMusicResult<T> = Result<T, MidiMusicError>;
+
+#[derive(Debug, Error)]
+pub enum MidiMusicError {
+    #[error("Json file at `{0}` is not valid")]
+    InvalidJsonFile(String, #[source] anyhow::Error),
+    #[error("Data file at `{0}` does not exist")]
+    DataFileDoesNotExist(String, #[source] anyhow::Error),
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
 #[ts(export, export_to = "../../src/app/core/model/MidiMusicList.ts")]
@@ -29,16 +40,22 @@ impl MidiMusicList {
     /// `path`.
     /// O `path` deve sempre ser o diretorio do arquivo com base nos resources do Tauri.
     /// Voce pode tambem criar essa lista com um `&str` chamando a funcao [`Self::from_json_file`]
-    pub fn from_path_resource(path: &PathBuf) -> Result<Self, Box<dyn Error>> {
-        let file = File::open(path)?;
+    pub fn from_path_resource(path: &PathBuf) -> MidiMusicResult<Self> {
+        let dir = path.display().to_string();
+        let file =
+            File::open(path).map_err(|e| MidiMusicError::DataFileDoesNotExist(dir.clone(), anyhow!(e)))?;
         let buf_reader = BufReader::new(file);
-        let res = serde_json::from_reader(buf_reader)?;
+        let res = serde_json::from_reader(buf_reader)
+            .map_err(move |e1| MidiMusicError::InvalidJsonFile(dir, anyhow!(e1)))?;
         Ok(res)
     }
-    pub fn from_json_file(directory: &str) -> Result<Self, Box<dyn Error>> {
-        let file = File::open(directory)?;
+    pub fn from_json_file(directory: &str) -> MidiMusicResult<Self> {
+        let dir = directory.to_string();
+        let file = File::open(directory)
+            .map_err(|e| MidiMusicError::DataFileDoesNotExist(dir.clone(), anyhow!(e)))?;
         let buf_reader = BufReader::new(file);
-        let res = serde_json::from_reader(buf_reader)?;
+        let res = serde_json::from_reader(buf_reader)
+            .map_err(move |e1| MidiMusicError::InvalidJsonFile(dir, anyhow!(e1)))?;
         Ok(res)
     }
 }

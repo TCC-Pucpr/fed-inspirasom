@@ -1,22 +1,19 @@
-use std::{error::Error, fmt::Display};
-
+use anyhow::Error;
+use arduino_comm::errors::ArduinoCommunicationError;
+use midi_reader::errors::MidiReaderError;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 use ts_rs::TS;
 
 pub type ServiceResult<T> = Result<T, ServiceError>;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, TS)]
+#[derive(Debug, Clone, Error, Serialize, Deserialize, PartialEq, Eq, TS)]
 #[ts(export, export_to = "../../src/app/core/model/ServiceError.ts")]
+#[error("Service error: {message} | code: {code}")]
 pub struct ServiceError {
     pub code: String,
     pub message: String,
 }
-impl Display for ServiceError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} | Code: {}", self.message, self.code)
-    }
-}
-impl Error for ServiceError {}
 
 impl Default for ServiceError {
     fn default() -> Self {
@@ -58,6 +55,24 @@ impl ServiceError {
             code: String::from("0001"),
             message: String::from("Erro inesperado"),
         }
+    }
+}
+
+impl From<anyhow::Error> for ServiceError {
+    fn from(value: Error) -> Self {
+        Self::new_with_message(value.to_string())
+    }
+}
+
+impl From<ArduinoCommunicationError> for ServiceError {
+    fn from(value: ArduinoCommunicationError) -> Self {
+        Self::new_with_message(value.to_string())
+    }
+}
+
+impl From<MidiReaderError> for ServiceError {
+    fn from(value: MidiReaderError) -> Self {
+        Self::new_with_message(value.to_string())
     }
 }
 
