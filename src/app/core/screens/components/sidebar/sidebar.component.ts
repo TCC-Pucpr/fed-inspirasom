@@ -62,6 +62,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if(wrapper) wrapper.style.setProperty("padding-left", '0px');
   }
 
+  public navigateLogin() {
+    this.router.navigate(['login']);
+  }
+
   public navigateGame() {
     this.router.navigate(['gamificada']);
   }
