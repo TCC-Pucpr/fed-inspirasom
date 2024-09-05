@@ -148,7 +148,7 @@ export class GameScene extends Phaser.Scene {
         const s = 0.5;
         try{
             if(isBmol) {
-                const note = this.physics.add.sprite(980, y, 'bmolNote');
+                const note = this.physics.add.sprite(980, y+5, 'bmolNote');
                 note.setVelocityX(-100*s).setOrigin(1, 1).setSize(42, 36).setOffset(7, 5);
                 this.notes.push(note);
             } else {
