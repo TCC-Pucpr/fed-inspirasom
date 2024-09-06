@@ -28,9 +28,9 @@ export class GameScene extends Phaser.Scene {
 
     public preload() {
         this.add.image(0, 0, 'background').setOrigin(0, 0);
-        this.limit = this.add.rectangle(255, 127, 2, 457).setOrigin(0,0);
-        this.pressArea = this.add.rectangle(287, 127, 60, 457).setOrigin(0,0);
-        this.wrongPressArea = this.add.rectangle(347, 127, 80, 457).setOrigin(0,0);
+        this.limit = this.add.rectangle(265, 127, 2, 457).setOrigin(0,0);
+        this.pressArea = this.add.rectangle(297, 127, 30, 457).setOrigin(0,0);
+        this.wrongPressArea = this.add.rectangle(327, 127, 80, 457).setOrigin(0,0);
         this.physics.add.existing(this.limit, true);
         this.physics.add.existing(this.pressArea, true);
         this.physics.add.existing(this.wrongPressArea, true);
@@ -144,16 +144,17 @@ export class GameScene extends Phaser.Scene {
 
     public createNote(row: number, isBmol: boolean): void {
         if( row === -1 ) return;
-        const y = 220 + row * 20;
-        const s = 0.5;
+        const y = 226 + (row * 13);
+        const x = 400;
+        const s = 0.2;
         try{
             if(isBmol) {
-                const note = this.physics.add.sprite(980, y+5, 'bmolNote');
-                note.setVelocityX(-100*s).setOrigin(1, 1).setSize(42, 36).setOffset(7, 5);
+                const note = this.physics.add.sprite(x, y, 'bmolNote');
+                note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(35, 32).setOffset(10, 5);
                 this.notes.push(note);
             } else {
-                const note = this.physics.add.sprite(980, y, 'note')
-                note.setVelocityX(-100*s).setOrigin(1, 1);
+                const note = this.physics.add.sprite(x, y, 'note');
+                note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(35, 32);
                 this.notes.push(note);
             }
         } catch(error) { }
