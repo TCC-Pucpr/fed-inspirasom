@@ -14,7 +14,11 @@ impl MidiState {
     }
 
     pub fn is_working(&self) -> bool {
-        self.worker.lock().as_ref().is_ok()
+        if let Ok(w) = self.worker.lock().as_ref() {
+            w.is_some()
+        } else {
+            false
+        }
     }
 
     pub fn set_worker(&self, wait_group: &WaitGroup) -> bool {

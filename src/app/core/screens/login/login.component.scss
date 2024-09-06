@@ -1,0 +1,40 @@
+.centerOnContainer {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.loginContainer {
+    background-color: white;
+    border-radius: 50px;
+    width: 80vw;
+    max-width: 1138px;
+    height: 75vh;
+    overflow: hidden;
+}
+
+.containerSeparator {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+}
+
+.separator {
+    display: flex;
+    width: 50%;
+    height: auto;
+
+    &__left {
+        padding: 2rem;
+        background-color: white;
+    }
+    &__right {
+        background-color: lightgray;        
+    }
+}
+
+.unselectable {
+    user-select: none;
+}

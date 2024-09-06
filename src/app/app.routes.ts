@@ -4,12 +4,14 @@ import { GamificadaComponent } from "./core/screens/gamificada/gamificada.compon
 import { MenuDashboardsComponent } from "./core/screens/menu-dashboards/menu-dashboards.component";
 import { provideAnimations } from "@angular/platform-browser/animations";
 import { MenuGamificadaComponent } from "./core/screens/menu-gamificada/menu-gamificada.component";
+import { LoginComponent } from "./core/screens/login/login.component";
 
 export const routes: Routes = [
     { path: 'dashboards', component: MenuDashboardsComponent },
     { path: 'gamificada', component: GamificadaComponent },
     { path: 'menu-gamificada', component: MenuGamificadaComponent },
-    { path: '**', redirectTo: 'menu-gamificada' }
+    { path: 'login', component: LoginComponent },
+    { path: '**', redirectTo: 'dashboards' }
 ];
 
 export const routesConfig: ApplicationConfig = {
