@@ -7,8 +7,8 @@ import { RustService } from '../rust/rust.service';
 })
 export class MusicService {
 
-  private musicList: MidiMusic[];  
-
+  private musicList: MidiMusic[] = [];
+  
   constructor(
     private rust: RustService,
   ) { }
@@ -28,7 +28,8 @@ export class MusicService {
   }
 
   public getMusicById(id: string): MidiMusic {
-    return this.musicList.filter(music => music.id === id)[0];
+    const filter = this.musicList.filter(music => music.id === id)[0];
+    return filter ? filter : {} as MidiMusic;
   }
 
 }
