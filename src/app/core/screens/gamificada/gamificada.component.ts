@@ -55,12 +55,12 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     const musicId = this.route.snapshot.queryParamMap.get('id');
     if(!musicId) this.router.navigate(['menu-gamificada']);
     this.rust.startMusic(musicId!);
-    this.rust.listenMidiNotes((note: any) => { this.addNoteOnGame(note); });
+    this.rust.listenMidiNotes(this.addNoteOnGame);
     this.musicData = this.musicService.getMusicById(musicId!);
 
     this.rust.connect_midi();
     this.rust.listen_for_midi_note((note: MidiSignal) => {
-      EventBus.emit(EventNames.ocarinaNote, note)
+      EventBus.emit(EventNames.ocarinaNote, note);
     });
     
     EventBus.on(EventNames.gameSceneReady, (scene: GameScene) => {

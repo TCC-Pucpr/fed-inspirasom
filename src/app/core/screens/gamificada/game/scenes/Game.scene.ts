@@ -19,6 +19,7 @@ export class GameScene extends Phaser.Scene {
     public scoreText: Phaser.GameObjects.Text;
     public multiplierText: Phaser.GameObjects.Text;
     public chainText: Phaser.GameObjects.Text;
+    public noteText: Phaser.GameObjects.Text;
 
     public isPaused: boolean = false;
 
@@ -31,7 +32,7 @@ export class GameScene extends Phaser.Scene {
 
     public preload() {
         this.add.image(0, 0, 'background').setOrigin(0, 0);
-        this.limit = this.add.rectangle(265, 127, 2, 457).setOrigin(0,0);
+        this.limit = this.add.rectangle(0, 127, 267, 457).setOrigin(0,0);
         this.pressArea = this.add.rectangle(297, 127, 30, 457).setOrigin(0,0);
         this.wrongPressArea = this.add.rectangle(327, 127, 80, 457).setOrigin(0,0);
         this.physics.add.existing(this.limit, true);
@@ -45,7 +46,8 @@ export class GameScene extends Phaser.Scene {
         this.scoreText = this.add.text(50, 50, '', { color: 'white' }).setOrigin(0, 0);
         this.multiplierText = this.add.text(50, 75, '', { color: 'white' }).setOrigin(0, 0);
         this.chainText = this.add.text(50, 100, '', { color: 'white' }).setOrigin(0, 0);
-        this.add.text(0, 0, 'Press [space] to hit the note, press [ESC] to pause', { color: 'white' }).setOrigin(0, 0);
+        this.noteText = this.add.text(50, 125, '', { color: 'white' }).setOrigin(0, 0);
+        this.add.text(0, 0, `Press [space] to hit the note, press [ESC] to pause`, { color: 'white' }).setOrigin(0, 0);
     }
     
     public create() {
@@ -72,6 +74,7 @@ export class GameScene extends Phaser.Scene {
         this.scoreText.setText(`Score: ${this.score}`);
         this.multiplierText.setText(`x${this.multiplier}`);
         this.chainText.setText(`Chain: ${this.chainCount}`);
+        this.noteText.setText(`Note: ${this.lastOcarinaNote.note_name}`);
     }
 
     public removeNote(note: any, limit: any): void {

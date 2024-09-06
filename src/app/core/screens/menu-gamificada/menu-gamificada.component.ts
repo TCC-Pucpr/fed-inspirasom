@@ -8,6 +8,7 @@ import { RustService } from '../../services/rust/rust.service';
 import { MidiMusic } from '../../model/MidiMusic';
 import { CommonModule } from '@angular/common';
 import { MusicService } from '../../services/musicService/music.service';
+import { MidiSignal } from '../../model/MidiSignal';
 
 @Component({
   selector: 'app-menu-gamificada',
@@ -30,7 +31,9 @@ export class MenuGamificadaComponent implements OnInit {
   constructor(
     private router: Router,
     public dialogService: DialogService,
-    private musicService: MusicService
+    private musicService: MusicService,
+
+    private rust: RustService
   ) {
 
   }
@@ -40,6 +43,10 @@ export class MenuGamificadaComponent implements OnInit {
     if(this.musicList.length == 0) {
       this.musicList = await this.musicService.fetchMusicList();
     }
+  }
+
+  private ngOnDestroy(): void {
+    this.rust.stop_midi();
   }
 
   public openPreferenciasGamificada(): void {
