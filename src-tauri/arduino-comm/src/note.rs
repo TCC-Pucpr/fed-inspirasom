@@ -1,5 +1,5 @@
 #[cfg(feature = "verbose")]
-use paris::error;
+use paris::{error, info};
 use serde::Serialize;
 use std::cmp::PartialEq;
 use std::iter::Iterator;
@@ -50,7 +50,7 @@ impl Note {
     pub fn from_byte(byte: u8) -> Option<Self> {
         #[cfg(feature = "verbose")]
         {
-            error!("Received byte: {}", byte)
+            info!("Received byte: {}", byte)
         }
         let i = if let Some(u) = (byte as usize).checked_sub(55) {
             u
