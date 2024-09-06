@@ -11,6 +11,13 @@ Para rodar, entre no diretório raiz do projeto, a seguir você irá
 executar o comando `npm install` para baixar todas as dependências.
 Em seguida, executar `npm run tauri dev`.
 
+### Contributing
+
+Para incrementar a versão do projeto, por favor use o seguinte comando:
+```
+npm run ver p
+```
+
 ### Código do Arduino
 
 [link](https://github.com/TCC-Pucpr/arduino-inspirasom/tree/9-criacao-da-branch-do-prototipo).
