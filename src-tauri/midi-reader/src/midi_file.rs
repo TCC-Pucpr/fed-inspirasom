@@ -1,5 +1,4 @@
 use midi_reader_writer::midly_0_5::exports::Smf;
-use std::sync::{Arc, Mutex};
 
 use std::time::Duration;
 
@@ -7,26 +6,30 @@ use crate::errors::{InvalidMidiFile, PlaybackError};
 use crate::game_connection::GamePlayer;
 use crate::midi_length_calc::calc_midi_sheet_length;
 use crate::player_wrapper::PlayerWrapper;
+#[cfg(test)]
+use crate::test_callback::TestCallback;
 use crate::timer::MidiPauserTimer;
-use midly::{Format, Timing};
+use midly::Format;
 use nodi::timers::Ticker;
+#[cfg(test)]
+use nodi::Player;
 use nodi::Sheet;
 use std::fs;
-
-use crate::Result;
+use utils::GenericResult;
+use utils::mutable_arc::MutableArc;
 
 pub trait MidiFilePlayer
 where
     Self: Sized,
 {
     fn is_still_playing(&self) -> bool;
-    fn from_file(file_location: &str) -> Result<Self>;
-    fn from_bytes_vector(vector: Vec<u8>) -> Result<Self>;
-    fn play_music<P: PlayBackCallback>(&mut self, play_back_callback: P) -> Result<()>;
+    fn from_file(file_location: &str) -> GenericResult<Self>;
+    fn from_bytes_vector(vector: Vec<u8>) -> GenericResult<Self>;
+    fn play_music<P: PlayBackCallback>(&mut self, play_back_callback: P) -> GenericResult<()>;
     fn create_sheet_player<P: PlayBackCallback>(
         &mut self,
         play_back_callback: P,
-    ) -> Result<PlayerWrapper<P>>;
+    ) -> GenericResult<PlayerWrapper<P>>;
     fn pause(&mut self);
     fn unpause(&mut self);
     fn stop(&mut self);
@@ -55,57 +58,90 @@ pub enum ReadingState {
 pub struct MidiFile {
     sheet: Sheet,
     ticker: Ticker,
-    reading_state: Arc<Mutex<ReadingState>>,
+    reading_state: MutableArc<ReadingState>,
     file_length: Duration,
-    elapsed_time: Arc<Mutex<Duration>>,
+    elapsed_time: MutableArc<Duration>,
 }
 
 impl MidiFile {
     fn create_timer<P: PlayBackCallback>(
         &self,
-        reading_state: Arc<Mutex<ReadingState>>,
-        pause_callback: Arc<Mutex<P>>,
+        reading_state: MutableArc<ReadingState>,
+        pause_callback: MutableArc<P>,
     ) -> MidiPauserTimer<P> {
         MidiPauserTimer::new(
             self.ticker,
             reading_state,
             pause_callback,
-            Arc::clone(&self.elapsed_time),
+            self.elapsed_time.clone(),
         )
     }
     fn update_reading_state(&self, reading_state: ReadingState) {
-        if let Ok(mut m) = self.reading_state.lock() {
-            *m = reading_state;
-        }
+        self.reading_state.set_data(reading_state);
     }
     pub fn remaining_time(&self) -> Duration {
-        if let Ok(t) = self.elapsed_time.lock() {
+        if let Some(t) = self.elapsed_time.get_data() {
             *t
         } else {
             Duration::MAX
         }
     }
     pub fn current_state(&self) -> ReadingState {
-        return if let Ok(s) = self.reading_state.lock().as_deref() {
+        if let Some(s) = self.reading_state.get_data() {
             s.clone()
         } else {
             ReadingState::NotRunning
+        }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn normal_play_file(file_location: &str) {
+        let file = fs::read(file_location).unwrap();
+        let Smf { header, tracks } = Smf::parse(&file).unwrap();
+        let timer = Ticker::try_from(header.timing).unwrap();
+
+        let p = TestCallback;
+
+        let timer = MidiPauserTimer::new(
+            timer,
+            MutableArc::from(ReadingState::Playing),
+            MutableArc::from(p),
+            MutableArc::from(Duration::ZERO),
+        );
+
+        let sheet = match header.format {
+            Format::SingleTrack | Format::Sequential => Sheet::sequential(&tracks),
+            Format::Parallel => Sheet::parallel(&tracks),
         };
+
+        let con = TestCallback;
+
+        let mut player = Player::new(timer, con);
+
+        player.play(&sheet);
     }
 }
 
 impl MidiFilePlayer for MidiFile {
-    fn from_file(file_location: &str) -> Result<Self> {
+    fn is_still_playing(&self) -> bool {
+        if let Some(m) = self.reading_state.get_data() {
+            match *m {
+                ReadingState::NotRunning | ReadingState::Stoped => false,
+                _ => true,
+            }
+        } else {
+            false
+        }
+    }
+
+    fn from_file(file_location: &str) -> GenericResult<Self> {
         let file = fs::read(file_location)?;
         Self::from_bytes_vector(file)
     }
 
-    fn from_bytes_vector(vector: Vec<u8>) -> Result<Self> {
+    fn from_bytes_vector(vector: Vec<u8>) -> GenericResult<Self> {
         let smf = Smf::parse(&vector)?;
-        let timer = match smf.header.timing {
-            Timing::Metrical(n) => Ticker::new(n.as_int()),
-            Timing::Timecode(_, _) => return Err(InvalidMidiFile.into()),
-        };
+        let timer = Ticker::try_from(smf.header.timing).map_err(|_e| InvalidMidiFile)?;
         let sheet = match smf.header.format {
             Format::Parallel => Sheet::parallel(&smf.tracks),
             Format::SingleTrack | Format::Sequential => Sheet::sequential(&smf.tracks),
@@ -114,12 +150,12 @@ impl MidiFilePlayer for MidiFile {
             file_length: calc_midi_sheet_length(&sheet, timer),
             sheet,
             ticker: timer,
-            reading_state: Arc::new(Mutex::new(ReadingState::NotRunning)),
-            elapsed_time: Arc::from(Mutex::new(Duration::ZERO)),
+            reading_state: MutableArc::from(ReadingState::NotRunning),
+            elapsed_time: MutableArc::from(Duration::ZERO),
         })
     }
 
-    fn play_music<P: PlayBackCallback>(&mut self, play_back_callback: P) -> Result<()> {
+    fn play_music<P: PlayBackCallback>(&mut self, play_back_callback: P) -> GenericResult<()> {
         let _ = play_back_callback;
         unimplemented!()
     }
@@ -127,19 +163,21 @@ impl MidiFilePlayer for MidiFile {
     fn create_sheet_player<P: PlayBackCallback>(
         &mut self,
         play_back_callback: P,
-    ) -> Result<PlayerWrapper<P>> {
-        if let Ok(m) = self.reading_state.lock() {
+    ) -> GenericResult<PlayerWrapper<P>> {
+        if let Some(m) = self.reading_state.get_data() {
             if *m != ReadingState::NotRunning {
                 return Err(PlaybackError.into());
             }
         }
-        let callback_arc = Arc::from(Mutex::new(play_back_callback));
+        let callback_arc = MutableArc::from(play_back_callback);
         self.update_reading_state(ReadingState::Playing);
-        let conn = GamePlayer::new(Arc::clone(&callback_arc), Arc::clone(&self.reading_state));
-        let sheet = self.sheet.to_owned();
-        let s = Arc::clone(&self.reading_state);
-        let timer = self.create_timer(Arc::clone(&self.reading_state), Arc::clone(&callback_arc));
-        Ok(PlayerWrapper::new(timer, conn, s, sheet))
+        Ok(PlayerWrapper::new(
+            self.create_timer(self.reading_state.clone(), callback_arc.clone()),
+            GamePlayer::new(callback_arc.clone(), self.reading_state.clone()),
+            self.reading_state.clone(),
+            callback_arc.clone(),
+            self.sheet.to_owned(),
+        ))
     }
 
     fn pause(&mut self) {
@@ -156,15 +194,5 @@ impl MidiFilePlayer for MidiFile {
 
     fn file_length(&self) -> Duration {
         self.file_length
-    }
-
-    fn is_still_playing(&self) -> bool {
-        if let Ok(m) = self.reading_state.lock() {
-            return match *m {
-                ReadingState::NotRunning | ReadingState::Stoped => false,
-                _ => true,
-            };
-        }
-        false
     }
 }

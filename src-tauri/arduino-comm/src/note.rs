@@ -1,6 +1,8 @@
 #[cfg(feature = "verbose")]
-use paris::error;
+use paris::{error, info};
 use serde::Serialize;
+use std::cmp::PartialEq;
+use std::iter::Iterator;
 use strum::{IntoEnumIterator, IntoStaticStr};
 use strum_macros::EnumIter;
 
@@ -8,7 +10,7 @@ use strum_macros::EnumIter;
 const INVALID_BYTE_MSG: &str =
     "Note from byte cannot be created because note cannot be played in the ocarina!";
 
-#[derive(EnumIter, Debug, Clone, Copy, Serialize, IntoStaticStr)]
+#[derive(EnumIter, Debug, Clone, Copy, Serialize, IntoStaticStr, PartialEq)]
 pub enum Note {
     G3,
     Ab3,
@@ -34,10 +36,22 @@ impl Note {
     pub const STATE_OFF: u8 = 128;
     pub const STATE_ON: u8 = 144;
     const MAX_VELOCITY: u8 = 127;
+
     pub fn ordinal(&self) -> u8 {
-        *self as u8
+        let mut iter = Note::iter().filter(move |x1| !x1.is_bmol()).rev();
+        let self_string: &str = self.into();
+        let self_string = self_string.replace("b", "");
+        let i = iter.position(move |x| {
+            let other_string: &str = x.into();
+            self_string == other_string
+        });
+        i.unwrap() as u8
     }
     pub fn from_byte(byte: u8) -> Option<Self> {
+        #[cfg(feature = "verbose")]
+        {
+            info!("Received byte: {}", byte)
+        }
         let i = if let Some(u) = (byte as usize).checked_sub(55) {
             u
         } else {

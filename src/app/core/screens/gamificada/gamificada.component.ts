@@ -55,8 +55,13 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     const musicId = this.route.snapshot.queryParamMap.get('id');
     if(!musicId) this.router.navigate(['menu-gamificada']);
     this.rust.startMusic(musicId!);
-    this.rust.listenMidiNotes((note: any) => { this.addNoteOnGame(note); });
+    this.rust.listenMidiNotes(this.addNoteOnGame);
     this.musicData = this.musicService.getMusicById(musicId!);
+
+    this.rust.connect_midi();
+    this.rust.listen_for_midi_note((note: MidiSignal) => {
+      EventBus.emit(EventNames.ocarinaNote, note);
+    });
     
     EventBus.on(EventNames.gameSceneReady, (scene: GameScene) => {
       this.gameScene = scene;
@@ -85,6 +90,7 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     this.phaserRef.game.destroy(true, false);
     await this.rust.stopMusic();
     await this.rust.unlistenMidiNotes();
+    this.rust.stop_midi();
     EventBus.off(EventNames.gameSceneReady);
     EventBus.off(EventNames.exitGame);
     EventBus.off(EventNames.pauseGame);
@@ -97,7 +103,7 @@ export class GamificadaComponent implements OnInit, OnDestroy {
 
 // --- Phaser methods
   public addNoteOnGame = (note: MidiSignal) => {
-    this.gameScene.createNote(note.note_index, note.is_bmol);
+    if(note.state) this.gameScene?.createNote(note.note_index, note.is_bmol);
   }
 
   public pauseMusic() {

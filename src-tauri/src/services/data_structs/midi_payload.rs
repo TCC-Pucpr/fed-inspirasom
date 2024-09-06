@@ -30,9 +30,7 @@ pub struct MidiPayload {
     note_index: u8,
     is_bmol: bool,
     note_name: String,
-    #[ts(rename = "airStrength")]
     velocity: u8,
-    #[ts(rename = "on")]
     state: bool,
 }
 
@@ -50,6 +48,7 @@ impl MidiPayload {
     }
 
     pub fn from_note(note: u8, velocity: u8, state: bool) -> Option<Self> {
+        let s = if velocity == 0 { false } else { state };
         let note = Note::from_byte(note)?;
         let note_name: &str = note.into();
         Some(Self {
@@ -57,7 +56,7 @@ impl MidiPayload {
             is_bmol: note.is_bmol(),
             note_name: note_name.to_string(),
             velocity,
-            state,
+            state: s,
         })
     }
 }

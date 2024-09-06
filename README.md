@@ -1,7 +1,23 @@
-# Tauri + Angular
+### Como rodar o programa
 
-This template should help get you started developing with Tauri and Angular.
+Pode usar qualquer sistema operacional, porém para que
+você consiga compilar e executar o programa, você vai precisar ter instalado no seu computador:
 
-## Recommended IDE Setup
+- Node e npm
+- Rust
+- Tauri, usando cargo para fazer a instalação
 
-[VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer) + [Angular Language Service](https://marketplace.visualstudio.com/items?itemName=Angular.ng-template).
+Para rodar, entre no diretório raiz do projeto, a seguir você irá
+executar o comando `npm install` para baixar todas as dependências.
+Em seguida, executar `npm run tauri dev`.
+
+### Contributing
+
+Para incrementar a versão do projeto, por favor use o seguinte comando:
+```
+npm run ver p
+```
+
+### Código do Arduino
+
+[link](https://github.com/TCC-Pucpr/arduino-inspirasom/tree/9-criacao-da-branch-do-prototipo).

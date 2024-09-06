@@ -1,3 +1,4 @@
+import { MidiSignal } from "../../../../model/MidiSignal";
 import { EventBus } from "../events/EventBus";
 import { EventNames } from "../events/EventNames.enum";
 
@@ -6,7 +7,7 @@ export class GameScene extends Phaser.Scene {
     public pressArea: Phaser.GameObjects.Rectangle; 
     public wrongPressArea: Phaser.GameObjects.Rectangle; 
     public limit: Phaser.GameObjects.Rectangle;
-    public notes: Phaser.Physics.Arcade.Group;
+    public notes: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody[] = [];
     public readonly noteSprite: string = "note";
     
     public score: number;
@@ -18,8 +19,11 @@ export class GameScene extends Phaser.Scene {
     public scoreText: Phaser.GameObjects.Text;
     public multiplierText: Phaser.GameObjects.Text;
     public chainText: Phaser.GameObjects.Text;
+    public noteText: Phaser.GameObjects.Text;
 
     public isPaused: boolean = false;
+
+    public lastOcarinaNote: MidiSignal = {} as MidiSignal;
     
     constructor(
     ) {
@@ -28,9 +32,9 @@ export class GameScene extends Phaser.Scene {
 
     public preload() {
         this.add.image(0, 0, 'background').setOrigin(0, 0);
-        this.limit = this.add.rectangle(275, 127, 2, 457).setOrigin(0,0);
-        this.pressArea = this.add.rectangle(287, 127, 60, 457).setOrigin(0,0);
-        this.wrongPressArea = this.add.rectangle(347, 127, 80, 457).setOrigin(0,0);
+        this.limit = this.add.rectangle(0, 127, 267, 457).setOrigin(0,0);
+        this.pressArea = this.add.rectangle(297, 127, 30, 457).setOrigin(0,0);
+        this.wrongPressArea = this.add.rectangle(327, 127, 80, 457).setOrigin(0,0);
         this.physics.add.existing(this.limit, true);
         this.physics.add.existing(this.pressArea, true);
         this.physics.add.existing(this.wrongPressArea, true);
@@ -42,24 +46,27 @@ export class GameScene extends Phaser.Scene {
         this.scoreText = this.add.text(50, 50, '', { color: 'white' }).setOrigin(0, 0);
         this.multiplierText = this.add.text(50, 75, '', { color: 'white' }).setOrigin(0, 0);
         this.chainText = this.add.text(50, 100, '', { color: 'white' }).setOrigin(0, 0);
-        this.add.text(0, 0, 'Press [space] to hit the note, press [ESC] to pause', { color: 'white' }).setOrigin(0, 0);
-
-        this.notes = this.physics.add.group();
+        this.noteText = this.add.text(50, 125, '', { color: 'white' }).setOrigin(0, 0);
+        this.add.text(0, 0, `Press [space] to hit the note, press [ESC] to pause`, { color: 'white' }).setOrigin(0, 0);
     }
     
     public create() {
         EventBus.emit(EventNames.gameSceneReady, this);
         EventBus.on(EventNames.resumeGame, this.resumeGame);
         EventBus.on(EventNames.pauseGame, this.pauseGame);
-        const escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
-        escKey?.on('down', () => { EventBus.emit(EventNames.pauseGame); });
+        EventBus.on(EventNames.ocarinaNote, (note: MidiSignal) => { this.lastOcarinaNote = note });
+        const escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)!;
+        escKey.on('down', () => { EventBus.emit(EventNames.pauseGame); });
         this.scene.launch("pause");
     }
 
     public override update() {
-        this.physics.overlap(this.notes, this.limit, this.removeNote, undefined, this);
-        this.physics.overlap(this.notes, this.pressArea, this.scoredNote, undefined, this);
-        this.physics.overlap(this.notes, this.wrongPressArea, this.poorNote, undefined, this);
+        if(this.notes.length > 0) {
+            const note = this.notes[0];
+            this.physics.overlap(note, this.limit, this.removeNote, undefined, this);
+            this.physics.overlap(note, this.pressArea, this.scoredNote, undefined, this);
+            this.physics.overlap(note, this.wrongPressArea, this.poorNote, undefined, this);
+        }
         if(this.isPressed && this.inputs?.space.isUp) {
             this.isPressed = false;
         }
@@ -67,37 +74,42 @@ export class GameScene extends Phaser.Scene {
         this.scoreText.setText(`Score: ${this.score}`);
         this.multiplierText.setText(`x${this.multiplier}`);
         this.chainText.setText(`Chain: ${this.chainCount}`);
+        this.noteText.setText(`Note: ${this.lastOcarinaNote.note_name}`);
     }
 
-    public removeNote(limit: any, note: any): void {
-        note.destroy();
+    public removeNote(note: any, limit: any): void {
+        this.removeNoteFromScene(note);
         this.score -= 10;
         this.multiplier = 1;
         this.chainCount = 0;
     }
 
-    public poorNote(area: any, note: any) { 
+    public poorNote(note: any, area: any) { 
         if(!this.isPressed && this.inputs?.space.isDown) {
+            this.removeNoteFromScene(note);
             this.isPressed = true;
-            note.destroy();
             this.score -= 20;
             this.chainCount = 1;
         }
     }
 
-    public scoredNote(area: any, note: any){
+    public scoredNote(note: any, area: any){
         if(!this.isPressed && this.inputs?.space.isDown) {
+            const noteCenter = note.x - note.width/2;
+            const accScore = this.getAccScore(noteCenter, this.pressArea.x, this.pressArea.width);
             this.isPressed = true;
-            note.destroy();
-            this.score += 10*this.multiplier;
+            this.removeNoteFromScene(note);
+            this.score += (10 + accScore)*this.multiplier;
             this.chainCount+=1;
         }
     }
 
     public pauseGame = () => {
-        this.isPaused = true;
-        this.scene.bringToTop("pause");
-        this.scene.pause("game");
+        try{
+            this.isPaused = true;
+            this.scene.bringToTop("pause");
+            this.scene.pause();
+        } catch (error){ }
     }
 
     public resumeGame = () => {
@@ -125,17 +137,54 @@ export class GameScene extends Phaser.Scene {
         return 8;
     }
 
+    public getAccScore(notePos: number, areaX: number, areaWidth: number): number {
+        const sectorSize = areaWidth/3;
+        if(areaX+(sectorSize*3) > notePos && notePos > areaX+(sectorSize*2)) {
+            return 5;
+        }
+        if(areaX+(sectorSize*2) > notePos && notePos > areaX+(sectorSize)) {
+            return 10;
+        } else {
+            return 5;
+        }
+    }
+
+    public oldCreateNote(row: number, isBmol: boolean): void {
+        if( row === -1 ) return;
+        const y = 226 + (row * 13);
+        const x = 980;
+        const s = 1;
+        const type = isBmol ? 'bmolNote' : 'note';
+        try{
+            const note = this.physics.add.sprite(x, y, type);
+            note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(35, 32);
+            this.notes.push(note);
+        } catch(error) { }
+    }
+
     public createNote(row: number, isBmol: boolean): void {
         if( row === -1 ) return;
-        const y = 220 + row * 20;
-        // TODO encontrar uma forma de não ter problemas usando funções com coisas do phaser como callbacks
+        const y = 226 + (row * 13);
+        const x = 980;
+        const s = 1;
         try{
             if(isBmol) {
-                this.notes.create(980, y, 'bmolNote').setVelocityX(-100).setOrigin(1, 1).setSize(42,36).setOffset(7,5);
+                const note = this.physics.add.sprite(x, y+3, 'bmolNote');
+                note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(42, 36).setOffset(11, 4);
+                this.notes.push(note);
             } else {
-                this.notes.create(980, y, 'note').setVelocityX(-100).setOrigin(1, 1);
+                const note = this.physics.add.sprite(x, y, 'note');
+                note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(35, 32);
+                this.notes.push(note);
             }
         } catch(error) { }
+    }
+
+    public removeNoteFromScene(note: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
+        const index = this.notes.indexOf(note);
+        if( index !== -1) {
+            this.notes.shift()?.destroy();
+        }
     }
 
 }

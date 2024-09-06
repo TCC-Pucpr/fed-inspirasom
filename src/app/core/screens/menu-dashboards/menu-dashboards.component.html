@@ -5,8 +5,8 @@
         <app-chart-visualization [chartData]="testData"></app-chart-visualization>
         <div class="secondColumn spacingDashboard">
             <div class="numericDisplays spacingDashboard">
-                <app-numeric-visualization [numericInfo]="100"></app-numeric-visualization>
-                <app-numeric-visualization [numericInfo]="10"></app-numeric-visualization>
+                <app-numeric-visualization class="w-100" upperText="Você logou por" [numericInfo]="10" lowerText="dias consecutivos! Parabéns"></app-numeric-visualization>
+                <!-- <app-numeric-visualization class="w-100" upperText="card temporario" [numericInfo]="100"></app-numeric-visualization> -->
             </div>
             <div class="listDisplay">
                 <app-list-visualization></app-list-visualization>

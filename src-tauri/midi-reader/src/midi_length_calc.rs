@@ -32,7 +32,7 @@ impl<'a> MidiLengthCalculator<'a> {
 }
 
 impl<'a> Timer for MidiLengthCalculator<'a> {
-    fn sleep_duration(&mut self, n_ticks: u32) -> std::time::Duration {
+    fn sleep_duration(&mut self, n_ticks: u32) -> Duration {
         self.ticker.sleep_duration(n_ticks)
     }
 
