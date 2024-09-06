@@ -9,6 +9,8 @@ import { Component, Input } from '@angular/core';
 })
 export class NumericVisualizationComponent {
 
+  @Input() upperText: string = ' ';
   @Input() numericInfo: number;
+  @Input() lowerText: string = ' ';
 
 }
