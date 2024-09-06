@@ -57,6 +57,11 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     this.rust.startMusic(musicId!);
     this.rust.listenMidiNotes((note: any) => { this.addNoteOnGame(note); });
     this.musicData = this.musicService.getMusicById(musicId!);
+
+    this.rust.connect_midi();
+    this.rust.listen_for_midi_note((note: MidiSignal) => {
+      EventBus.emit(EventNames.ocarinaNote, note)
+    });
     
     EventBus.on(EventNames.gameSceneReady, (scene: GameScene) => {
       this.gameScene = scene;
@@ -85,6 +90,7 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     this.phaserRef.game.destroy(true, false);
     await this.rust.stopMusic();
     await this.rust.unlistenMidiNotes();
+    this.rust.stop_midi();
     EventBus.off(EventNames.gameSceneReady);
     EventBus.off(EventNames.exitGame);
     EventBus.off(EventNames.pauseGame);

@@ -1,3 +1,4 @@
+import { MidiSignal } from "../../../../model/MidiSignal";
 import { EventBus } from "../events/EventBus";
 import { EventNames } from "../events/EventNames.enum";
 
@@ -20,6 +21,8 @@ export class GameScene extends Phaser.Scene {
     public chainText: Phaser.GameObjects.Text;
 
     public isPaused: boolean = false;
+
+    public lastOcarinaNote: MidiSignal = {} as MidiSignal;
     
     constructor(
     ) {
@@ -49,6 +52,7 @@ export class GameScene extends Phaser.Scene {
         EventBus.emit(EventNames.gameSceneReady, this);
         EventBus.on(EventNames.resumeGame, this.resumeGame);
         EventBus.on(EventNames.pauseGame, this.pauseGame);
+        EventBus.on(EventNames.ocarinaNote, (note: MidiSignal) => { this.lastOcarinaNote = note });
         const escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)!;
         escKey.on('down', () => { EventBus.emit(EventNames.pauseGame); });
         this.scene.launch("pause");
@@ -142,15 +146,28 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
+    public oldCreateNote(row: number, isBmol: boolean): void {
+        if( row === -1 ) return;
+        const y = 226 + (row * 13);
+        const x = 980;
+        const s = 1;
+        const type = isBmol ? 'bmolNote' : 'note';
+        try{
+            const note = this.physics.add.sprite(x, y, type);
+            note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(35, 32);
+            this.notes.push(note);
+        } catch(error) { }
+    }
+
     public createNote(row: number, isBmol: boolean): void {
         if( row === -1 ) return;
         const y = 226 + (row * 13);
-        const x = 400;
-        const s = 0.2;
+        const x = 980;
+        const s = 1;
         try{
             if(isBmol) {
-                const note = this.physics.add.sprite(x, y, 'bmolNote');
-                note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(35, 32).setOffset(10, 5);
+                const note = this.physics.add.sprite(x, y+3, 'bmolNote');
+                note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(42, 36).setOffset(11, 4);
                 this.notes.push(note);
             } else {
                 const note = this.physics.add.sprite(x, y, 'note');

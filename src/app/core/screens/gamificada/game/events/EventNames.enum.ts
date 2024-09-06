@@ -3,5 +3,6 @@ export enum EventNames {
     "pauseSceneReady" = "pauseSceneReady",
     "exitGame" = "exitGame",
     "pauseGame" = "pauseGame",
-    "resumeGame" = "resumeGame"
+    "resumeGame" = "resumeGame",
+    "ocarinaNote" = "ocarinaNote"
 }

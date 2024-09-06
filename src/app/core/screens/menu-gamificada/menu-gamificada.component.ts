@@ -37,7 +37,7 @@ export class MenuGamificadaComponent implements OnInit {
 
   public async ngOnInit(): Promise<void> {
     this.musicList = this.musicService.getMusicList();
-    if(!this.musicList) {
+    if(this.musicList.length == 0) {
       this.musicList = await this.musicService.fetchMusicList();
     }
   }
