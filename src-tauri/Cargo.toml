@@ -17,11 +17,14 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 arduino-comm = { path = "arduino-comm", features = ["verbose"] }
 midi-reader = { path = "midi-reader" }
+sea-orm = { version = "1.1.0-rc.1", features = ["sqlx-sqlite", "macros", "runtime-async-std", "debug-print", "with-json", "with-time"] }
 waitgroup = { workspace = true }
 ts-rs = { workspace = true }
 paris = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
+tracing-subscriber = "0.3.18"
+tracing = "0.1.40"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

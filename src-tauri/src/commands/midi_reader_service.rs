@@ -1,7 +1,7 @@
 use crate::{
     app_states::midi_device_state::MidiState,
+    commands::service_error::ServiceError,
     constants::events_name::{MIDI_READ_NOTE, MIDI_READ_STATE},
-    services::service_error::ServiceError,
     RESOURCES_FOLDER,
 };
 use anyhow::anyhow;
@@ -11,13 +11,15 @@ use std::{
 };
 
 use super::{
-    data_structs::{
+    payloads::{
         midi_payload::{MidiFileState, MidiPayload},
         music::{MidiMusic, MidiMusicList},
     },
     service_error::ServiceResult,
 };
 
+use crate::app_states::current_music_score_state::CurrentMusicScoreState;
+use crate::app_states::store_state::StoreState;
 use midi_reader::errors::MidiReaderError;
 use midi_reader::midi_file::{MidiFile, MidiFilePlayer, PlayBackCallback, ReadingState};
 use paris::{error, info, warn, Logger};
@@ -89,6 +91,8 @@ pub async fn list_musics<R: Runtime>(app: tauri::AppHandle<R>) -> ServiceResult<
 pub async fn start_game<R: Runtime>(
     music_id: String,
     midi_state: State<'_, MidiState>,
+    score_state: State<'_, CurrentMusicScoreState>,
+    store: State<'_, StoreState>,
     handle: tauri::AppHandle<R>,
     window: Window,
 ) -> ServiceResult<()> {
@@ -102,7 +106,7 @@ pub async fn start_game<R: Runtime>(
             _ => {}
         }
     };
-    let (music, file) = read_music_from_id(&handle, music_id).map_err(|e1| {
+    let (music, file) = read_music_from_id(&handle, &music_id).map_err(|e1| {
         logger.done().error(e1.to_string());
         e1
     })?;
@@ -132,11 +136,14 @@ pub async fn start_game<R: Runtime>(
     logger
         .done()
         .info("Successfully loaded file, now playing...");
+    score_state.reset();
     const RESET_MSG: &str = "Midi file state has been reset!";
-    let res = match p.play() {
+    let res: ServiceResult<()> = match p.play() {
         Ok(_) => {
             logger.done().info("Music finished playing");
-            Ok(())
+            score_state
+                .save_to_store(&music_id, &store)
+                .map_err(move |e| ServiceError::from(e))
         }
         Err(err) => {
             if let MidiReaderError::Interrupted = err {
@@ -148,6 +155,7 @@ pub async fn start_game<R: Runtime>(
             }
         }
     };
+    score_state.reset();
     midi_state.reset_midi_file();
     logger.info(RESET_MSG);
     res
@@ -224,7 +232,7 @@ pub async fn stop_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
 }
 
 #[tauri::command]
-pub async fn music_length(music_id: String, handle: tauri::AppHandle) -> ServiceResult<u64> {
+pub async fn music_length(music_id: &str, handle: tauri::AppHandle) -> ServiceResult<u64> {
     let mut logger = Logger::new();
     logger.info("Calculating midi file length...");
     let (_, f) = match read_music_from_id(&handle, music_id) {
@@ -270,7 +278,7 @@ pub async fn remaining_time(midi_state: State<'_, MidiState>) -> ServiceResult<u
 
 fn read_music_from_id<R: Runtime>(
     handle: &tauri::AppHandle<R>,
-    music_id: String,
+    music_id: &str,
 ) -> anyhow::Result<(MidiMusic, Vec<u8>)> {
     let list = music_list(handle)?;
     if let Some(m) = list.files.iter().find(|e| e.id == music_id) {

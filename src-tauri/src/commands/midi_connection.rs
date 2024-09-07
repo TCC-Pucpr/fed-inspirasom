@@ -1,5 +1,5 @@
 use crate::{
-    constants::events_name::MIDI_NOTE, services::data_structs::midi_payload::MidiPayload, MidiState,
+    commands::payloads::midi_payload::MidiPayload, constants::events_name::MIDI_NOTE, MidiState,
 };
 use arduino_comm::midi_connection::{connect, list_available_devices};
 use paris::{info, warn, Logger};

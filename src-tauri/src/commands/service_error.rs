@@ -1,3 +1,4 @@
+use crate::app_states::store_state::StorageError;
 use anyhow::Error;
 use arduino_comm::errors::ArduinoCommunicationError;
 use midi_reader::errors::MidiReaderError;
@@ -72,6 +73,12 @@ impl From<ArduinoCommunicationError> for ServiceError {
 
 impl From<MidiReaderError> for ServiceError {
     fn from(value: MidiReaderError) -> Self {
+        Self::new_with_message(value.to_string())
+    }
+}
+
+impl From<StorageError> for ServiceError {
+    fn from(value: StorageError) -> Self {
         Self::new_with_message(value.to_string())
     }
 }

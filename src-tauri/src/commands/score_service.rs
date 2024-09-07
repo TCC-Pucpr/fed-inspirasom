@@ -1,6 +1,6 @@
 use crate::app_states::current_music_score_state::CurrentMusicScoreState;
-use crate::services::data_structs::on_note_data::{OnNoteMessage, OnNotePayload};
-use crate::services::service_error::ServiceResult;
+use crate::commands::payloads::on_note_data::{OnNoteMessage, OnNotePayload};
+use crate::commands::service_error::ServiceResult;
 use tauri::State;
 
 #[tauri::command]
