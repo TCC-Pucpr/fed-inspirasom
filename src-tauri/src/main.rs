@@ -4,7 +4,7 @@
 use crate::app_states::current_music_score_state::CurrentMusicScoreState;
 use crate::app_states::store_state::StoreState;
 use app_states::midi_device_state::MidiState;
-use commands::{midi_connection::*, midi_reader_service::*, score_service::*};
+use commands::{midi_connection_commands::*, midi_reader_commands::*, score_commands::*};
 use std::path::PathBuf;
 use tauri::{App, Manager};
 
