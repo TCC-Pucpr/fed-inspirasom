@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::sync::{Arc, Mutex};
 
 pub mod mutable_arc;

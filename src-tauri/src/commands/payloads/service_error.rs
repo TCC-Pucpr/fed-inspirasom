@@ -1,3 +1,4 @@
+use crate::app_states::database_state::DatabaseError;
 use anyhow::Error;
 use arduino_comm::errors::ArduinoCommunicationError;
 use midi_reader::errors::MidiReaderError;
@@ -95,6 +96,12 @@ impl From<&str> for ServiceError {
 impl From<String> for ServiceError {
     fn from(value: String) -> Self {
         Self::new_with_message(value)
+    }
+}
+
+impl From<DatabaseError> for ServiceError {
+    fn from(value: DatabaseError) -> Self {
+        Self::new_with_message(value.to_string())
     }
 }
 

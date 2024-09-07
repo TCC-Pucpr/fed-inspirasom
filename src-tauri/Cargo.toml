@@ -14,10 +14,6 @@ tauri-build = { version = "1", features = [] }
 tauri = { version = "1", features = ["shell-open"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-storage = { path = "storage", features = ["verbose"] }
-arduino-comm = { path = "arduino-comm", features = ["verbose"] }
-midi-reader = { path = "midi-reader" }
-sea-orm = { version = "1.1.0-rc.1", features = ["sqlx-sqlite", "macros", "runtime-async-std", "debug-print", "with-json", "with-time"] }
 waitgroup = { workspace = true }
 ts-rs = { workspace = true }
 paris = { workspace = true }
@@ -26,12 +22,18 @@ anyhow = { workspace = true }
 tracing-subscriber = "0.3.18"
 tracing = "0.1.40"
 
+migration = { path = "persistence/migration" }
+entity = { path = "persistence/entity" }
+persistence = { path = "persistence", features = ["verbose"] }
+midi-reader = { path = "midi-reader" }
+arduino-comm = { path = "arduino-comm", features = ["verbose"] }
+
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
 
 [workspace]
-members = ["arduino-comm", "midi-reader", "storage", "utils"]
+members = ["arduino-comm", "midi-reader", "persistence", "utils", "persistence/migration", "persistence/entity"]
 
 [workspace.dependencies]
 ts-rs = "9.0.1"
@@ -39,3 +41,8 @@ waitgroup = "0.1.2"
 paris = "1.5.15"
 anyhow = "1.0.86"
 thiserror = "1.0.63"
+sea-orm = "1.1.0-rc.1"
+
+[dependencies.sea-orm]
+workspace = true
+features = ["sqlx-sqlite", "macros", "runtime-async-std", "debug-print", "with-json", "with-time"]

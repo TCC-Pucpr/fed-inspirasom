@@ -1,6 +1,5 @@
 use crate::{
     app_states::midi_device_state::MidiState,
-    commands::service_error::ServiceError,
     constants::events_name::{MIDI_READ_NOTE, MIDI_READ_STATE},
     RESOURCES_FOLDER,
 };
@@ -10,16 +9,14 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-use super::{
-    payloads::{
-        midi_payload::{MidiFileState, MidiPayload},
-        music::{MidiMusic, MidiMusicList},
-    },
-    service_error::ServiceResult,
+use super::payloads::{
+    midi_payload::{MidiFileState, MidiPayload},
+    music::{MidiMusic, MidiMusicList},
 };
 
 use crate::app_states::current_music_score_state::CurrentMusicScoreState;
 use crate::app_states::store_state::StoreState;
+use crate::commands::payloads::service_error::{ServiceError, ServiceResult};
 use midi_reader::errors::MidiReaderError;
 use midi_reader::midi_file::{MidiFile, MidiFilePlayer, PlayBackCallback, ReadingState};
 use paris::{error, info, warn, Logger};

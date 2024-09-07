@@ -6,7 +6,7 @@ use paris::{info, warn, Logger};
 use tauri::{State, Window};
 use waitgroup::WaitGroup;
 
-use super::service_error::{ServiceError, ServiceResult};
+use crate::commands::payloads::service_error::{ServiceError, ServiceResult};
 
 const ALREADY_CONNECTED_CODE: &str = "0001";
 const ALREADY_CONNECTED: &str = "Already listening to a midi device! Disconnect from it first";

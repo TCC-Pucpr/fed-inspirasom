@@ -2,16 +2,17 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use crate::app_states::current_music_score_state::CurrentMusicScoreState;
+use crate::app_states::database_state::DatabaseState;
 use crate::app_states::store_state::StoreState;
 use app_states::midi_device_state::MidiState;
 use commands::{midi_connection_commands::*, midi_reader_commands::*, score_commands::*};
 use std::path::PathBuf;
+use tauri::async_runtime::block_on;
 use tauri::{App, Manager};
 
 mod app_states;
 mod commands;
 mod constants;
-mod services;
 
 pub const RESOURCES_FOLDER: &str = "resources/";
 
@@ -40,8 +41,11 @@ fn main() {
             reset_music_score
         ])
         .setup(move |app| {
-            let store = StoreState::try_from(app as &App)?;
+            let context_resources_path = get_resources_path(app).display().to_string();
+            let store = StoreState::try_from(context_resources_path.as_str())?;
+            let db = block_on(DatabaseState::connect(context_resources_path.as_str()))?;
             app.manage(store);
+            app.manage(db);
             Ok(())
         })
         .run(tauri::generate_context!())
