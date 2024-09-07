@@ -52,13 +52,15 @@ pub struct OnNoteMessage {
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "../../src/app/core/model/OnScoreUpdateMessage.ts")]
 pub struct OnNotePayload {
+    hit_streak: u64,
     total_score: i64,
     latest_message_score: i32,
 }
 
 impl OnNotePayload {
-    pub fn new(total_score: i64, latest_message_score: i32) -> Self {
+    pub fn new(hit_streak: u64, total_score: i64, latest_message_score: i32) -> Self {
         Self {
+            hit_streak,
             total_score,
             latest_message_score,
         }

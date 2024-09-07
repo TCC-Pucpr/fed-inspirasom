@@ -36,7 +36,8 @@ fn main() {
             list_musics,
             music_length,
             remaining_time,
-            on_note
+            on_note,
+            reset_music_score
         ])
         .setup(move |app| {
             let store = StoreState::try_from(app as &App)?;

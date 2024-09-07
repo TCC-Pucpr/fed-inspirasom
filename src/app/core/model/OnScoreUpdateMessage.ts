@@ -3,6 +3,6 @@
 /**
  * Payload que será emitido ao front sobre sempre que o usuario atualizar o seu score
  * o `total_score` é o score total acumulado na sessao atual da musica e o
- * `latest_message_score` é o score ganho/perdido depois do ultimo input
+ * `latest_message_score` é o score ganho/perdido depois do ultimo input.
  */
-export type OnNotePayload = { total_score: bigint, latest_message_score: number, };
+export type OnNotePayload = { hit_streak: bigint, total_score: bigint, latest_message_score: number, };

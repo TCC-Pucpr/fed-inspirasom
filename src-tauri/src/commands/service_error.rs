@@ -1,12 +1,15 @@
-use crate::app_states::store_state::StorageError;
 use anyhow::Error;
 use arduino_comm::errors::ArduinoCommunicationError;
 use midi_reader::errors::MidiReaderError;
 use serde::{Deserialize, Serialize};
+use std::sync::PoisonError;
+use storage::storage::StorageError;
 use thiserror::Error;
 use ts_rs::TS;
 
 pub type ServiceResult<T> = Result<T, ServiceError>;
+
+const MUTEX_ERROR_MESSAGE: &str = "Mutex is poisoned";
 
 #[derive(Debug, Clone, Error, Serialize, Deserialize, PartialEq, Eq, TS)]
 #[ts(export, export_to = "../../src/app/core/model/ServiceError.ts")]
@@ -92,5 +95,11 @@ impl From<&str> for ServiceError {
 impl From<String> for ServiceError {
     fn from(value: String) -> Self {
         Self::new_with_message(value)
+    }
+}
+
+impl<T: Sized> From<PoisonError<T>> for ServiceError {
+    fn from(_value: PoisonError<T>) -> Self {
+        ServiceError::from(MUTEX_ERROR_MESSAGE)
     }
 }

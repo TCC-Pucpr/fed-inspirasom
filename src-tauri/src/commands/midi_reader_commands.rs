@@ -31,7 +31,6 @@ const DATA_JSON: &str = "data.json";
 const STATE_CHANGE_ERROR_LOG_MSG: &str =
     "Could not acquire midi file state, probably because there is no file being played";
 const STATE_CHANGE_ERROR_MSG: &str = "There is no file being played";
-const ACQUIRE_MIDI_FILE_STATE_ERROR_MSG: &str = "Error while acquiring midi file state";
 
 struct SheetListener {
     window: Window,
@@ -141,9 +140,7 @@ pub async fn start_game<R: Runtime>(
     let res: ServiceResult<()> = match p.play() {
         Ok(_) => {
             logger.done().info("Music finished playing");
-            score_state
-                .save_to_store(&music_id, &store)
-                .map_err(move |e| ServiceError::from(e))
+            Ok(store.save(&music_id, score_state.deref())?)
         }
         Err(err) => {
             if let MidiReaderError::Interrupted = err {
@@ -155,6 +152,7 @@ pub async fn start_game<R: Runtime>(
             }
         }
     };
+    store.commit()?;
     score_state.reset();
     midi_state.reset_midi_file();
     logger.info(RESET_MSG);
@@ -165,70 +163,34 @@ pub async fn start_game<R: Runtime>(
 pub async fn pause_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
     logger.info("Pause called, acquiring midi file state...");
-    if let Some(state) = midi_state
-        .midi_file
-        .lock()
-        .map_err(|_| {
-            logger.done().error(ACQUIRE_MIDI_FILE_STATE_ERROR_MSG);
-            ServiceError::from(ACQUIRE_MIDI_FILE_STATE_ERROR_MSG)
-        })?
-        .deref_mut()
-    {
+    acquire_state(&mut logger, midi_state, move |logger, state| {
         state.pause();
         logger.done().info("Midi file playback paused successfully");
-        Ok(())
-    } else {
-        logger.done().error(STATE_CHANGE_ERROR_LOG_MSG);
-        Err(ServiceError::from(STATE_CHANGE_ERROR_MSG))
-    }
+    })
 }
 
 #[tauri::command]
 pub async fn resume_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
     logger.info("Resume called, acquiring midi file state...");
-    if let Some(state) = midi_state
-        .midi_file
-        .lock()
-        .map_err(|_| {
-            logger.done().error(ACQUIRE_MIDI_FILE_STATE_ERROR_MSG);
-            ServiceError::from(ACQUIRE_MIDI_FILE_STATE_ERROR_MSG)
-        })?
-        .deref_mut()
-    {
+    acquire_state(&mut logger, midi_state, move |logger, state| {
         state.unpause();
         logger
             .done()
             .info("Midi file playback resumed successfully");
-        Ok(())
-    } else {
-        logger.done().error(STATE_CHANGE_ERROR_LOG_MSG);
-        Err(ServiceError::from(STATE_CHANGE_ERROR_MSG))
-    }
+    })
 }
 
 #[tauri::command]
 pub async fn stop_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
     logger.info("Stop called, acquiring midi file state...");
-    if let Some(state) = midi_state
-        .midi_file
-        .lock()
-        .map_err(|_| {
-            logger.done().error(ACQUIRE_MIDI_FILE_STATE_ERROR_MSG);
-            ServiceError::from(ACQUIRE_MIDI_FILE_STATE_ERROR_MSG)
-        })?
-        .as_mut()
-    {
+    acquire_state(&mut logger, midi_state, move |logger, state| {
         state.stop();
         logger
             .done()
             .info("Midi file playback stopped successfully");
-        Ok(())
-    } else {
-        logger.done().error(STATE_CHANGE_ERROR_LOG_MSG);
-        Err(ServiceError::from(STATE_CHANGE_ERROR_MSG))
-    }
+    })
 }
 
 #[tauri::command]
@@ -257,19 +219,22 @@ pub async fn music_length(music_id: &str, handle: tauri::AppHandle) -> ServiceRe
 pub async fn remaining_time(midi_state: State<'_, MidiState>) -> ServiceResult<u64> {
     let mut logger = Logger::new();
     logger.loading("Reading remaining time...");
-    if let Some(state) = midi_state
-        .midi_file
-        .lock()
-        .map_err(|_| {
-            logger.done().error(ACQUIRE_MIDI_FILE_STATE_ERROR_MSG);
-            ServiceError::from(ACQUIRE_MIDI_FILE_STATE_ERROR_MSG)
-        })?
-        .deref()
-    {
+    acquire_state(&mut logger, midi_state, move |logger, state| {
         let dur = state.remaining_time().as_secs();
         let msg = format!("Remaining time obtained: {} seconds left", dur);
         logger.done().info(msg);
-        Ok(dur)
+        dur
+    })
+}
+
+#[inline]
+fn acquire_state<T>(
+    logger: &mut Logger,
+    midi_state: State<'_, MidiState>,
+    on_acquired: fn(&mut Logger, &mut MidiFile) -> T,
+) -> ServiceResult<T> {
+    if let Some(state) = midi_state.midi_file.lock()?.deref_mut() {
+        Ok(on_acquired(logger, state))
     } else {
         logger.done().error(STATE_CHANGE_ERROR_LOG_MSG);
         Err(ServiceError::from(STATE_CHANGE_ERROR_MSG))

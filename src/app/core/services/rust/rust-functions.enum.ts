@@ -58,7 +58,13 @@ export enum RustFunctionName {
      *
      * Adiciona ao acumulador de score, retorna o novo total e o score ganho.
      */
-    onNote = "on_note"
+    onNote = "on_note",
+    /**
+     * (music_id: String)
+     *
+     * Reseta todos os scores de uma musica
+     */
+    resetMusicScore = "reset_music_score"
 }
 
 /**
