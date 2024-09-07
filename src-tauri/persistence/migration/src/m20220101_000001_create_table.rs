@@ -21,6 +21,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Score::Table)
                     .if_not_exists()
+                    .col(pk_auto(Score::Id))
                     .col(integer(Score::Total))
                     .col(timestamp(Score::Date))
                     .col(boolean(Score::Completed))
@@ -34,7 +35,7 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
-        
+
         Ok(())
     }
 
@@ -59,6 +60,7 @@ enum Music {
 #[derive(DeriveIden)]
 enum Score {
     Table,
+    Id,
     Total,
     Date,
     Completed,
