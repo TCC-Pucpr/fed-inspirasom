@@ -47,9 +47,9 @@ Para fazer uma nova atualizacao ao banco de dados, entre no diretorio `src-tauri
 sea-orm-cli migrate generate [nome da migracao]
 ```
 
-Nome deve ser em snake case ou entre aspas " e sem o [ ]
+Nome deve ser em snake case ou entre aspas " e sem o [ ]. Idealmente o nome é a mudanca que sera feita.
 
-Um novo arquivo sera gerado dentro do crate `migrations` com o nome sendo a data local, e o nome escolhido.
+Um novo arquivo sera gerado dentro do crate `migrations`.
 
 Dentro desse arquivo modifique as funcoes up e down, fazendo as mudancas para nova versao e rollback.
 [Mais detalhes sobre migracao com SeaORM](https://www.sea-ql.org/SeaORM/docs/migration/writing-migration/)
@@ -70,8 +70,8 @@ sea-orm-cli generate entity -o entity/src/entities
 
 [Mais detalhes sobre rodando as migracoes com SeaORM](https://www.sea-ql.org/SeaORM/docs/migration/running-migration/)
 
-OBS: Voce pode usar configuracoes de run se voce estiver usando algum produto da Jetbrains e nao
-quer rodar esses comandos na mao.
+OBS: Voce pode usar configuracoes de run ja criadas se voce estiver usando algum produto da Jetbrains e nao
+quer rodar alguns desses comandos na mao.
 
 ### Código do Arduino
 
