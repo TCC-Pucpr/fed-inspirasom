@@ -3,8 +3,8 @@ use crate::app_states::database_state::DatabaseState;
 use crate::commands::payloads::on_note_data::{OnNoteMessage, OnNotePayload};
 use crate::commands::payloads::score::{OrderType, ScorePayload};
 use crate::commands::payloads::service_error::{ServiceError, ServiceResult};
-use entity::prelude::Score;
-use entity::{music, score};
+use entity::prelude::{Music, Score};
+use entity::score;
 use migration::Order;
 use sea_orm::{ColumnTrait, EntityTrait, ModelTrait, QueryFilter, QueryOrder};
 use tauri::State;
@@ -30,7 +30,7 @@ pub async fn reset_music_score(
     music_id: i32,
     db_state: State<'_, DatabaseState>,
 ) -> ServiceResult<()> {
-    let music = if let Some(m) = music::Entity::find_by_id(music_id)
+    let music = if let Some(m) = Music::find_by_id(music_id)
         .one(&db_state.db)
         .await?
     {
@@ -38,7 +38,7 @@ pub async fn reset_music_score(
     } else {
         return Err(ServiceError::from("Music does not exist"));
     };
-    let res = score::Entity::delete_many()
+    let res = Score::delete_many()
         .belongs_to(&music)
         .exec(&db_state.db)
         .await?;
@@ -58,7 +58,7 @@ pub async fn list_scores(
     completed: Option<bool>,
     db_state: State<'_, DatabaseState>,
 ) -> ServiceResult<Vec<ScorePayload>> {
-    let music_model = if let Some(m) = music::Entity::find_by_id(music_id)
+    let music_model = if let Some(m) = Music::find_by_id(music_id)
         .one(&db_state.db)
         .await?
     {

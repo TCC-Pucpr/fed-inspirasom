@@ -18,6 +18,8 @@ pub enum DatabaseError {
     CouldNotCreateFile(String, #[source] anyhow::Error),
     #[error("Error while running migrations on `{0}`")]
     MigrationError(String, #[source] anyhow::Error),
+    #[error("Could not create database model")]
+    CouldNotCreateActiveModel,
 }
 
 pub struct DatabaseState {

@@ -28,7 +28,7 @@ export enum RustFunctionName {
      */
     listMidiDevices = "list_midi_devices",
     /**
-     * (musicId: number)
+     * (music_id: number)
      *
      * Comeca a enviar o evento midiReadNote e midiReadState
      */
@@ -50,7 +50,7 @@ export enum RustFunctionName {
      */
     listMusics = "list_musics",
     /**
-     * (musicId: number)
+     * (music_id: number)
      *
      * Calcula e devolve a duracao total da musica em segundos
      */
@@ -83,7 +83,25 @@ export enum RustFunctionName {
      *
      * Se for vazia, uma lista vazia é retornada.
      */
-    listScores = "list_scores"
+    listScores = "list_scores",
+    /**
+     * (music_name: String, file_path: String)
+     * 
+     * Cria uma nova musica no banco de dados
+     * 
+     * `file_path` é o caminho absoluto do arquivo, uma cópia desse arquivo é feito dentro do `resources`
+     * se ele existir, e entao essa copia vai ser usada pelo app.
+     * 
+     * Retorna o novo `MidiMusic` adicionado
+     */
+    addNewMusic = "add_new_music",
+    /**
+     * (music_id: number)
+     * 
+     * Remove a musica e todos os seus scores da base.
+     */
+    removeMusic = "remove_music",
+    
 }
 
 /**

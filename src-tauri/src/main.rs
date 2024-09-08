@@ -9,7 +9,7 @@ use app_states::midi_device_state::MidiState;
 use commands::{midi_connection_commands::*, midi_reader_commands::*, score_commands::*};
 use std::path::PathBuf;
 use tauri::async_runtime::block_on;
-use tauri::{App, Manager};
+use tauri::{App, AppHandle, Manager, Runtime};
 
 mod app_states;
 mod commands;
@@ -17,6 +17,13 @@ mod constants;
 
 pub fn get_context_path(app: &App) -> PathBuf {
     app.path_resolver()
+        .resolve_resource(RESOURCES_FOLDER)
+        .unwrap()
+}
+
+pub fn get_resources_path<R: Runtime>(handle: &AppHandle<R>) -> PathBuf {
+    handle
+        .path_resolver()
         .resolve_resource(RESOURCES_FOLDER)
         .unwrap()
 }
@@ -39,7 +46,9 @@ fn main() {
             remaining_time,
             on_note,
             reset_music_score,
-            list_scores
+            list_scores,
+            add_new_music,
+            remove_music
         ])
         .setup(move |app| {
             let context_resources_path = get_context_path(app).display().to_string();
