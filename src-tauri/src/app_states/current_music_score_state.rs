@@ -1,8 +1,8 @@
 use crate::app_states::store_state::StoreState;
+use persistence::storage::{StorageResult, StorageSavable, Store};
 use serde::ser::Error;
 use serde::{Serialize, Serializer};
 use std::sync::Mutex;
-use storage::storage::{StorageResult, StorageSavable, Store};
 
 const DEFAULT_SCORE: Score = 10;
 const SCORE_KEY: &str = "__score";

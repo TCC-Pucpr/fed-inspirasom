@@ -1,10 +1,11 @@
-use crate::get_resources_path;
+use crate::constants::dirs::STORE_DIR;
+use crate::get_context_path;
+use persistence::storage::{
+    StorageError, StorageResult, StorageRetrievable, StorageSavable, Store,
+};
 use std::ops::DerefMut;
 use std::sync::Mutex;
-use storage::storage::{StorageError, StorageResult, StorageRetrievable, StorageSavable, Store};
 use tauri::App;
-
-const DB_NAME: &str = "inspire_music_data.db";
 
 pub struct StoreState {
     store: Mutex<Store>,
@@ -12,7 +13,7 @@ pub struct StoreState {
 
 impl StoreState {
     fn db_file_path(file_path: &str) -> String {
-        format!("{}/{}", file_path, DB_NAME)
+        format!("{}{}", file_path, STORE_DIR)
     }
     pub fn load_or_create_new(file_path: &str) -> StorageResult<Self> {
         let store = Store::load_or_create_new(&Self::db_file_path(file_path))?;
@@ -81,7 +82,7 @@ impl TryFrom<App> for StoreState {
 impl TryFrom<&App> for StoreState {
     type Error = StorageError;
     fn try_from(value: &App) -> StorageResult<Self> {
-        let f = get_resources_path(value);
+        let f = get_context_path(value);
         let path = f.display().to_string();
         Self::try_from(path)
     }

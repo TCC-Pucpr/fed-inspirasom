@@ -10,6 +10,7 @@ pub struct Model {
     pub total: i32,
     pub date: DateTimeUtc,
     pub completed: bool,
+    pub highest_streak: i32,
     pub music_id: i32,
 }
 

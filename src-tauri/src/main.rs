@@ -4,6 +4,7 @@
 use crate::app_states::current_music_score_state::CurrentMusicScoreState;
 use crate::app_states::database_state::DatabaseState;
 use crate::app_states::store_state::StoreState;
+use crate::constants::dirs::RESOURCES_FOLDER;
 use app_states::midi_device_state::MidiState;
 use commands::{midi_connection_commands::*, midi_reader_commands::*, score_commands::*};
 use std::path::PathBuf;
@@ -14,9 +15,7 @@ mod app_states;
 mod commands;
 mod constants;
 
-pub const RESOURCES_FOLDER: &str = "resources/";
-
-pub fn get_resources_path(app: &App) -> PathBuf {
+pub fn get_context_path(app: &App) -> PathBuf {
     app.path_resolver()
         .resolve_resource(RESOURCES_FOLDER)
         .unwrap()
@@ -41,7 +40,7 @@ fn main() {
             reset_music_score
         ])
         .setup(move |app| {
-            let context_resources_path = get_resources_path(app).display().to_string();
+            let context_resources_path = get_context_path(app).display().to_string();
             let store = StoreState::try_from(context_resources_path.as_str())?;
             let db = block_on(DatabaseState::connect(context_resources_path.as_str()))?;
             app.manage(store);

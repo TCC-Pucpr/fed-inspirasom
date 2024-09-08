@@ -2,9 +2,9 @@ use crate::app_states::database_state::DatabaseError;
 use anyhow::Error;
 use arduino_comm::errors::ArduinoCommunicationError;
 use midi_reader::errors::MidiReaderError;
+use persistence::storage::StorageError;
 use serde::{Deserialize, Serialize};
 use std::sync::PoisonError;
-use storage::storage::StorageError;
 use thiserror::Error;
 use ts_rs::TS;
 

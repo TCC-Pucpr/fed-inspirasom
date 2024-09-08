@@ -21,9 +21,7 @@ use midi_reader::errors::MidiReaderError;
 use midi_reader::midi_file::{MidiFile, MidiFilePlayer, PlayBackCallback, ReadingState};
 use paris::{error, info, warn, Logger};
 use tauri::{Runtime, State, Window};
-
-const MUSICS_FOLDER: &str = "musics/";
-const DATA_JSON: &str = "data.json";
+use crate::constants::dirs::{MUSIC_DATA_DIR, MUSICS_FOLDER};
 
 const STATE_CHANGE_ERROR_LOG_MSG: &str =
     "Could not acquire midi file state, probably because there is no file being played";
@@ -265,7 +263,7 @@ fn read_music_from_id<R: Runtime>(
 fn music_list<R: Runtime>(handle: &tauri::AppHandle<R>) -> anyhow::Result<MidiMusicList> {
     if let Some(p) = handle
         .path_resolver()
-        .resolve_resource(format_resources_music_dir(DATA_JSON))
+        .resolve_resource(format!("{}{}", RESOURCES_FOLDER, MUSIC_DATA_DIR))
     {
         return MidiMusicList::from_path_resource(&p).map_err(move |e| anyhow!(e));
     };
@@ -276,7 +274,7 @@ fn music_list<R: Runtime>(handle: &tauri::AppHandle<R>) -> anyhow::Result<MidiMu
 fn music<R: Runtime>(handle: &tauri::AppHandle<R>, music_name: &str) -> Result<Vec<u8>, String> {
     if let Some(p) = handle
         .path_resolver()
-        .resolve_resource(format_resources_music_dir(music_name))
+        .resolve_resource(format!("{}{}{}", RESOURCES_FOLDER, MUSICS_FOLDER, music_name))
     {
         if let Ok(vec) = fs::read(&p) {
             Ok(vec)
@@ -291,9 +289,4 @@ fn music<R: Runtime>(handle: &tauri::AppHandle<R>, music_name: &str) -> Result<V
     } else {
         Err(String::from("Could not get path resolver"))
     }
-}
-
-#[inline]
-fn format_resources_music_dir(file_name: &str) -> String {
-    format!("{}{}{}", RESOURCES_FOLDER, MUSICS_FOLDER, file_name)
 }

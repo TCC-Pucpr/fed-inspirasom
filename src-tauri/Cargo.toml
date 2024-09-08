@@ -21,6 +21,7 @@ thiserror = { workspace = true }
 anyhow = { workspace = true }
 tracing-subscriber = "0.3.18"
 tracing = "0.1.40"
+const_format = "0.2.33"
 
 migration = { path = "persistence/migration" }
 entity = { path = "persistence/entity" }

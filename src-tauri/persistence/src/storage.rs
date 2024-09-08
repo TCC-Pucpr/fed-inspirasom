@@ -13,8 +13,6 @@ use thiserror::Error;
 
 pub type StorageResult<T> = Result<T, StorageError>;
 
-const STORE_NAME: &str = "inspire_music_data";
-
 #[derive(Debug, Error)]
 pub enum StorageError {
     #[error("Database file in path `{0}` does not exist")]
@@ -200,7 +198,10 @@ impl StorageSavable for u64 {}
 impl StorageSavable for u32 {}
 impl StorageSavable for i64 {}
 impl StorageSavable for i32 {}
+impl StorageSavable for String {}
+impl StorageSavable for &str {}
 impl StorageRetrievable for u64 {}
 impl StorageRetrievable for u32 {}
 impl StorageRetrievable for i64 {}
 impl StorageRetrievable for i32 {}
+impl StorageRetrievable for String {}

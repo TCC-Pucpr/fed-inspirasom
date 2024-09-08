@@ -25,6 +25,7 @@ impl MigrationTrait for Migration {
                     .col(integer(Score::Total))
                     .col(timestamp(Score::Date))
                     .col(boolean(Score::Completed))
+                    .col(integer(Score::HighestStreak))
                     .col(integer(Score::MusicId))
                     .foreign_key(
                         ForeignKey::create()
@@ -63,6 +64,7 @@ enum Score {
     Id,
     Total,
     Date,
+    HighestStreak,
     Completed,
     MusicId,
 }
