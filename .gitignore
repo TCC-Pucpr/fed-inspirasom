@@ -48,6 +48,4 @@ src/assets/phaser.min.js
 
 src-tauri/resources/musics/*.mid
 src-tauri/resources/data/
-src-tauri/user/.env
-
 .env
