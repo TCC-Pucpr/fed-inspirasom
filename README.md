@@ -72,6 +72,8 @@ O database será atualizado, porém ainda é necessario atualizar os structs de 
 sea-orm-cli generate entity -o entity/src/entities
 ```
 
+Para adicionar novas musicas padroes, deve-se criar um novo migration passando as novas musicas
+
 [Mais detalhes sobre rodando as migracoes com SeaORM](https://www.sea-ql.org/SeaORM/docs/migration/running-migration/)
 
 OBS: Voce pode usar configuracoes de run ja criadas se voce estiver usando algum produto da Jetbrains e nao

@@ -1,7 +1,8 @@
-use crate::music_json_loader::add_musics_to_entity;
-use entity::music;
-use sea_orm_migration::sea_orm::EntityTrait;
+use crate::music_json_loader::load_data_file;
+use entity::music::ActiveModel;
+use entity::{music, score};
 use sea_orm_migration::prelude::*;
+use sea_orm_migration::sea_orm::EntityTrait;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -22,12 +23,22 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let db = manager.get_connection();
-        add_musics_to_entity(db).await
+        let files = load_data_file();
+        music::Entity::delete_many().exec(db).await?;
+        let m: Vec<ActiveModel> = files
+            .files
+            .into_iter()
+            .map(move |x| x.into_active_model())
+            .collect();
+        music::Entity::insert_many(m).exec(db).await?;
+        score::Entity::delete_many().exec(db).await?;
+        Ok(())
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let db = manager.get_connection();
         music::Entity::delete_many().exec(db).await?;
+        score::Entity::delete_many().exec(db).await?;
         Ok(())
     }
 }
