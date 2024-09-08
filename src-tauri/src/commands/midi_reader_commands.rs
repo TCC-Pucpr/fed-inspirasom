@@ -2,25 +2,27 @@ use super::payloads::{
     midi_payload::{MidiFileState, MidiPayload},
     music::{MidiMusic, MidiMusicList},
 };
-use crate::{
-    app_states::midi_device_state::MidiState,
-    constants::events_name::{MIDI_READ_NOTE, MIDI_READ_STATE},
-    RESOURCES_FOLDER,
-};
-use anyhow::anyhow;
-use std::{fs, ops::DerefMut};
-
 use crate::app_states::current_music_score_state::CurrentMusicScoreState;
 use crate::app_states::database_state::DatabaseState;
 use crate::commands::payloads::service_error::{ServiceError, ServiceResult};
 use crate::constants::dirs::MUSICS_FOLDER;
+use crate::{
+    app_states::midi_device_state::MidiState,
+    constants::events_name::{MIDI_READ_NOTE, MIDI_READ_STATE},
+    get_resources_path, RESOURCES_FOLDER,
+};
+use anyhow::anyhow;
+use convert_case::{Case, Casing};
+use entity::prelude::{Music, Score};
 use entity::{music, score};
+use midi_reader::calculate_midi_length;
 use midi_reader::errors::MidiReaderError;
 use midi_reader::midi_file::{MidiFile, MidiFilePlayer, PlayBackCallback, ReadingState};
 use paris::{error, info, warn, Logger};
-use sea_orm::sqlx::types::chrono::Utc;
-use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait};
-use tauri::{Runtime, State, Window};
+use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, ModelTrait, QueryFilter, TransactionTrait};
+use std::fs::exists;
+use std::{fs, ops::DerefMut};
+use tauri::{AppHandle, Runtime, State, Window};
 
 const STATE_CHANGE_ERROR_LOG_MSG: &str =
     "Could not acquire midi file state, probably because there is no file being played";
@@ -86,7 +88,7 @@ pub async fn start_game<R: Runtime>(
     midi_state: State<'_, MidiState>,
     score_state: State<'_, CurrentMusicScoreState>,
     db_state: State<'_, DatabaseState>,
-    handle: tauri::AppHandle<R>,
+    handle: AppHandle<R>,
     window: Window,
 ) -> ServiceResult<()> {
     let mut logger = Logger::new();
@@ -151,18 +153,7 @@ pub async fn start_game<R: Runtime>(
             }
         }
     };
-    let model = if let Ok(s) = score_state.score.lock() {
-        score::ActiveModel {
-            id: Default::default(),
-            total: ActiveValue::Set(s.total_score as i32),
-            date: ActiveValue::Set(Utc::now()),
-            completed: ActiveValue::Set(finished),
-            highest_streak: ActiveValue::Set(s.highest_streak as i32),
-            music_id: ActiveValue::Set(music_id),
-        }
-    } else {
-        return Err(ServiceError::from("Could not save music score"));
-    };
+    let model = score_state.create_active_model(finished, music_id)?;
     model.insert(&db_state.db).await?;
     score_state.reset();
     midi_state.reset_midi_file();
@@ -208,7 +199,7 @@ pub async fn stop_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
 pub async fn music_length(
     music_id: i32,
     db_state: State<'_, DatabaseState>,
-    handle: tauri::AppHandle,
+    handle: AppHandle,
 ) -> ServiceResult<u64> {
     let mut logger = Logger::new();
     logger.info("Calculating midi file length...");
@@ -242,6 +233,78 @@ pub async fn remaining_time(midi_state: State<'_, MidiState>) -> ServiceResult<u
     })
 }
 
+#[tauri::command]
+pub async fn add_new_music<R: Runtime>(
+    music_name: &str,
+    file_path: &str,
+    app_handle: AppHandle<R>,
+    db_state: State<'_, DatabaseState>,
+) -> ServiceResult<MidiMusic> {
+    if let Ok(e) = exists(file_path) {
+        if !e {
+            return Err(ServiceError::from(format!(
+                "Midi file on {} does not exist",
+                file_path
+            )));
+        }
+        if Music::find()
+            .filter(music::Column::Name.eq(music_name))
+            .one(&db_state.db)
+            .await
+            .is_ok_and(move |t| t.is_some())
+        {
+            return Err(ServiceError::from(format!(
+                "Midi file with name {} already exist",
+                music_name
+            )));
+        }
+        let mut path = get_resources_path(&app_handle);
+        path.push(music_name.to_case(Case::Snake));
+        fs::copy(file_path, &path)?;
+        let dur = calculate_midi_length(file_path);
+        let model = music::ActiveModel {
+            id: Default::default(),
+            name: ActiveValue::Set(music_name.to_string()),
+            duration: ActiveValue::Set(dur.as_secs() as i32),
+            directory: ActiveValue::Set(path.display().to_string()),
+        };
+        let new = model.insert(&db_state.db).await?;
+        Ok(new.into())
+    } else {
+        Err(ServiceError::from("Could not find midi file"))
+    }
+}
+
+#[tauri::command]
+pub async fn remove_music<R: Runtime>(
+    music_id: i32,
+    app_handle: AppHandle<R>,
+    db_state: State<'_, DatabaseState>,
+) -> ServiceResult<()> {
+    let mut logger = Logger::new();
+    let music = if let Some(m) = Music::find_by_id(music_id).one(&db_state.db).await? {
+        m
+    } else {
+        return Err(ServiceError::from(format!("Music with id {} does not exist", music_id)));
+    };
+    let mut p = get_resources_path(&app_handle);
+    p.push(&music.directory);
+    if let Err(_) = fs::remove_file(&p) {
+        logger.error(format!(
+            "Could not remove midi file at {}, continuing removal from database...",
+            p.display().to_string()
+        ));
+    }
+    drop(p);
+    logger.loading("Starting removal of music and its scores...");
+    let txn = db_state.db.begin().await?;
+    Score::delete_many().filter(score::Column::MusicId.eq(music_id)).exec(&txn).await?;
+    music.delete(&txn).await?;
+    txn.commit().await?;
+    logger.done().info(format!("Midi file with id {} removed", music_id));
+    Ok(())
+}
+
 #[inline]
 fn acquire_state<T>(
     logger: &mut Logger,
@@ -258,7 +321,7 @@ fn acquire_state<T>(
 
 async fn read_music_from_id<R: Runtime>(
     db_state: &State<'_, DatabaseState>,
-    handle: &tauri::AppHandle<R>,
+    handle: &AppHandle<R>,
     music_id: i32,
 ) -> anyhow::Result<(MidiMusic, Vec<u8>)> {
     let list = music_list(db_state).await?;
@@ -282,11 +345,11 @@ async fn read_music_from_id<R: Runtime>(
 }
 
 async fn music_list(db_state: &State<'_, DatabaseState>) -> anyhow::Result<MidiMusicList> {
-    let a = music::Entity::find().all(&db_state.db).await?;
+    let a = Music::find().all(&db_state.db).await?;
     Ok(MidiMusicList::from(a))
 }
 
-fn music<R: Runtime>(handle: &tauri::AppHandle<R>, music_name: &str) -> Result<Vec<u8>, String> {
+fn music<R: Runtime>(handle: &AppHandle<R>, music_name: &str) -> Result<Vec<u8>, String> {
     if let Some(p) = handle.path_resolver().resolve_resource(format!(
         "{}{}{}",
         RESOURCES_FOLDER, MUSICS_FOLDER, music_name

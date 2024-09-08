@@ -117,3 +117,9 @@ impl<T: Sized> From<PoisonError<T>> for ServiceError {
         ServiceError::from(MUTEX_ERROR_MESSAGE)
     }
 }
+
+impl From<std::io::Error> for ServiceError {
+    fn from(value: std::io::Error) -> Self {
+        Self::new_with_message(value.to_string())
+    }
+}
