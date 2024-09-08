@@ -18,13 +18,35 @@ use nodi::Sheet;
 use std::fs;
 use utils::mutable_arc::MutableArc;
 
+pub(crate) fn load_midi_bytes(file_location: &str) -> MidiReaderResult<Vec<u8>> {
+    fs::read(file_location)
+        .map_err(move |_| MidiReaderError::FileDoesNotExist(file_location.to_string()))
+}
+
+pub(crate) fn create_sheet_and_ticker(vec: Vec<u8>) -> MidiReaderResult<(Sheet, Ticker)> {
+    let smf = Smf::parse(&vec).map_err(move |e| MidiReaderError::InvalidMidiFile(anyhow!(e)))?;
+    let timer = Ticker::try_from(smf.header.timing)
+        .map_err(|e| MidiReaderError::InvalidMidiFile(anyhow!(e)))?;
+    let sheet = match smf.header.format {
+        Format::Parallel => Sheet::parallel(&smf.tracks),
+        Format::SingleTrack | Format::Sequential => Sheet::sequential(&smf.tracks),
+    };
+    Ok((sheet, timer))
+}
+
 pub trait MidiFilePlayer
 where
     Self: Sized,
 {
     fn is_still_playing(&self) -> bool;
-    fn from_file(file_location: &str) -> MidiReaderResult<Self>;
-    fn from_bytes_vector(vector: Vec<u8>) -> MidiReaderResult<Self>;
+    fn from_file(file_location: &str) -> MidiReaderResult<Self> {
+        Self::from_bytes_vector(load_midi_bytes(file_location)?)
+    }
+    fn from_bytes_vector(vector: Vec<u8>) -> MidiReaderResult<Self> {
+        let (sheet, timer) = create_sheet_and_ticker(vector)?;
+        Ok(Self::from_sheet_and_ticker(sheet, timer))
+    }
+    fn from_sheet_and_ticker(sheet: Sheet, ticker: Ticker) -> Self;
     fn play_music<P: PlayBackCallback>(&mut self, play_back_callback: P) -> MidiReaderResult<()>;
     fn create_sheet_player<P: PlayBackCallback>(
         &mut self,
@@ -134,28 +156,14 @@ impl MidiFilePlayer for MidiFile {
         }
     }
 
-    fn from_file(file_location: &str) -> MidiReaderResult<Self> {
-        let file = fs::read(file_location)
-            .map_err(move |_| MidiReaderError::FileDoesNotExist(file_location.to_string()))?;
-        Self::from_bytes_vector(file)
-    }
-
-    fn from_bytes_vector(vector: Vec<u8>) -> MidiReaderResult<Self> {
-        let smf =
-            Smf::parse(&vector).map_err(move |e| MidiReaderError::InvalidMidiFile(anyhow!(e)))?;
-        let timer = Ticker::try_from(smf.header.timing)
-            .map_err(|e| MidiReaderError::InvalidMidiFile(anyhow!(e)))?;
-        let sheet = match smf.header.format {
-            Format::Parallel => Sheet::parallel(&smf.tracks),
-            Format::SingleTrack | Format::Sequential => Sheet::sequential(&smf.tracks),
-        };
-        Ok(Self {
-            file_length: calc_midi_sheet_length(&sheet, timer),
+    fn from_sheet_and_ticker(sheet: Sheet, ticker: Ticker) -> Self {
+        Self {
+            file_length: calc_midi_sheet_length(&sheet, ticker),
             sheet,
-            ticker: timer,
+            ticker,
             reading_state: MutableArc::from(ReadingState::NotRunning),
             elapsed_time: MutableArc::from(Duration::ZERO),
-        })
+        }
     }
 
     fn play_music<P: PlayBackCallback>(&mut self, play_back_callback: P) -> MidiReaderResult<()> {

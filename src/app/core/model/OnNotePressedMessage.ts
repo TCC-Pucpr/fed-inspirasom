@@ -11,4 +11,4 @@ import type { OnNotePrecision } from "./NotePressPrecision";
  * `Miss` quando deixar a nota passar
  * `EarlyMiss` quando errar a nota completamente antes de entrar na area de acerto
  */
-export type OnNoteMessage = { precision: OnNotePrecision, };
+export type OnNotePressedMessage = { precision: OnNotePrecision, };

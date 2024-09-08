@@ -41,7 +41,7 @@ impl From<OnNotePrecision> for bool {
 /// `Miss` quando deixar a nota passar
 /// `EarlyMiss` quando errar a nota completamente antes de entrar na area de acerto
 #[derive(Deserialize, TS, Copy, Clone)]
-#[ts(export, export_to = "../../src/app/core/model/OnNotePressedMessage.ts")]
+#[ts(export, export_to = "../../src/app/core/model/OnNotePressedMessage.ts", rename = "OnNotePressedMessage")]
 pub struct OnNoteMessage {
     pub precision: OnNotePrecision,
 }
@@ -50,15 +50,15 @@ pub struct OnNoteMessage {
 /// o `total_score` é o score total acumulado na sessao atual da musica e o
 /// `latest_message_score` é o score ganho/perdido depois do ultimo input.
 #[derive(Debug, Serialize, TS)]
-#[ts(export, export_to = "../../src/app/core/model/OnScoreUpdateMessage.ts")]
+#[ts(export, export_to = "../../src/app/core/model/OnScoreUpdateMessage.ts", rename = "OnScoreUpdateMessage")]
 pub struct OnNotePayload {
-    hit_streak: u64,
+    hit_streak: u32,
     total_score: i64,
     latest_message_score: i32,
 }
 
 impl OnNotePayload {
-    pub fn new(hit_streak: u64, total_score: i64, latest_message_score: i32) -> Self {
+    pub fn new(hit_streak: u32, total_score: i64, latest_message_score: i32) -> Self {
         Self {
             hit_streak,
             total_score,

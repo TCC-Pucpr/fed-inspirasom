@@ -1,27 +1,26 @@
+use super::payloads::{
+    midi_payload::{MidiFileState, MidiPayload},
+    music::{MidiMusic, MidiMusicList},
+};
 use crate::{
     app_states::midi_device_state::MidiState,
     constants::events_name::{MIDI_READ_NOTE, MIDI_READ_STATE},
     RESOURCES_FOLDER,
 };
 use anyhow::anyhow;
-use std::{
-    fs,
-    ops::{Deref, DerefMut},
-};
-
-use super::payloads::{
-    midi_payload::{MidiFileState, MidiPayload},
-    music::{MidiMusic, MidiMusicList},
-};
+use std::{fs, ops::DerefMut};
 
 use crate::app_states::current_music_score_state::CurrentMusicScoreState;
-use crate::app_states::store_state::StoreState;
+use crate::app_states::database_state::DatabaseState;
 use crate::commands::payloads::service_error::{ServiceError, ServiceResult};
+use crate::constants::dirs::MUSICS_FOLDER;
+use entity::{music, score};
 use midi_reader::errors::MidiReaderError;
 use midi_reader::midi_file::{MidiFile, MidiFilePlayer, PlayBackCallback, ReadingState};
 use paris::{error, info, warn, Logger};
+use sea_orm::sqlx::types::chrono::Utc;
+use sea_orm::{ActiveModelTrait, ActiveValue, EntityTrait};
 use tauri::{Runtime, State, Window};
-use crate::constants::dirs::{MUSIC_DATA_DIR, MUSICS_FOLDER};
 
 const STATE_CHANGE_ERROR_LOG_MSG: &str =
     "Could not acquire midi file state, probably because there is no file being played";
@@ -69,10 +68,10 @@ impl PlayBackCallback for SheetListener {
 }
 
 #[tauri::command]
-pub async fn list_musics<R: Runtime>(app: tauri::AppHandle<R>) -> ServiceResult<MidiMusicList> {
+pub async fn list_musics(db_state: State<'_, DatabaseState>) -> ServiceResult<MidiMusicList> {
     let mut logger = Logger::new();
     logger.loading("Fetching music list...");
-    let list = music_list(&app).map_err(|e| {
+    let list = music_list(&db_state).await.map_err(|e| {
         logger.done().error(e.to_string());
         e
     })?;
@@ -83,10 +82,10 @@ pub async fn list_musics<R: Runtime>(app: tauri::AppHandle<R>) -> ServiceResult<
 
 #[tauri::command]
 pub async fn start_game<R: Runtime>(
-    music_id: String,
+    music_id: i32,
     midi_state: State<'_, MidiState>,
     score_state: State<'_, CurrentMusicScoreState>,
-    store: State<'_, StoreState>,
+    db_state: State<'_, DatabaseState>,
     handle: tauri::AppHandle<R>,
     window: Window,
 ) -> ServiceResult<()> {
@@ -100,10 +99,12 @@ pub async fn start_game<R: Runtime>(
             _ => {}
         }
     };
-    let (music, file) = read_music_from_id(&handle, &music_id).map_err(|e1| {
-        logger.done().error(e1.to_string());
-        e1
-    })?;
+    let (music, file) = read_music_from_id(&db_state, &handle, music_id)
+        .await
+        .map_err(|e1| {
+            logger.done().error(e1.to_string());
+            e1
+        })?;
     let msg = format!("Music found: {}", music);
     logger.done().info(msg);
     let sheet_listener = SheetListener {
@@ -132,12 +133,15 @@ pub async fn start_game<R: Runtime>(
         .info("Successfully loaded file, now playing...");
     score_state.reset();
     const RESET_MSG: &str = "Midi file state has been reset!";
+    let finished: bool;
     let res: ServiceResult<()> = match p.play() {
         Ok(_) => {
             logger.done().info("Music finished playing");
-            Ok(store.save(&music_id, score_state.deref())?)
+            finished = true;
+            Ok(())
         }
         Err(err) => {
+            finished = false;
             if let MidiReaderError::Interrupted = err {
                 logger.info(err.to_string());
                 Ok(())
@@ -147,7 +151,19 @@ pub async fn start_game<R: Runtime>(
             }
         }
     };
-    store.commit()?;
+    let model = if let Ok(s) = score_state.score.lock() {
+        score::ActiveModel {
+            id: Default::default(),
+            total: ActiveValue::Set(s.total_score as i32),
+            date: ActiveValue::Set(Utc::now()),
+            completed: ActiveValue::Set(finished),
+            highest_streak: ActiveValue::Set(s.highest_streak as i32),
+            music_id: ActiveValue::Set(music_id),
+        }
+    } else {
+        return Err(ServiceError::from("Could not save music score"));
+    };
+    model.insert(&db_state.db).await?;
     score_state.reset();
     midi_state.reset_midi_file();
     logger.info(RESET_MSG);
@@ -189,10 +205,14 @@ pub async fn stop_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
 }
 
 #[tauri::command]
-pub async fn music_length(music_id: &str, handle: tauri::AppHandle) -> ServiceResult<u64> {
+pub async fn music_length(
+    music_id: i32,
+    db_state: State<'_, DatabaseState>,
+    handle: tauri::AppHandle,
+) -> ServiceResult<u64> {
     let mut logger = Logger::new();
     logger.info("Calculating midi file length...");
-    let (_, f) = match read_music_from_id(&handle, music_id) {
+    let (_, f) = match read_music_from_id(&db_state, &handle, music_id).await {
         Ok(f) => f,
         Err(err) => {
             let msg = format!("Error while fetching midi file bytes: {}", err);
@@ -236,11 +256,12 @@ fn acquire_state<T>(
     }
 }
 
-fn read_music_from_id<R: Runtime>(
+async fn read_music_from_id<R: Runtime>(
+    db_state: &State<'_, DatabaseState>,
     handle: &tauri::AppHandle<R>,
-    music_id: &str,
+    music_id: i32,
 ) -> anyhow::Result<(MidiMusic, Vec<u8>)> {
-    let list = music_list(handle)?;
+    let list = music_list(db_state).await?;
     if let Some(m) = list.files.iter().find(|e| e.id == music_id) {
         match music(handle, &m.directory) {
             Ok(vec) => Ok((m.to_owned(), vec)),
@@ -260,22 +281,16 @@ fn read_music_from_id<R: Runtime>(
     }
 }
 
-fn music_list<R: Runtime>(handle: &tauri::AppHandle<R>) -> anyhow::Result<MidiMusicList> {
-    if let Some(p) = handle
-        .path_resolver()
-        .resolve_resource(format!("{}{}", RESOURCES_FOLDER, MUSIC_DATA_DIR))
-    {
-        return MidiMusicList::from_path_resource(&p).map_err(move |e| anyhow!(e));
-    };
-    let msg = "Could not fetch music list".to_string();
-    Err(anyhow!(msg))
+async fn music_list(db_state: &State<'_, DatabaseState>) -> anyhow::Result<MidiMusicList> {
+    let a = music::Entity::find().all(&db_state.db).await?;
+    Ok(MidiMusicList::from(a))
 }
 
 fn music<R: Runtime>(handle: &tauri::AppHandle<R>, music_name: &str) -> Result<Vec<u8>, String> {
-    if let Some(p) = handle
-        .path_resolver()
-        .resolve_resource(format!("{}{}{}", RESOURCES_FOLDER, MUSICS_FOLDER, music_name))
-    {
+    if let Some(p) = handle.path_resolver().resolve_resource(format!(
+        "{}{}{}",
+        RESOURCES_FOLDER, MUSICS_FOLDER, music_name
+    )) {
         if let Ok(vec) = fs::read(&p) {
             Ok(vec)
         } else {

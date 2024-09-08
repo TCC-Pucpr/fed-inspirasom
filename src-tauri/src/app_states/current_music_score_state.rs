@@ -12,8 +12,9 @@ type Score = i64;
 
 #[derive(Default)]
 pub struct CurrentMusicScore {
-    total_score: Score,
-    hit_streak: u64,
+    pub total_score: Score,
+    pub hit_streak: u32,
+    pub highest_streak: u32,
 }
 
 #[derive(Default)]
@@ -59,12 +60,15 @@ impl CurrentMusicScoreState {
             *score = Default::default();
         }
     }
-    pub fn add_to_total_score(&self, multiplier: f32, is_miss: bool) -> (Score, Score, u64) {
+    pub fn add_to_total_score(&self, multiplier: f32, is_miss: bool) -> (Score, Score, u32) {
         if let Ok(mut score) = self.score.lock() {
             if is_miss {
                 score.hit_streak = 0;
             } else {
                 score.hit_streak += 1;
+                if score.hit_streak > score.highest_streak {
+                    score.highest_streak = score.highest_streak;
+                }
             };
             let score_to_add = DEFAULT_SCORE * (score.hit_streak as Score) * (multiplier as Score);
             score.total_score += score_to_add;

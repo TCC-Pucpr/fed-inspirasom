@@ -5,4 +5,4 @@
  * o `total_score` é o score total acumulado na sessao atual da musica e o
  * `latest_message_score` é o score ganho/perdido depois do ultimo input.
  */
-export type OnNotePayload = { hit_streak: bigint, total_score: bigint, latest_message_score: number, };
+export type OnScoreUpdateMessage = { hit_streak: number, total_score: bigint, latest_message_score: number, };

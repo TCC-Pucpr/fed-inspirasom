@@ -13,6 +13,8 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(pk_auto(Music::Id))
                     .col(text(Music::Name))
+                    .col(integer(Music::Duration))
+                    .col(text(Music::Directory))
                     .to_owned(),
             )
             .await?;
@@ -56,6 +58,8 @@ enum Music {
     Table,
     Id,
     Name,
+    Duration,
+    Directory,
 }
 
 #[derive(DeriveIden)]

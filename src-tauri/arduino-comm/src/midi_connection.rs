@@ -26,14 +26,15 @@ pub fn list_available_devices() -> ArduinoCommResult<Vec<String>> {
 pub fn connect_to_port_with_name<F: Fn(MidiWrapper) + Send + 'static>(
     name: &str,
     callback: F,
-) -> ArduinoCommResult<MidiInputConnection<()>> {
+) -> ArduinoCommResult<()> {
     let midi_in =
         MidiInput::new(CLIENT_NAME).map_err(|_| ArduinoCommunicationError::MidiInputError)?;
     let ports = midi_in.ports();
     for p in ports {
         if let Ok(n) = midi_in.port_name(&p) {
             if n == name {
-                return start_listening_port(&p, callback);
+                start_listening_port(&p, callback)?;
+                return Ok(());
             }
         }
     }
@@ -42,10 +43,9 @@ pub fn connect_to_port_with_name<F: Fn(MidiWrapper) + Send + 'static>(
     ))
 }
 
-pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(
-    callback: F,
-) -> ArduinoCommResult<MidiInputConnection<()>> {
-    let midi_in = MidiInput::new(CLIENT_NAME).map_err(|_| ArduinoCommunicationError::MidiInputError)?;
+pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(callback: F) -> ArduinoCommResult<()> {
+    let midi_in =
+        MidiInput::new(CLIENT_NAME).map_err(|_| ArduinoCommunicationError::MidiInputError)?;
     let ports = midi_in.ports();
     let input_port = match ports.len() {
         0 => return Err(ArduinoCommunicationError::NoDevicesConnected),
@@ -94,7 +94,8 @@ pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(
         {
             info!("Selected Port: {}", port_name);
         }
-        start_listening_port(&p, callback)
+        start_listening_port(&p, callback)?;
+        Ok(())
     } else {
         Err(ArduinoCommunicationError::OcarinaNotFound)
     }

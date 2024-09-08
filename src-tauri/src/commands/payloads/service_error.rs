@@ -3,6 +3,7 @@ use anyhow::Error;
 use arduino_comm::errors::ArduinoCommunicationError;
 use midi_reader::errors::MidiReaderError;
 use persistence::storage::StorageError;
+use sea_orm::DbErr;
 use serde::{Deserialize, Serialize};
 use std::sync::PoisonError;
 use thiserror::Error;
@@ -101,6 +102,12 @@ impl From<String> for ServiceError {
 
 impl From<DatabaseError> for ServiceError {
     fn from(value: DatabaseError) -> Self {
+        Self::new_with_message(value.to_string())
+    }
+}
+
+impl From<DbErr> for ServiceError {
+    fn from(value: DbErr) -> Self {
         Self::new_with_message(value.to_string())
     }
 }

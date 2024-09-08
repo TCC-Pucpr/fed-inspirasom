@@ -27,6 +27,7 @@ fn main() {
         .manage(CurrentMusicScoreState::default())
         .invoke_handler(tauri::generate_handler![
             start_listening_midi,
+            connect_to_midi,
             disconnect_midi,
             list_midi_devices,
             start_game,
@@ -37,7 +38,8 @@ fn main() {
             music_length,
             remaining_time,
             on_note,
-            reset_music_score
+            reset_music_score,
+            list_scores
         ])
         .setup(move |app| {
             let context_resources_path = get_context_path(app).display().to_string();

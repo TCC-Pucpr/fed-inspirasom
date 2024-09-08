@@ -8,9 +8,15 @@
 export enum RustFunctionName {
     // dataSource service
     /**
-     * Conecta ao dispositivo midi
+     * Conecta ao dispositivo midi com o nome esperado da ocarina
      */
     connectMidi = "start_listening_midi",
+    /**
+     * (port_name: String)
+     *
+     * Conecta a porta com o nome especificado. Idealmente ser um dos retornos de `listMidiDevices`
+     */
+    connectToMidiWithName = "connect_to_midi",
     /**
      * Desconecta do dispositivo midi previamente conectado.
      * Faz nada se nao tiver conectado
@@ -22,7 +28,7 @@ export enum RustFunctionName {
      */
     listMidiDevices = "list_midi_devices",
     /**
-     * (musicId: String)
+     * (musicId: number)
      *
      * Comeca a enviar o evento midiReadNote e midiReadState
      */
@@ -44,27 +50,36 @@ export enum RustFunctionName {
      */
     listMusics = "list_musics",
     /**
-     * (musicId: String)
+     * (musicId: number)
      *
      * Calcula e devolve a duracao total da musica em segundos
      */
     musicLength = "music_length",
     /**
-     * Retorna a quantidade de tempo que ainda falta para terminar a musica em segundos.
+     * Retorna a quantidade de tempo (number) que ainda falta para terminar a musica em segundos.
      */
     remainingTime = "remaining_time",
     /**
-     * (on_note_message: OnNoteMessage)
+     * (on_note_message: OnNotePressedMessage)
      *
-     * Adiciona ao acumulador de score, retorna o novo total e o score ganho.
+     * Adiciona ao acumulador de score, retorna `OnScoreUpdateMessage`
      */
     onNote = "on_note",
     /**
-     * (music_id: String)
+     * (music_id: number)
      *
      * Reseta todos os scores de uma musica
      */
-    resetMusicScore = "reset_music_score"
+    resetMusicScore = "reset_music_score",
+    /**
+     * (music_id: number, order_type: ScoreOrderType, ascending: boolean)
+     *
+     * Pega a lista de scores e tentativas feitas em uma musica, retornando um
+     * lista de `Score`. ordenada baseado nos parametros.
+     *
+     * Se for vazia, uma lista vazia é retornada.
+     */
+    listScores = "list_scores"
 }
 
 /**

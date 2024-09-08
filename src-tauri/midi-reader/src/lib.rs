@@ -2,6 +2,7 @@ pub mod errors;
 mod game_connection;
 mod midi_connection;
 pub mod midi_file;
+pub use midi_length_calc::calculate_midi_length;
 mod midi_length_calc;
 mod player_wrapper;
 mod test_callback;
