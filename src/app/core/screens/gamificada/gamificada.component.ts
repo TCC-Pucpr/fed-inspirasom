@@ -42,14 +42,30 @@ export class GamificadaComponent implements OnInit, OnDestroy {
 
     private musicData: MidiMusic;
 
-    constructor(
-        protected sidebarService: SidebarService,
-        private router: Router,
-        private route: ActivatedRoute,
-        private rust: RustService,
-        private musicService: MusicService
-    ) {
-    }
+  constructor(
+    protected sidebarService: SidebarService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private rust: RustService,
+    private musicService: MusicService
+  ) {
+  }
+  
+  public ngOnInit(): void {
+    const musicId = this.route.snapshot.queryParamMap.get('id');
+    if(!musicId) this.router.navigate(['menu-gamificada']);
+    this.rust.startMusic(+musicId!);
+    this.rust.listenMidiNotes(this.addNoteOnGame);
+    this.musicData = this.musicService.getMusicById(musicId!);
+
+    this.rust.connect_midi();
+    this.rust.listen_for_midi_note((note: MidiSignal) => {
+      EventBus.emit(EventNames.ocarinaNote, note);
+    });
+    
+    EventBus.on(EventNames.gameSceneReady, (scene: GameScene) => {
+      this.gameScene = scene;
+    });
 
     public ngOnInit(): void {
         const musicId = this.route.snapshot.queryParamMap.get('id');
@@ -77,9 +93,16 @@ export class GamificadaComponent implements OnInit, OnDestroy {
             this.rust.pauseMusic();
         });
 
-        EventBus.on(EventNames.resumeGame, (_: any) => {
-            this.rust.resumeMusic();
-        });
+  public async ngOnDestroy(): Promise<void> {
+    this.phaserRef.game.destroy(true, false);
+    await this.rust.stopMusic();
+    await this.rust.unlistenMidiNotes();
+    this.rust.stop_midi();
+    EventBus.off(EventNames.gameSceneReady);
+    EventBus.off(EventNames.exitGame);
+    EventBus.off(EventNames.pauseGame);
+    EventBus.off(EventNames.resumeGame);
+  }
 
     }
 

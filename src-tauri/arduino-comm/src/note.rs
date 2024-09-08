@@ -1,4 +1,5 @@
-use paris::info;
+#[cfg(feature = "verbose")]
+use paris::{error, info};
 use serde::Serialize;
 use std::cmp::PartialEq;
 use std::iter::Iterator;
