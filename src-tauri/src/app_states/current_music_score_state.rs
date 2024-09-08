@@ -1,4 +1,3 @@
-use crate::app_states::store_state::StoreState;
 use persistence::storage::{StorageResult, StorageSavable, Store};
 use serde::ser::Error;
 use serde::{Serialize, Serializer};
@@ -41,19 +40,6 @@ impl StorageSavable for CurrentMusicScoreState {
 impl CurrentMusicScoreState {
     fn get_music_id_key(music_id: &str, key_type: &str) -> String {
         format!("{}{}", music_id, key_type)
-    }
-    pub fn reset_attempts(music_id: &str, store_state: &StoreState) -> StorageResult<()> {
-        let attempts_key = &Self::get_music_id_key(music_id, NUMBER_OF_ATTEMPTS_KEY);
-        let attempts: u64 = store_state.retrieve_default(attempts_key)?;
-        if attempts == u64::default() {
-            Ok(())
-        } else {
-            for i in 1..attempts {
-                let k = format!("{}{}", &Self::get_music_id_key(music_id, SCORE_KEY), i);
-                store_state.remove(&k)?
-            }
-            store_state.remove(&Self::get_music_id_key(music_id, NUMBER_OF_ATTEMPTS_KEY))
-        }
     }
     pub fn reset(&self) {
         if let Ok(mut score) = self.score.lock() {

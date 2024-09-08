@@ -12,6 +12,7 @@ pub enum OrderType {
     DATE,
     SCORE,
     STREAK,
+    NONE,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
@@ -24,7 +25,7 @@ pub struct ScorePayload {
     pub total: i32,
     pub date_achieved: String,
     pub highest_streak: i32,
-    pub finished: bool
+    pub finished: bool,
 }
 
 impl From<Model> for ScorePayload {

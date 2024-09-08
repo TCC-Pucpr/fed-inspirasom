@@ -7,11 +7,12 @@ import {RustService} from '../rust/rust.service';
 })
 export class MusicService {
 
-  private musicList: MidiMusic[] = [];
-  
-  constructor(
-    private rust: RustService,
-  ) { }
+    private musicList: MidiMusic[] = [];
+
+    constructor(
+        private rust: RustService,
+    ) {
+    }
 
 
     public async fetchMusicList(): Promise<MidiMusic[]> {
@@ -27,9 +28,9 @@ export class MusicService {
         return this.musicList;
     }
 
-  public getMusicById(id: number): MidiMusic {
-    const filter = this.musicList.filter(music => music.id === id)[0];
-    return filter ? filter : {} as MidiMusic;
-  }
+    public getMusicById(id: number): MidiMusic {
+        const filter = this.musicList.filter(music => music.id === id)[0];
+        return filter ? filter : {} as MidiMusic;
+    }
 
 }

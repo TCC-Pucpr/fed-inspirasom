@@ -72,10 +72,14 @@ export enum RustFunctionName {
      */
     resetMusicScore = "reset_music_score",
     /**
-     * (music_id: number, order_type: ScoreOrderType, ascending: boolean)
+     * (music_id: number, order_type: ScoreOrderType, ascending: boolean | null, completed: boolean | null)
      *
      * Pega a lista de scores e tentativas feitas em uma musica, retornando um
      * lista de `Score`. ordenada baseado nos parametros.
+     *
+     * Se `ascending` for nulo, a lista é retornada na forma que foi armazenada.
+     *
+     * Se `completed` for nulo, retorna scores com a musica finalizada e sem ter finalizado
      *
      * Se for vazia, uma lista vazia é retornada.
      */
