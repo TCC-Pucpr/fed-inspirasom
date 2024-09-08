@@ -7,10 +7,12 @@ use std::ops::DerefMut;
 use std::sync::Mutex;
 use tauri::App;
 
+#[allow(dead_code)]
 pub struct StoreState {
     store: Mutex<Store>,
 }
 
+#[allow(dead_code)]
 impl StoreState {
     fn db_file_path(file_path: &str) -> String {
         format!("{}{}", file_path, STORE_DIR)

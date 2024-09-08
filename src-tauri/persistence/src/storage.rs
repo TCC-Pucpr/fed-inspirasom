@@ -66,7 +66,7 @@ where
 {
     /// Get a new key based on the key received to save self in.
     /// If an error is returned here, cancels the entire operation
-    fn transform_key(&self, store: &mut Store, key: &str) -> StorageResult<String> {
+    fn transform_key(&self, _store: &mut Store, key: &str) -> StorageResult<String> {
         Ok(String::from(key))
     }
     /// Get a new value to saved in place of self, this is called before [`Self::transform_key`],
