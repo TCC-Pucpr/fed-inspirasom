@@ -16,6 +16,8 @@ nodi = { version = "1.0.0", features = ["midir"] }
 waitgroup = { workspace = true }
 paris = { workspace = true, optional = true, features = ["macros"] }
 utils = { path = "../utils" }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
 
 [features]
 verbose = ["paris"]

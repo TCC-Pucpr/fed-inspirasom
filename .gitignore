@@ -47,4 +47,5 @@ Thumbs.db
 src/assets/phaser.min.js
 
 src-tauri/resources/musics/*.mid
-src-tauri/user/.env
+src-tauri/resources/data/
+.env

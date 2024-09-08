@@ -1,0 +1,22 @@
+[package]
+name = "migration"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "migration"
+path = "src/lib.rs"
+
+[dependencies]
+async-std = { version = "1", features = ["attributes", "tokio1"] }
+entity = { path = "../entity" }
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.128"
+
+# Para calcular a duracao da musica
+midi-reader = { path = "../../midi-reader" }
+
+[dependencies.sea-orm-migration]
+version = "1.1.0-rc.1"
+features = ["runtime-tokio-rustls", "sqlx-sqlite"]

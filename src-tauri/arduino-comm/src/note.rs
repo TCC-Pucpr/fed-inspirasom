@@ -1,14 +1,12 @@
 #[cfg(feature = "verbose")]
-use paris::{error, info};
+use paris::info;
 use serde::Serialize;
 use std::cmp::PartialEq;
 use std::iter::Iterator;
 use strum::{IntoEnumIterator, IntoStaticStr};
 use strum_macros::EnumIter;
 
-#[cfg(feature = "verbose")]
-const INVALID_BYTE_MSG: &str =
-    "Note from byte cannot be created because note cannot be played in the ocarina!";
+use crate::errors::{ArduinoCommResult, ArduinoCommunicationError};
 
 #[derive(EnumIter, Debug, Clone, Copy, Serialize, IntoStaticStr, PartialEq)]
 pub enum Note {
@@ -47,7 +45,7 @@ impl Note {
         });
         i.unwrap() as u8
     }
-    pub fn from_byte(byte: u8) -> Option<Self> {
+    pub fn from_byte(byte: u8) -> ArduinoCommResult<Self> {
         #[cfg(feature = "verbose")]
         {
             info!("Received byte: {}", byte)
@@ -55,21 +53,13 @@ impl Note {
         let i = if let Some(u) = (byte as usize).checked_sub(55) {
             u
         } else {
-            #[cfg(feature = "verbose")]
-            {
-                error!("{}", INVALID_BYTE_MSG)
-            }
-            return None;
+            return Err(ArduinoCommunicationError::ByteNotSupported(byte));
         };
         let note_iter = Note::iter();
         if i >= note_iter.len() {
-            #[cfg(feature = "verbose")]
-            {
-                error!("{}", INVALID_BYTE_MSG)
-            }
-            None
+            Err(ArduinoCommunicationError::ByteNotSupported(byte))
         } else {
-            note_iter.get(i)
+            Ok(note_iter.get(i).unwrap())
         }
     }
     pub fn velocity_percentage(velocity: u8) -> f32 {
@@ -92,9 +82,9 @@ pub struct NoteWrapper {
 }
 
 impl NoteWrapper {
-    pub fn new(note: u8) -> Option<Self> {
+    pub fn new(note: u8) -> ArduinoCommResult<Self> {
         let n = Note::from_byte(note)?;
-        Some(NoteWrapper {
+        Ok(NoteWrapper {
             note: n,
             byte: note,
         })

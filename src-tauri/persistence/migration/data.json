@@ -1,0 +1,32 @@
+{
+  "files": [
+    {
+      "name": "Musica de teste",
+      "directory": "/teste.mid"
+    },
+    {
+      "name": "Musica de teste 2",
+      "directory": "/teste2.mid"
+    },
+    {
+      "name": "Zelda Ocarina of Time - Great Fairy Fountain",
+      "directory": "/zelda_fairy.mid"
+    },
+    {
+      "name": "Never Gonna give You Up - Rick Astley",
+      "directory": "/Never-Gonna-Give-You-Up-1.mid"
+    },
+    {
+      "name": "Super Mario Galaxy - Gusty Garden Galaxy",
+      "directory": "/Super Mario Galaxy - Gusty Garden Galaxy.mid"
+    },
+    {
+      "name": "Africa - Toto",
+      "directory": "/toto-africa.mid"
+    },
+    {
+      "name": "Mii Channel",
+      "directory": "/Wii Channels - Mii Channel.mid"
+    }
+  ]
+}

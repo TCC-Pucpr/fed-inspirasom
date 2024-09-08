@@ -11,7 +11,7 @@ impl MidiWrapper {
     pub fn new_from_bytes(state: u8, byte: u8, velocity: u8) -> Self {
         MidiWrapper {
             air_strength: velocity,
-            note: *NoteWrapper::new(byte).get_or_insert(Default::default()),
+            note: NoteWrapper::new(byte).unwrap_or_else(move |_| Default::default()),
             state,
         }
     }
