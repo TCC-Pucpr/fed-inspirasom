@@ -55,7 +55,7 @@ impl DatabaseState {
         match Database::connect(&db_path).await {
             Ok(db) => {
                 if Self::check_migration(&db, &db_path).await? {
-                    logger.loading("Database is outdated, running migrations...");
+                    logger.info("Database is outdated, running migrations...");
                     if let Err(e) = Migrator::up(&db, None).await {
                         logger.done();
                         return Err(MigrationError(db_path, anyhow!(e)));
