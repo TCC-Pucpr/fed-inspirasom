@@ -12,9 +12,9 @@ impl MigrationTrait for Migration {
                     .table(Music::Table)
                     .if_not_exists()
                     .col(pk_auto(Music::Id))
-                    .col(text(Music::Name))
+                    .col(text(Music::Name).unique_key())
                     .col(integer(Music::Duration))
-                    .col(text(Music::Directory))
+                    .col(text(Music::Directory).unique_key())
                     .to_owned(),
             )
             .await?;
@@ -38,7 +38,24 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
-
+        manager
+            .create_index(
+                Index::create()
+                    .table(Music::Table)
+                    .col(Music::Name)
+                    .name("idx-music-name")
+                    .to_owned(),
+            )
+            .await?;
+        manager
+            .create_index(
+                Index::create()
+                    .table(Music::Table)
+                    .col(Music::Directory)
+                    .name("idx-music-directory")
+                    .to_owned(),
+            )
+            .await?;
         Ok(())
     }
 

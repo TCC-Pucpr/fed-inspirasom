@@ -72,9 +72,20 @@ O database será atualizado, porém ainda é necessario atualizar os structs de 
 sea-orm-cli generate entity -o entity/src/entities
 ```
 
-Para adicionar novas musicas padroes, deve-se criar um novo migration passando as novas musicas
-
 [Mais detalhes sobre rodando as migracoes com SeaORM](https://www.sea-ql.org/SeaORM/docs/migration/running-migration/)
+
+### Adicionando uma nova musica padrão (migration)
+
+1. Cria um novo arquivo JSON dentro do `src-tauri/persistence/migration/jsons`. Idealmente com a data de quando esta
+   sendo feito a adicao
+2. Adicione novos objects dentro do "files" que possua os campos `name` e `directory`, onde `directory` deve comecar
+   com /, conter apenas o nome, e deve estar dentro do `src-tauri/resources/musics`
+3. Crie um novo migration usando ``sea-orm-cli migrate generate [nome da migracao]``
+4. Copie o codigo que esta dentro de um outro migration com nome terminando com `load_musics`
+5. Mude o nome do json na constante `JSON`
+6. Execute ``sea-orm-cli migrate up``
+
+OBS: Para fazer rollback, rode o comando ``sea-orm-cli migrate down``
 
 OBS: Voce pode usar configuracoes de run ja criadas se voce estiver usando algum produto da Jetbrains e nao
 quer rodar alguns desses comandos na mao.
