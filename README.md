@@ -78,7 +78,7 @@ sea-orm-cli generate entity -o entity/src/entities
 
 1. Cria um novo arquivo JSON dentro do `src-tauri/persistence/migration/jsons`. Idealmente com a data de quando esta
    sendo feito a adicao
-2. Adicione novos objects dentro do "files" que possua os campos `name` e `directory`, onde `directory` deve comecar
+2. Adicione novos objects dentro de um array chamado "files" que possua os campos `name` e `directory`, onde `directory` deve comecar
    com /, conter apenas o nome, e deve estar dentro do `src-tauri/resources/musics`
 3. Crie um novo migration usando ``sea-orm-cli migrate generate [nome da migracao]``
 4. Copie o codigo que esta dentro de um outro migration com nome terminando com `load_musics`
