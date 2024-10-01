@@ -16,7 +16,7 @@ Se voce estiver num linux:
 #### Fedora
 
 ``` shell
-sudo dnf install alsa-lib-devel
+sudo dnf install alsa-lib-devel libudev-devel
 ```
 
 #### Ubuntu
