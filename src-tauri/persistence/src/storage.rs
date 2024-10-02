@@ -1,14 +1,14 @@
-use std::fs;
 use crate::storage::StorageError::{
     CouldNotCreateStorage, KeyNotFound, StorageAlreadyExists, StorageCommitError,
     StorageDoesNotExist, StorageWriteError,
 };
 use anyhow::anyhow;
 #[cfg(feature = "verbose")]
-use paris::{error, info};
+use paris::{error, success};
 use pickledb::{PickleDb, PickleDbDumpPolicy, SerializationMethod};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use std::fs;
 use std::path::Path;
 use thiserror::Error;
 
@@ -141,7 +141,7 @@ impl Store {
             return Err(StorageAlreadyExists(file.to_string()));
         }
         let parent = path.parent().unwrap();
-        fs::create_dir_all(parent).map_err(move |e| CouldNotCreateStorage(file.to_string()))?;
+        fs::create_dir_all(parent).map_err(move |_e| CouldNotCreateStorage(file.to_string()))?;
         let mut store = PickleDb::new(
             file,
             PickleDbDumpPolicy::DumpUponRequest,
@@ -150,7 +150,7 @@ impl Store {
         match store.dump() {
             Ok(_) => {
                 #[cfg(feature = "verbose")]
-                info!("Database successfully created at {}", file);
+                success!("Database successfully created at {}", file);
                 Ok(Self {
                     store,
                     has_pending_changes: false,
@@ -167,7 +167,7 @@ impl Store {
         ) {
             Ok(store) => {
                 #[cfg(feature = "verbose")]
-                info!("Database at {} successfully loaded", file);
+                success!("Database at {} successfully loaded", file);
                 Ok(Self {
                     store,
                     has_pending_changes: false,

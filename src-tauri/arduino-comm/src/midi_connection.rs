@@ -1,7 +1,7 @@
 use crate::errors::{ArduinoCommResult, ArduinoCommunicationError};
 use crate::midi_wrapper::MidiWrapper;
 use midir::{MidiInput, MidiInputConnection, MidiInputPort};
-use paris::info;
+use paris::{info, success};
 
 const PORT_NAME: &str = "USB MidiKliK";
 const CLIENT_NAME: &str = "InspiraSomMidiIn";
@@ -33,6 +33,10 @@ pub fn connect_to_port_with_name<F: Fn(MidiWrapper) + Send + 'static>(
     for p in ports {
         if let Ok(n) = midi_in.port_name(&p) {
             if n == name {
+                #[cfg(feature = "verbose")] 
+                {
+                    success!("Connected to port with name {name}")    
+                }
                 start_listening_port(&p, callback)?;
                 return Ok(());
             }
@@ -64,7 +68,7 @@ pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(callback: F) -> ArduinoCommR
             let mut port: Option<MidiInputPort> = None;
             #[cfg(feature = "verbose")]
             {
-                info!("Várias portas encontradas!")
+                info!("Many ports detected")
             }
             for p in ports {
                 let port_name = midi_in
@@ -72,7 +76,7 @@ pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(callback: F) -> ArduinoCommR
                     .map_err(move |_| ArduinoCommunicationError::PortError)?;
                 #[cfg(feature = "verbose")]
                 {
-                    info!("Porta {}", port_name);
+                    info!("Port {}", port_name);
                 }
                 if port_name.starts_with(PORT_NAME) {
                     port = Some(p);
