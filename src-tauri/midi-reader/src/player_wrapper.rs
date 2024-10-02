@@ -1,15 +1,14 @@
+use crate::errors::{MidiReaderError, MidiReaderResult};
 use crate::{
-    errors::Interrupted,
     game_connection::GamePlayer,
     midi_file::{PlayBackCallback, ReadingState},
-    timer::MidiPauserTimer,
+    timer::MidiPauseTimer,
 };
 use nodi::{Player, Sheet};
-use utils::GenericResult;
 use utils::mutable_arc::MutableArc;
 
 pub struct PlayerWrapper<P: PlayBackCallback> {
-    timer: MidiPauserTimer<P>,
+    timer: MidiPauseTimer<P>,
     game_player: GamePlayer<P>,
     reading_state: MutableArc<ReadingState>,
     callback: MutableArc<P>,
@@ -18,7 +17,7 @@ pub struct PlayerWrapper<P: PlayBackCallback> {
 
 impl<P: PlayBackCallback> PlayerWrapper<P> {
     pub(crate) fn new(
-        timer: MidiPauserTimer<P>,
+        timer: MidiPauseTimer<P>,
         game_player: GamePlayer<P>,
         reading_state: MutableArc<ReadingState>,
         callback: MutableArc<P>,
@@ -32,7 +31,7 @@ impl<P: PlayBackCallback> PlayerWrapper<P> {
             callback,
         }
     }
-    pub fn play(self) -> GenericResult<()> {
+    pub fn play(self) -> MidiReaderResult<()> {
         let sheet = &self.sheet;
         let mut player = Player::new(self.timer, self.game_player);
         let play_result = player.play(&sheet);
@@ -41,7 +40,7 @@ impl<P: PlayBackCallback> PlayerWrapper<P> {
             if let Some(c) = self.callback.get_data() {
                 c.on_interrupted();
             }
-            Err(Interrupted.into())
+            Err(MidiReaderError::Interrupted)
         } else {
             if let Some(c) = self.callback.get_data() {
                 c.on_finished();

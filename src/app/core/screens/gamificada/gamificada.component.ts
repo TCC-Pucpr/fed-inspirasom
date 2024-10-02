@@ -54,11 +54,12 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   }
   
   public ngOnInit(): void {
-    const musicId = this.route.snapshot.queryParamMap.get('id');
-    if(!musicId) this.router.navigate(['menu-gamificada']);
-    this.rust.startMusic(musicId!);
+    const queryParam = this.route.snapshot.queryParamMap.get('id');
+    if(!queryParam) this.router.navigate(['menu-gamificada']);
+    const musicId = parseInt(queryParam!);
+    this.rust.startMusic(musicId);
     this.rust.listenMidiNotes(this.addNoteOnGame);
-    this.musicData = this.musicService.getMusicById(musicId!);
+    this.musicData = this.musicService.getMusicById(musicId);
 
     this.rust.connect_midi();
     this.rust.listen_for_midi_note((note: MidiSignal) => {
@@ -92,7 +93,6 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     EventBus.on(EventNames.resumeGame, (_: any) => {
       this.rust.resumeMusic();
     });
-
   }
 
   public async ngOnDestroy(): Promise<void> {

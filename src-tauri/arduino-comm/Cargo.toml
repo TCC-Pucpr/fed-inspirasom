@@ -12,6 +12,7 @@ serde = { version = "1", features = ["derive"] }
 strum = { version = "0.26", features = ["derive"] }
 strum_macros = "0.26.4"
 paris = { workspace = true, optional = true, features = ["macros"] }
+thiserror = { workspace = true }
 
 [features]
 verbose = ["paris"]

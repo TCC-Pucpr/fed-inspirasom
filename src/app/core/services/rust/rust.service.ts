@@ -7,22 +7,25 @@ import { MidiMusicList } from '../../model/MidiMusicList';
 import { MidiState } from '../../model/MidiState';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class RustService {
 
   private listeningMidiNotes: any;
   private listeningMusicState: any;
 
-  constructor() { }
+    constructor() {
+    }
 
-  public connect_midi() {
-    invoke(RustFunctionName.connectMidi).then(_ => {});
-  }
+    public connect_midi() {
+        invoke(RustFunctionName.connectMidi).then(_ => {
+        });
+    }
 
-  public stop_midi() {
-    invoke(RustFunctionName.stopMidi).then(_ => {});
-  }
+    public stop_midi() {
+        invoke(RustFunctionName.stopMidi).then(_ => {
+        });
+    }
 
   public listen_for_midi_note(callback: (signal: MidiSignal) => void) {
     return listen(RustEventsName.midiNote, (event) => {
@@ -34,7 +37,7 @@ export class RustService {
     return await invoke(RustFunctionName.listMusics);
   }
 
-  public async startMusic(musicId: String): Promise<void> {
+  public async startMusic(musicId: number): Promise<void> {
     await invoke(RustFunctionName.startGame, { musicId }).then(_ => {});
   }
 

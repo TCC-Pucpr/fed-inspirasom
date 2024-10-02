@@ -1,12 +1,13 @@
 use crate::{
-    constants::events_name::MIDI_NOTE, services::data_structs::midi_payload::MidiPayload, MidiState,
+    commands::payloads::midi_payload::MidiPayload, constants::events_name::MIDI_NOTE, MidiState,
 };
-use arduino_comm::midi_connection::{connect, list_available_devices};
+use arduino_comm::midi_connection::{connect, connect_to_port_with_name, list_available_devices};
 use paris::{info, warn, Logger};
 use tauri::{State, Window};
 use waitgroup::WaitGroup;
-
-use super::service_error::{ServiceError, ServiceResult};
+use arduino_comm::errors::ArduinoCommResult;
+use arduino_comm::midi_wrapper::MidiWrapper;
+use crate::commands::payloads::service_error::{ServiceError, ServiceResult};
 
 const ALREADY_CONNECTED_CODE: &str = "0001";
 const ALREADY_CONNECTED: &str = "Already listening to a midi device! Disconnect from it first";
@@ -36,9 +37,49 @@ pub async fn list_midi_devices() -> ServiceResult<Vec<String>> {
 }
 
 #[tauri::command]
+pub async fn connect_to_midi(
+    port_name: &str,
+    window: Window,
+    state: State<'_, MidiState>,
+) -> ServiceResult<()> {
+    let p = move || {
+        connect_to_port_with_name(port_name, move |wrapper| {
+            note_received(wrapper, &window);
+        })
+    };
+    listen_to_port(state, p).await
+}
+
+#[tauri::command]
 pub async fn start_listening_midi(
     window: Window,
     state: State<'_, MidiState>,
+) -> ServiceResult<()> {
+    let p = move || {
+        connect(move |wrapper| {
+            note_received(wrapper, &window);
+        })
+    };
+    listen_to_port(state, p).await
+}
+
+fn note_received(
+    wrapper: MidiWrapper,
+    window: &Window
+) {
+    info!(
+        "Received input: {} - {} - {:?}",
+        wrapper.state, wrapper.air_strength, wrapper.note
+    );
+    let payload = MidiPayload::from_midi_wrapper(wrapper);
+    window
+        .emit(MIDI_NOTE, payload)
+        .expect("Could not send midi event!");
+}
+
+async fn listen_to_port(
+    state: State<'_, MidiState>,
+    midi_connection: impl FnOnce() -> ArduinoCommResult<()>
 ) -> ServiceResult<()> {
     if state.is_working() {
         warn!("There is already a device connected");
@@ -51,16 +92,7 @@ pub async fn start_listening_midi(
     logger.info("Starting connection to device and listening for inputs...");
     let wg = WaitGroup::new();
     state.set_worker(&wg);
-    let conn = connect(move |wrapper| {
-        info!(
-            "Received input: {} - {} - {:?}",
-            wrapper.state, wrapper.air_strength, wrapper.note
-        );
-        let payload = MidiPayload::from_midi_wrapper(wrapper);
-        window
-            .emit(MIDI_NOTE, payload)
-            .expect("Could not send midi event!");
-    });
+    let conn = midi_connection();
     if let Err(err) = conn {
         let msg = format!("Error while connecting to midi device: {}", err);
         logger.error(msg);
