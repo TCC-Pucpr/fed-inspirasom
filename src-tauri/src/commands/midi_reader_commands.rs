@@ -330,7 +330,7 @@ async fn read_music_from_id<R: Runtime>(
             Ok(vec) => Ok((m.to_owned(), vec)),
             Err(err) => {
                 let msg = format!(
-                    "Music with id {} found, but error while loading midI file: {}",
+                    "Music with id {} found, but error while loading midi file: {}",
                     music_id, err
                 );
                 Err(anyhow!(msg))

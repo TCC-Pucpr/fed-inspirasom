@@ -11,8 +11,8 @@ use std::env::current_dir;
 use std::fs::File;
 use std::io::BufReader;
 
-const DATA_DIR: &str = "/migration/jsons/";
-const MUSICS_DIR: &str = "../resources/musics";
+const DATA_DIR: &str = "/persistence/migration/jsons/";
+const MUSICS_DIR: &str = "resources/musics";
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct MusicList {
@@ -28,8 +28,9 @@ pub(crate) struct MusicDataObject {
 impl MusicDataObject {
     pub(crate) fn into_active_model(self) -> ActiveModel {
         let file = format!("{}{}", MUSICS_DIR, self.directory);
-        println!("Loaded file: {}", file);
-        let duration = calculate_midi_length(&file);
+        let dir = current_dir().unwrap().join(file).display().to_string();
+        println!("Loaded file: {}", dir);
+        let duration = calculate_midi_length(&dir);
         ActiveModel {
             name: ActiveValue::Set(self.name),
             duration: ActiveValue::Set(duration.as_secs() as i32),
@@ -59,7 +60,7 @@ pub(crate) async fn add_musics<'a>(manager: &SchemaManager<'a>, json: &str) -> R
     Ok(())
 }
 
-pub(crate) async fn remove_musics<'a>(manager: &SchemaManager<'a>, json_file: &str) -> Result<(), DbErr>{
+pub(crate) async fn remove_musics<'a>(manager: &SchemaManager<'a>, json_file: &str) -> Result<(), DbErr> {
     let db = manager.get_connection();
     let files = load_data_file(json_file);
     let names: Vec<String> = files.into_iter().map(move |x| x.name).collect();

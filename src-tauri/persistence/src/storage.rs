@@ -1,3 +1,4 @@
+use std::fs;
 use crate::storage::StorageError::{
     CouldNotCreateStorage, KeyNotFound, StorageAlreadyExists, StorageCommitError,
     StorageDoesNotExist, StorageWriteError,
@@ -135,9 +136,12 @@ impl Store {
         }
     }
     pub fn create_new(file: &str) -> StorageResult<Self> {
-        if Path::new(&file).exists() {
+        let path = Path::new(file);
+        if path.exists() {
             return Err(StorageAlreadyExists(file.to_string()));
         }
+        let parent = path.parent().unwrap();
+        fs::create_dir_all(parent).map_err(move |e| CouldNotCreateStorage(file.to_string()))?;
         let mut store = PickleDb::new(
             file,
             PickleDbDumpPolicy::DumpUponRequest,

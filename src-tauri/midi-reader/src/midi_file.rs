@@ -18,7 +18,7 @@ use nodi::Sheet;
 use std::fs;
 use utils::mutable_arc::MutableArc;
 
-pub(crate) fn load_midi_bytes(file_location: &str) -> MidiReaderResult<Vec<u8>> {
+pub fn load_midi_bytes(file_location: &str) -> MidiReaderResult<Vec<u8>> {
     fs::read(file_location)
         .map_err(move |_| MidiReaderError::FileDoesNotExist(file_location.to_string()))
 }
