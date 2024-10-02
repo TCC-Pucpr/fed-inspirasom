@@ -1,4 +1,5 @@
 import { MidiSignal } from "../../../../model/MidiSignal";
+import { MidiState } from "../../../../model/MidiState";
 import { EventBus } from "../events/EventBus";
 import { EventNames } from "../events/EventNames.enum";
 
@@ -7,7 +8,7 @@ export class GameScene extends Phaser.Scene {
     public pressArea: Phaser.GameObjects.Rectangle; 
     public wrongPressArea: Phaser.GameObjects.Rectangle; 
     public limit: Phaser.GameObjects.Rectangle;
-    public notes: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody[] = [];
+    public notes: { note: MidiSignal, body: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody }[] = [];
     public readonly noteSprite: string = "note";
     
     public score: number;
@@ -54,18 +55,31 @@ export class GameScene extends Phaser.Scene {
         EventBus.emit(EventNames.gameSceneReady, this);
         EventBus.on(EventNames.resumeGame, this.resumeGame);
         EventBus.on(EventNames.pauseGame, this.pauseGame);
-        EventBus.on(EventNames.ocarinaNote, (note: MidiSignal) => { this.lastOcarinaNote = note });
+        EventBus.on(EventNames.ocarinaNote, this.checkForNote);
         const escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)!;
         escKey.on('down', () => { EventBus.emit(EventNames.pauseGame); });
         this.scene.launch("pause");
     }
 
+    public checkForNote = (playedNote: MidiSignal) => {
+        this.lastOcarinaNote = playedNote;
+        try {
+            if(this.notes.length > 0) {
+                const note = this.notes[0];
+                console.log(`body: [${note.note.note_name}], current: [${playedNote.note_name}]`);
+                if(note.note.note_name === playedNote.note_name) {
+                    this.physics.overlap(note.body, this.limit, this.removeNote, undefined, this);
+                    this.physics.overlap(note.body, this.pressArea, this.scoredNote, undefined, this);
+                    this.physics.overlap(note.body, this.wrongPressArea, this.poorNote, undefined, this);
+                }
+            }
+        } catch (err) { };
+    }
+
     public override update() {
         if(this.notes.length > 0) {
             const note = this.notes[0];
-            this.physics.overlap(note, this.limit, this.removeNote, undefined, this);
-            this.physics.overlap(note, this.pressArea, this.scoredNote, undefined, this);
-            this.physics.overlap(note, this.wrongPressArea, this.poorNote, undefined, this);
+            this.physics.overlap(note.body, this.limit, this.removeNote, undefined, this);
         }
         if(this.isPressed && this.inputs?.space.isUp) {
             this.isPressed = false;
@@ -85,23 +99,19 @@ export class GameScene extends Phaser.Scene {
     }
 
     public poorNote(note: any, area: any) { 
-        if(!this.isPressed && this.inputs?.space.isDown) {
-            this.removeNoteFromScene(note);
-            this.isPressed = true;
-            this.score -= 20;
-            this.chainCount = 1;
-        }
+        this.removeNoteFromScene(note);
+        this.isPressed = true;
+        this.score -= 20;
+        this.chainCount = 1;
     }
 
     public scoredNote(note: any, area: any){
-        if(!this.isPressed && this.inputs?.space.isDown) {
-            const noteCenter = note.x - note.width/2;
-            const accScore = this.getAccScore(noteCenter, this.pressArea.x, this.pressArea.width);
-            this.isPressed = true;
-            this.removeNoteFromScene(note);
-            this.score += (10 + accScore)*this.multiplier;
-            this.chainCount+=1;
-        }
+        const noteCenter = note.x - note.width/2;
+        const accScore = this.getAccScore(noteCenter, this.pressArea.x, this.pressArea.width);
+        this.isPressed = true;
+        this.removeNoteFromScene(note);
+        this.score += (10 + accScore)*this.multiplier;
+        this.chainCount+=1;
     }
 
     public pauseGame = () => {
@@ -149,41 +159,27 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    public oldCreateNote(row: number, isBmol: boolean): void {
-        if( row === -1 ) return;
-        const y = 226 + (row * 13);
-        const x = 980;
-        const s = 1;
-        const type = isBmol ? 'bmolNote' : 'note';
-        try{
-            const note = this.physics.add.sprite(x, y, type);
-            note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(35, 32);
-            this.notes.push(note);
-        } catch(error) { }
-    }
-
-    public createNote(row: number, isBmol: boolean): void {
-        if( row === -1 ) return;
-        const y = 226 + (row * 13);
+    public createNote(note: MidiSignal): void {
+        if( note.note_index === -1 ) return;
+        const y = 226 + (note.note_index * 13);
         const x = 980;
         const s = 1;
         try{
-            if(isBmol) {
-                const note = this.physics.add.sprite(x, y+3, 'bmolNote');
-                note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(42, 36).setOffset(11, 4);
-                this.notes.push(note);
+            if(note.is_bmol) {
+                const body = this.physics.add.sprite(x, y+3, 'bmolNote');
+                body.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(42, 36).setOffset(11, 4);
+                this.notes.push({ note, body });
             } else {
-                const note = this.physics.add.sprite(x, y, 'note');
-                note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(35, 32);
-                this.notes.push(note);
+                const body = this.physics.add.sprite(x, y, 'note');
+                body.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(35, 32);
+                this.notes.push({ note, body });
             }
         } catch(error) { }
     }
 
     public removeNoteFromScene(note: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
-        const index = this.notes.indexOf(note);
-        if( index !== -1) {
-            this.notes.shift()?.destroy();
+        if(this.notes.filter((data) => data.body === note)) {
+            this.notes.shift()?.body.destroy();
         }
     }
 
