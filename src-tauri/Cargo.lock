@@ -2592,6 +2592,7 @@ dependencies = [
  "async-std",
  "entity",
  "midi-reader",
+ "paris",
  "sea-orm-migration",
  "serde",
  "serde_json",

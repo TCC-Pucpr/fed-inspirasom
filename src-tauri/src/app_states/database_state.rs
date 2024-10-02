@@ -48,7 +48,7 @@ impl DatabaseState {
                 return Err(DatabaseError::CouldNotCreateFile(path, anyhow!(e)));
             }
             drop(path);
-            logger.done().info("Database file created successfully!");
+            logger.done().success("Database file created successfully!");
         }
         logger.loading("Connecting to database...\n");
         let db_path = Self::full_path(context_path);
@@ -61,7 +61,7 @@ impl DatabaseState {
                         return Err(MigrationError(db_path, anyhow!(e)));
                     }
                 }
-                logger.done().info("Database connected!");
+                logger.done().success("Database connected!");
                 Ok(DatabaseState { db })
             }
             Err(err) => {

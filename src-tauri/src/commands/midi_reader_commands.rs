@@ -78,7 +78,7 @@ pub async fn list_musics(db_state: State<'_, DatabaseState>) -> ServiceResult<Mi
         e
     })?;
     let msg = format!("List fetched: {:?}", list);
-    logger.done().info(msg);
+    logger.done().success(msg);
     Ok(list)
 }
 
@@ -132,7 +132,7 @@ pub async fn start_game<R: Runtime>(
     };
     logger
         .done()
-        .info("Successfully loaded file, now playing...");
+        .success("Successfully loaded file, now playing...");
     score_state.reset();
     const RESET_MSG: &str = "Midi file state has been reset!";
     let finished: bool;
@@ -167,7 +167,7 @@ pub async fn pause_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     logger.info("Pause called, acquiring midi file state...");
     acquire_state(&mut logger, midi_state, move |logger, state| {
         state.pause();
-        logger.done().info("Midi file playback paused successfully");
+        logger.done().success("Midi file playback paused successfully");
     })
 }
 
@@ -179,7 +179,7 @@ pub async fn resume_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> 
         state.unpause();
         logger
             .done()
-            .info("Midi file playback resumed successfully");
+            .success("Midi file playback resumed successfully");
     })
 }
 
@@ -191,7 +191,7 @@ pub async fn stop_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
         state.stop();
         logger
             .done()
-            .info("Midi file playback stopped successfully");
+            .success("Midi file playback stopped successfully");
     })
 }
 
@@ -217,7 +217,7 @@ pub async fn music_length(
     })?;
     let length = midi_file.file_length().as_secs();
     let msg = format!("Successfully calculated length: {}", length);
-    logger.done().info(msg);
+    logger.done().success(msg);
     Ok(length)
 }
 
@@ -301,7 +301,7 @@ pub async fn remove_music<R: Runtime>(
     Score::delete_many().filter(score::Column::MusicId.eq(music_id)).exec(&txn).await?;
     music.delete(&txn).await?;
     txn.commit().await?;
-    logger.done().info(format!("Midi file with id {} removed", music_id));
+    logger.done().success(format!("Midi file with id {} removed", music_id));
     Ok(())
 }
 

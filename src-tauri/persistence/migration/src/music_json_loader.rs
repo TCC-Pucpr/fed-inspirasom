@@ -4,6 +4,8 @@ use entity::music::ActiveModel;
 use entity::prelude::{Music, Score};
 use entity::{music, score};
 use midi_reader::calculate_midi_length;
+#[cfg(feature = "verbose")]
+use paris::{error, info};
 use sea_orm_migration::sea_orm::{ColumnTrait, EntityTrait, ModelTrait, QueryFilter, TransactionTrait};
 use sea_orm_migration::SchemaManager;
 use serde::{Deserialize, Serialize};
@@ -29,7 +31,8 @@ impl MusicDataObject {
     pub(crate) fn into_active_model(self) -> ActiveModel {
         let file = format!("{}{}", MUSICS_DIR, self.directory);
         let dir = current_dir().unwrap().join(file).display().to_string();
-        println!("Loaded file: {}", dir);
+        #[cfg(feature = "verbose")]
+        info!("Loaded file: {}", dir);
         let duration = calculate_midi_length(&dir);
         ActiveModel {
             name: ActiveValue::Set(self.name),
@@ -42,7 +45,8 @@ impl MusicDataObject {
 
 pub(crate) fn load_data_file(json_file: &str) -> Vec<MusicDataObject> {
     let dir = current_dir().unwrap().display().to_string() + DATA_DIR + json_file;
-    println!("Data file dir: {}", dir);
+    #[cfg(feature = "verbose")]
+    info!("Data file dir: {}", dir);
     let file = File::open(dir).unwrap();
     let buf_reader = BufReader::new(file);
     let ml: MusicList = serde_json::from_reader(buf_reader).unwrap();
@@ -77,7 +81,8 @@ pub(crate) async fn remove_musics<'a>(manager: &SchemaManager<'a>, json_file: &s
                 .await?;
             m.delete(&txn).await?;
         } else {
-            eprintln!("Music file with name {} not present, ignoring...", n);
+            #[cfg(feature = "verbose")]
+            error!("Music file with name {} not present, ignoring...", n);
         }
     }
     txn.commit().await?;

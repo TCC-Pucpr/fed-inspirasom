@@ -42,7 +42,8 @@ export enum RustFunctionName {
      */
     stopgame = "stop_game",
     /**
-     * Notifica o lado do rust para voltar a emitir eventos de notas
+     * Notifica o lado do rust para voltar a emitir eventos de notas, só funciona se a música estiver
+     * sido pausada.
      */
     resumeGame = "resume_game",
     /**
@@ -52,7 +53,8 @@ export enum RustFunctionName {
     /**
      * (music_id: number)
      *
-     * Calcula e devolve a duracao total da musica em segundos
+     * Calcula e devolve a duracao total da musica em segundos. Voce nao precisar
+     * chamar essa função.
      */
     musicLength = "music_length",
     /**
