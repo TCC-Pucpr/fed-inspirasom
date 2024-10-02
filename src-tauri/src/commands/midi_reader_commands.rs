@@ -28,12 +28,12 @@ const STATE_CHANGE_ERROR_LOG_MSG: &str =
     "Could not acquire midi file state, probably because there is no file being played";
 const STATE_CHANGE_ERROR_MSG: &str = "There is no file being played";
 
-struct SheetListener {
-    window: Window,
+struct SheetListener<'a> {
+    window: &'a Window,
     ignore_note_errors: bool,
 }
 
-impl PlayBackCallback for SheetListener {
+impl <'a> PlayBackCallback for SheetListener<'a> {
     fn on_note(&self, on: bool, key: u8, vel: u8) -> bool {
         let payload = match MidiPayload::from_note(key, vel, on) {
             Ok(p) => p,
@@ -110,7 +110,7 @@ pub async fn start_game<R: Runtime>(
     let msg = format!("Music found: {}", music);
     logger.done().info(msg);
     let sheet_listener = SheetListener {
-        window,
+        window: &window,
         ignore_note_errors: true,
     };
     logger.loading("Loading file bytes...");
@@ -136,6 +136,7 @@ pub async fn start_game<R: Runtime>(
     score_state.reset();
     const RESET_MSG: &str = "Midi file state has been reset!";
     let finished: bool;
+    let _ = window.emit(MIDI_READ_STATE, MidiFileState::PLAYING);
     let res: ServiceResult<()> = match p.play() {
         Ok(_) => {
             logger.done().info("Music finished playing");
@@ -165,34 +166,38 @@ pub async fn start_game<R: Runtime>(
 pub async fn pause_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
     logger.info("Pause called, acquiring midi file state...");
-    acquire_state(&mut logger, midi_state, move |logger, state| {
+    acquire_state(&mut logger, midi_state, Box::new(move |logger: &mut Logger, state: &mut MidiFile| {
         state.pause();
         logger.done().success("Midi file playback paused successfully");
-    })
+    }))
 }
 
 #[tauri::command]
-pub async fn resume_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
+pub async fn resume_game(
+    midi_state: State<'_, MidiState>,
+    window: Window,
+) -> ServiceResult<()> {
     let mut logger = Logger::new();
     logger.info("Resume called, acquiring midi file state...");
-    acquire_state(&mut logger, midi_state, move |logger, state| {
+    acquire_state(&mut logger, midi_state, Box::new(move |logger: &mut Logger, state: &mut MidiFile| {
         state.unpause();
+        let _ = window.emit(MIDI_READ_STATE, MidiFileState::PLAYING);
         logger
             .done()
             .success("Midi file playback resumed successfully");
-    })
+    }))
 }
 
 #[tauri::command]
 pub async fn stop_game(midi_state: State<'_, MidiState>) -> ServiceResult<()> {
     let mut logger = Logger::new();
     logger.info("Stop called, acquiring midi file state...");
-    acquire_state(&mut logger, midi_state, move |logger, state| {
+    acquire_state(&mut logger, midi_state, Box::new(move |logger: &mut Logger, state: &mut MidiFile| {
         state.stop();
         logger
             .done()
             .success("Midi file playback stopped successfully");
-    })
+    }))
 }
 
 #[tauri::command]
@@ -225,12 +230,12 @@ pub async fn music_length(
 pub async fn remaining_time(midi_state: State<'_, MidiState>) -> ServiceResult<u64> {
     let mut logger = Logger::new();
     logger.loading("Reading remaining time...");
-    acquire_state(&mut logger, midi_state, move |logger, state| {
+    acquire_state(&mut logger, midi_state, Box::new(move |logger: &mut Logger, state: &mut MidiFile| {
         let dur = state.remaining_time().as_secs();
         let msg = format!("Remaining time obtained: {} seconds left", dur);
         logger.done().info(msg);
         dur
-    })
+    }))
 }
 
 #[tauri::command]
@@ -309,7 +314,7 @@ pub async fn remove_music<R: Runtime>(
 fn acquire_state<T>(
     logger: &mut Logger,
     midi_state: State<'_, MidiState>,
-    on_acquired: fn(&mut Logger, &mut MidiFile) -> T,
+    on_acquired: Box<dyn Fn(&mut Logger, &mut MidiFile) -> T>,
 ) -> ServiceResult<T> {
     if let Some(state) = midi_state.midi_file.lock()?.deref_mut() {
         Ok(on_acquired(logger, state))

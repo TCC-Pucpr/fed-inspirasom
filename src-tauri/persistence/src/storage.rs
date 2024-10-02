@@ -141,7 +141,7 @@ impl Store {
             return Err(StorageAlreadyExists(file.to_string()));
         }
         let parent = path.parent().unwrap();
-        fs::create_dir_all(parent).map_err(move |e| CouldNotCreateStorage(file.to_string()))?;
+        fs::create_dir_all(parent).map_err(move |_e| CouldNotCreateStorage(file.to_string()))?;
         let mut store = PickleDb::new(
             file,
             PickleDbDumpPolicy::DumpUponRequest,
