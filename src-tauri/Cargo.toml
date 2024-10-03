@@ -24,7 +24,7 @@ tracing = "0.1.40"
 const_format = "0.2.33"
 convert_case = "0.6.0"
 
-migration = { path = "persistence/migration" }
+migration = { path = "persistence/migration", features = ["verbose"] }
 entity = { path = "persistence/entity" }
 persistence = { path = "persistence", features = ["verbose"] }
 midi-reader = { path = "midi-reader" }
