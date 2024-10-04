@@ -23,6 +23,7 @@ pub enum MidiFileState {
     INTERRUPTED,
     FINISHED,
     PAUSED,
+    PLAYING
 }
 
 #[derive(TS, Serialize, Clone)]

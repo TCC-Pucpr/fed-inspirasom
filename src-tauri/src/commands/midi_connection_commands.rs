@@ -1,13 +1,13 @@
+use crate::commands::payloads::service_error::{ServiceError, ServiceResult};
 use crate::{
     commands::payloads::midi_payload::MidiPayload, constants::events_name::MIDI_NOTE, MidiState,
 };
-use arduino_comm::midi_connection::{connect, connect_to_port_with_name, list_available_devices};
+use arduino_comm::errors::ArduinoCommResult;
+use arduino_comm::midi_connection::{connect, connect_to_port_with_name, list_available_devices, MidiConnection};
+use arduino_comm::midi_wrapper::MidiWrapper;
 use paris::{info, warn, Logger};
 use tauri::{State, Window};
 use waitgroup::WaitGroup;
-use arduino_comm::errors::ArduinoCommResult;
-use arduino_comm::midi_wrapper::MidiWrapper;
-use crate::commands::payloads::service_error::{ServiceError, ServiceResult};
 
 const ALREADY_CONNECTED_CODE: &str = "0001";
 const ALREADY_CONNECTED: &str = "Already listening to a midi device! Disconnect from it first";
@@ -79,7 +79,7 @@ fn note_received(
 
 async fn listen_to_port(
     state: State<'_, MidiState>,
-    midi_connection: impl FnOnce() -> ArduinoCommResult<()>
+    midi_connection: impl FnOnce() -> ArduinoCommResult<MidiConnection>
 ) -> ServiceResult<()> {
     if state.is_working() {
         warn!("There is already a device connected");

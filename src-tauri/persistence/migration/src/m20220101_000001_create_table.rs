@@ -47,15 +47,6 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
-        manager
-            .create_index(
-                Index::create()
-                    .table(Music::Table)
-                    .col(Music::Directory)
-                    .name("idx-music-directory")
-                    .to_owned(),
-            )
-            .await?;
         Ok(())
     }
 
@@ -65,6 +56,9 @@ impl MigrationTrait for Migration {
             .await?;
         manager
             .drop_table(Table::drop().table(Score::Table).to_owned())
+            .await?;
+        manager
+            .drop_index(Index::drop().table(Music::Table).name("idx-music-name").to_owned())
             .await?;
         Ok(())
     }

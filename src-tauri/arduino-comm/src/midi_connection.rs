@@ -1,11 +1,18 @@
 use crate::errors::{ArduinoCommResult, ArduinoCommunicationError};
 use crate::midi_wrapper::MidiWrapper;
 use midir::{MidiInput, MidiInputConnection, MidiInputPort};
-use paris::info;
+#[cfg(feature = "verbose")]
+use paris::{info, success};
 
 const PORT_NAME: &str = "USB MidiKliK";
 const CLIENT_NAME: &str = "InspiraSomMidiIn";
 const INSPIRE_PORT_NAME: &str = "InspireMidiPort";
+
+pub struct MidiConnection {
+    pub port: String,
+    #[allow(dead_code)] // we need to keep this named field so it does not get dropped from the memory
+    conn: MidiInputConnection<()>
+}
 
 pub fn list_available_devices() -> ArduinoCommResult<Vec<String>> {
     let midi_in =
@@ -26,15 +33,18 @@ pub fn list_available_devices() -> ArduinoCommResult<Vec<String>> {
 pub fn connect_to_port_with_name<F: Fn(MidiWrapper) + Send + 'static>(
     name: &str,
     callback: F,
-) -> ArduinoCommResult<()> {
+) -> ArduinoCommResult<MidiConnection> {
     let midi_in =
         MidiInput::new(CLIENT_NAME).map_err(|_| ArduinoCommunicationError::MidiInputError)?;
     let ports = midi_in.ports();
     for p in ports {
         if let Ok(n) = midi_in.port_name(&p) {
             if n == name {
-                start_listening_port(&p, callback)?;
-                return Ok(());
+                #[cfg(feature = "verbose")] 
+                {
+                    success!("Connected to port with name {name}")    
+                }
+                return Ok(start_listening_port(&p, callback)?);
             }
         }
     }
@@ -43,7 +53,7 @@ pub fn connect_to_port_with_name<F: Fn(MidiWrapper) + Send + 'static>(
     ))
 }
 
-pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(callback: F) -> ArduinoCommResult<()> {
+pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(callback: F) -> ArduinoCommResult<MidiConnection> {
     let midi_in =
         MidiInput::new(CLIENT_NAME).map_err(|_| ArduinoCommunicationError::MidiInputError)?;
     let ports = midi_in.ports();
@@ -64,7 +74,7 @@ pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(callback: F) -> ArduinoCommR
             let mut port: Option<MidiInputPort> = None;
             #[cfg(feature = "verbose")]
             {
-                info!("Várias portas encontradas!")
+                info!("Many ports detected")
             }
             for p in ports {
                 let port_name = midi_in
@@ -72,7 +82,7 @@ pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(callback: F) -> ArduinoCommR
                     .map_err(move |_| ArduinoCommunicationError::PortError)?;
                 #[cfg(feature = "verbose")]
                 {
-                    info!("Porta {}", port_name);
+                    info!("Port {}", port_name);
                 }
                 if port_name.starts_with(PORT_NAME) {
                     port = Some(p);
@@ -94,8 +104,7 @@ pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(callback: F) -> ArduinoCommR
         {
             info!("Selected Port: {}", port_name);
         }
-        start_listening_port(&p, callback)?;
-        Ok(())
+        Ok(start_listening_port(&p, callback)?)
     } else {
         Err(ArduinoCommunicationError::OcarinaNotFound)
     }
@@ -104,7 +113,7 @@ pub fn connect<F: Fn(MidiWrapper) + Send + 'static>(callback: F) -> ArduinoCommR
 fn start_listening_port<F: Fn(MidiWrapper) + Send + 'static>(
     port: &MidiInputPort,
     callback: F,
-) -> ArduinoCommResult<MidiInputConnection<()>> {
+) -> ArduinoCommResult<MidiConnection> {
     let midi_in =
         MidiInput::new(CLIENT_NAME).map_err(|_| ArduinoCommunicationError::MidiInputError)?;
     let port_name = midi_in
@@ -125,6 +134,6 @@ fn start_listening_port<F: Fn(MidiWrapper) + Send + 'static>(
             },
             (),
         )
-        .map_err(|_| ArduinoCommunicationError::PortListenError(port_name))?;
-    Ok(res)
+        .map_err(|_| ArduinoCommunicationError::PortListenError(port_name.clone()))?;
+    Ok(MidiConnection { port: port_name, conn: res })
 }
