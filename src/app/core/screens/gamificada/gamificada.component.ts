@@ -61,8 +61,8 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     this.rust.listenMidiNotes(this.addNoteOnGame);
     this.musicData = this.musicService.getMusicById(musicId);
 
-    this.rust.connect_midi();
-    this.rust.listen_for_midi_note((note: MidiSignal) => {
+    this.rust.connectOcarina();
+    this.rust.listenForOcarinaNote((note: MidiSignal) => {
       EventBus.emit(EventNames.ocarinaNote, note);
     });
 
@@ -103,7 +103,7 @@ export class GamificadaComponent implements OnInit, OnDestroy {
       console.log("Something went wrong, but the music is not playing..."); 
     }
     await this.rust.unlistenMidiNotes();
-    this.rust.stop_midi();
+    this.rust.releaseOcarina();
     (Object.keys(EventNames) as Array<keyof typeof EventNames>).map((event) => EventBus.off(event));
   }
 

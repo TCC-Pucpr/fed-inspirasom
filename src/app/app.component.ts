@@ -34,9 +34,9 @@ export class AppComponent implements OnInit {
     greet(event: SubmitEvent, name: string): void {
         event.preventDefault();
         if (this.isListeningMidi) {
-            this.rustInvoker.stop_midi();
+            this.rustInvoker.releaseOcarina();
         } else {
-            this.rustInvoker.connect_midi();
+            this.rustInvoker.connectOcarina();
         }
         this.isListeningMidi = !this.isListeningMidi;
     }
