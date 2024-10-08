@@ -17,6 +17,7 @@ import { PauseScene } from './game/scenes/Pause.scene';
 import { MusicService } from '../../services/musicService/music.service';
 import { MidiMusic } from '../../model/MidiMusic';
 import { MidiState } from '../../model/MidiState';
+import { EndgameScene } from './game/scenes/Endgame.scene';
 
 @Component({
   selector: 'app-gamificada',
@@ -61,8 +62,8 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     this.rust.listenMidiNotes(this.addNoteOnGame);
     this.musicData = this.musicService.getMusicById(musicId);
 
-    this.rust.connect_midi();
-    this.rust.listen_for_midi_note((note: MidiSignal) => {
+    this.rust.connectOcarina();
+    this.rust.listenForOcarinaNote((note: MidiSignal) => {
       EventBus.emit(EventNames.ocarinaNote, note);
     });
 
@@ -77,7 +78,11 @@ export class GamificadaComponent implements OnInit, OnDestroy {
 
     EventBus.on(EventNames.pauseSceneReady, (scene: PauseScene) => {
       this.pauseScene = scene;
-      this.setMusicName(this.musicData.name);
+      this.pauseScene.musicName = this.musicData.name;
+    });
+
+    EventBus.on(EventNames.endSceneReady, (scene: EndgameScene) => {
+      scene.musicName = this.musicData.name;
     });
 
     EventBus.on(EventNames.exitGame, (_: any) => {
@@ -103,7 +108,7 @@ export class GamificadaComponent implements OnInit, OnDestroy {
       console.log("Something went wrong, but the music is not playing..."); 
     }
     await this.rust.unlistenMidiNotes();
-    this.rust.stop_midi();
+    this.rust.releaseOcarina();
     (Object.keys(EventNames) as Array<keyof typeof EventNames>).map((event) => EventBus.off(event));
   }
 
@@ -128,10 +133,6 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   public get isMusicPaused(): boolean {
     if(!this.gameScene) return true;
     return this.gameScene.isGamePaused;
-  }
-
-  public setMusicName(musicName: string) {
-    this.pauseScene.musicName = musicName;
   }
 
 }

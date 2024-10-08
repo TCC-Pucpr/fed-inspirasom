@@ -46,7 +46,7 @@ export class MenuGamificadaComponent implements OnInit {
   }
 
   private ngOnDestroy(): void {
-    this.rust.stop_midi();
+    this.rust.releaseOcarina();
   }
 
   public openPreferenciasGamificada(): void {

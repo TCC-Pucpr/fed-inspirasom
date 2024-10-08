@@ -17,17 +17,15 @@ export class RustService {
     constructor() {
     }
 
-    public connect_midi() {
-        invoke(RustFunctionName.connectMidi).then(_ => {
-        });
+    public connectOcarina() {
+      invoke(RustFunctionName.connectMidi).then(_ => {});
     }
 
-    public stop_midi() {
-        invoke(RustFunctionName.stopMidi).then(_ => {
-        });
+    public releaseOcarina() {
+      invoke(RustFunctionName.stopMidi).then(_ => {});
     }
 
-  public listen_for_midi_note(callback: (signal: MidiSignal) => void) {
+  public listenForOcarinaNote(callback: (signal: MidiSignal) => void) {
     return listen(RustEventsName.midiNote, (event) => {
       callback(event.payload as MidiSignal)
     });
