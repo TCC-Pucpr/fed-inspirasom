@@ -13,6 +13,8 @@ import { MusicService } from '../../services/musicService/music.service';
 import { MidiMusic } from '../../model/MidiMusic';
 import { MidiState } from '../../model/MidiState';
 
+import * as fw from 'three';
+
 @Component({
   selector: 'app-gamificada',
   standalone: true,
@@ -44,6 +46,12 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   }
   
   public ngOnInit(): void {
+    const scene = new fw.Scene();
+    const camera = new fw.PerspectiveCamera( 75, window.innerWidth/ window.innerHeight, 0.1, 1000);
+    const renderer = new fw.WebGLRenderer();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild(renderer.domElement);
+
     const queryParam = this.route.snapshot.queryParamMap.get('id');
     if(!queryParam) this.router.navigate(['menu-gamificada']);
     const musicId = parseInt(queryParam!);
