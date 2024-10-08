@@ -1,4 +1,5 @@
 use crate::note::NoteWrapper;
+use std::fmt::Display;
 
 #[derive(Clone, Debug)]
 pub struct MidiWrapper {
@@ -14,5 +15,11 @@ impl MidiWrapper {
             note: NoteWrapper::new(byte).unwrap_or_else(move |_| Default::default()),
             state,
         }
+    }
+}
+
+impl Display for MidiWrapper {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "State: {} | Note: {:?} | Velocity: {}", self.state, self.note, self.air_strength)
     }
 }

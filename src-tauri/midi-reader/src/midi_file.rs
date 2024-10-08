@@ -3,7 +3,7 @@ use midi_reader_writer::midly_0_5::exports::Smf;
 use std::time::Duration;
 
 use crate::errors::{MidiReaderError, MidiReaderResult};
-use crate::game_connection::GamePlayer;
+use crate::game_player::GamePlayer;
 use crate::midi_length_calc::calc_midi_sheet_length;
 use crate::player_wrapper::PlayerWrapper;
 #[cfg(test)]

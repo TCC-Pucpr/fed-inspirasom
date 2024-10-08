@@ -1,3 +1,7 @@
+#[cfg(feature = "verbose")]
+use crate::LOG_TAG;
+use midir::InitError;
+use paris::error;
 use thiserror::Error;
 
 pub type ArduinoCommResult<T> = Result<T, ArduinoCommunicationError>;
@@ -18,4 +22,14 @@ pub enum ArduinoCommunicationError {
     NoDevicesConnected,
     #[error("Error while listening to port `{0}`")]
     PortListenError(String),
+}
+
+impl From<InitError> for ArduinoCommunicationError {
+    fn from(_value: InitError) -> Self {
+        #[cfg(feature = "verbose")]
+        {
+            error!("[{}] PortMidi error: {}", LOG_TAG, _value)
+        }
+        ArduinoCommunicationError::MidiInputError
+    }
 }

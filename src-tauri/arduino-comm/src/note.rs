@@ -7,6 +7,8 @@ use strum::{IntoEnumIterator, IntoStaticStr};
 use strum_macros::EnumIter;
 
 use crate::errors::{ArduinoCommResult, ArduinoCommunicationError};
+#[cfg(feature = "verbose")]
+use crate::LOG_TAG;
 
 #[derive(EnumIter, Debug, Clone, Copy, Serialize, IntoStaticStr, PartialEq)]
 pub enum Note {
@@ -48,7 +50,7 @@ impl Note {
     pub fn from_byte(byte: u8) -> ArduinoCommResult<Self> {
         #[cfg(feature = "verbose")]
         {
-            info!("Received byte: {}", byte)
+            info!("[{}] Received byte: {}", LOG_TAG, byte)
         }
         let i = if let Some(u) = (byte as usize).checked_sub(55) {
             u

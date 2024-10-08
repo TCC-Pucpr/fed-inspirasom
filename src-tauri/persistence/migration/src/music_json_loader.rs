@@ -13,7 +13,7 @@ use std::env::current_dir;
 use std::fs::File;
 use std::io::BufReader;
 
-const DATA_DIR: &str = "/persistence/migration/jsons/";
+const DATA_DIR: &str = "resources/musics/";
 const MUSICS_DIR: &str = "resources/musics";
 
 #[derive(Serialize, Deserialize)]
@@ -29,8 +29,12 @@ pub(crate) struct MusicDataObject {
 
 impl MusicDataObject {
     pub(crate) fn into_active_model(self) -> ActiveModel {
-        let file = format!("{}{}", MUSICS_DIR, self.directory);
-        let dir = current_dir().unwrap().join(file).display().to_string();
+        let dir = current_dir()
+            .unwrap()
+            .join(MUSICS_DIR)
+            .join(&self.directory)
+            .display()
+            .to_string();
         #[cfg(feature = "verbose")]
         info!("Loaded file: {}", dir);
         let duration = calculate_midi_length(&dir);
@@ -44,10 +48,10 @@ impl MusicDataObject {
 }
 
 pub(crate) fn load_data_file(json_file: &str) -> Vec<MusicDataObject> {
-    let dir = current_dir().unwrap().display().to_string() + DATA_DIR + json_file;
+    let dir = current_dir().unwrap().join(DATA_DIR).display().to_string() + json_file;
     #[cfg(feature = "verbose")]
     info!("Data file dir: {}", dir);
-    let file = File::open(dir).unwrap();
+    let file = File::open(dir.as_str()).expect(format!("Error opening file: {}", dir).as_str());
     let buf_reader = BufReader::new(file);
     let ml: MusicList = serde_json::from_reader(buf_reader).unwrap();
     ml.files

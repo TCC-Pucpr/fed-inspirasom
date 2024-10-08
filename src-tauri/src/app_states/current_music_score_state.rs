@@ -1,8 +1,4 @@
-use crate::app_states::database_state::{DatabaseError, DatabaseResult};
-use entity::score::ActiveModel;
 use persistence::storage::{StorageResult, StorageSavable, Store};
-use sea_orm::sqlx::types::chrono::Utc;
-use sea_orm::ActiveValue;
 use serde::ser::Error;
 use serde::{Serialize, Serializer};
 use std::sync::Mutex;
@@ -11,7 +7,7 @@ const DEFAULT_SCORE: Score = 10;
 const SCORE_KEY: &str = "__score";
 const NUMBER_OF_ATTEMPTS_KEY: &str = "__attempts";
 
-type Score = i64;
+type Score = i32;
 
 #[derive(Default)]
 pub struct CurrentMusicScore {
@@ -65,25 +61,6 @@ impl CurrentMusicScoreState {
             (score.total_score, score_to_add, score.hit_streak)
         } else {
             (0, 0, 0)
-        }
-    }
-
-    pub fn create_active_model(
-        &self,
-        completed: bool,
-        music_id: i32,
-    ) -> DatabaseResult<ActiveModel> {
-        if let Ok(score) = self.score.lock() {
-            Ok(ActiveModel {
-                id: Default::default(),
-                total: ActiveValue::Set(score.total_score as i32),
-                date: ActiveValue::Set(Utc::now()),
-                completed: ActiveValue::Set(completed),
-                highest_streak: ActiveValue::Set(score.highest_streak as i32),
-                music_id: ActiveValue::Set(music_id),
-            })
-        } else {
-            Err(DatabaseError::CouldNotCreateActiveModel)
         }
     }
 }

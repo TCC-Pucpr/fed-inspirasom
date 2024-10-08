@@ -1,6 +1,6 @@
 use crate::errors::{MidiReaderError, MidiReaderResult};
 use crate::{
-    game_connection::GamePlayer,
+    game_player::GamePlayer,
     midi_file::{PlayBackCallback, ReadingState},
     timer::MidiPauseTimer,
 };
