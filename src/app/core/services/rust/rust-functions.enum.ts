@@ -74,7 +74,7 @@ export enum RustFunctionName {
      */
     remainingTime = "remaining_time",
     /**
-     * (on_note_message: OnNotePressedMessage)
+     * (on_note_message: OnNoteMessage)
      *
      * Adiciona ao acumulador de score, retorna `OnScoreUpdateMessage`
      */
