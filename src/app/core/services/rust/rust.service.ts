@@ -27,7 +27,6 @@ export class RustService {
 
   public listenForOcarinaNote(callback: (signal: MidiSignal) => void) {
     return listen(RustEventsName.midiNote, (event) => {
-      console.log("banana");
       callback(event.payload as MidiSignal)
     });
   }

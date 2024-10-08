@@ -17,6 +17,7 @@ import { PauseScene } from './game/scenes/Pause.scene';
 import { MusicService } from '../../services/musicService/music.service';
 import { MidiMusic } from '../../model/MidiMusic';
 import { MidiState } from '../../model/MidiState';
+import { EndgameScene } from './game/scenes/Endgame.scene';
 
 @Component({
   selector: 'app-gamificada',
@@ -77,7 +78,11 @@ export class GamificadaComponent implements OnInit, OnDestroy {
 
     EventBus.on(EventNames.pauseSceneReady, (scene: PauseScene) => {
       this.pauseScene = scene;
-      this.setMusicName(this.musicData.name);
+      this.pauseScene.musicName = this.musicData.name;
+    });
+
+    EventBus.on(EventNames.endSceneReady, (scene: EndgameScene) => {
+      scene.musicName = this.musicData.name;
     });
 
     EventBus.on(EventNames.exitGame, (_: any) => {
@@ -128,10 +133,6 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   public get isMusicPaused(): boolean {
     if(!this.gameScene) return true;
     return this.gameScene.isGamePaused;
-  }
-
-  public setMusicName(musicName: string) {
-    this.pauseScene.musicName = musicName;
   }
 
 }

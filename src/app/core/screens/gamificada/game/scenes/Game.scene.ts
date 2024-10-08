@@ -1,5 +1,7 @@
+import { EndgameDataModel } from "../../../../model/EndgameData.model";
 import { MidiSignal } from "../../../../model/MidiSignal";
 import { MidiState } from "../../../../model/MidiState";
+import { NoteStatusModel } from "../../../../model/NoteStatus.model";
 import { EventBus } from "../events/EventBus";
 import { EventNames } from "../events/EventNames.enum";
 
@@ -9,21 +11,22 @@ export class GameScene extends Phaser.Scene {
     public wrongPressArea: Phaser.GameObjects.Rectangle; 
     public limit: Phaser.GameObjects.Rectangle;
     public notes: { note: MidiSignal, body: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody }[] = [];
-    public readonly noteSprite: string = "note";
     
     public score: number;
     public multiplier: number;
     public chainCount: number;
 
     public inputs: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
-    public isPressed: boolean | undefined = false;
     public scoreText: Phaser.GameObjects.Text;
     public multiplierText: Phaser.GameObjects.Text;
     public chainText: Phaser.GameObjects.Text;
     public noteText: Phaser.GameObjects.Text;
 
+    public musicState: MidiState;
     public isPaused: boolean = false;
+    public isEndGame: boolean = false;
 
+    public noteStatus: NoteStatusModel = {} as NoteStatusModel;
     public lastOcarinaNote: MidiSignal = {} as MidiSignal;
     
     constructor(
@@ -49,6 +52,8 @@ export class GameScene extends Phaser.Scene {
         this.chainText = this.add.text(50, 100, '', { color: 'white' }).setOrigin(0, 0);
         this.noteText = this.add.text(50, 125, '', { color: 'white' }).setOrigin(0, 0);
         this.add.text(0, 0, `Press [space] to hit the note, press [ESC] to pause`, { color: 'white' }).setOrigin(0, 0);
+
+        this.noteStatus = { hitNotes: 0, missedNotes: 0, poorNotes: 0 };
     }
     
     public create() {
@@ -56,8 +61,10 @@ export class GameScene extends Phaser.Scene {
         EventBus.on(EventNames.resumeGame, this.resumeGame);
         EventBus.on(EventNames.pauseGame, this.pauseGame);
         EventBus.on(EventNames.ocarinaNote, this.checkForNote);
+        EventBus.on(EventNames.musicStateChange, this.treatStates);
         const escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)!;
         escKey.on('down', () => { EventBus.emit(EventNames.pauseGame); });
+        this.scene.launch("endScreen");
         this.scene.launch("pause");
     }
 
@@ -80,9 +87,8 @@ export class GameScene extends Phaser.Scene {
         if(this.notes.length > 0) {
             const note = this.notes[0];
             this.physics.overlap(note.body, this.limit, this.removeNote, undefined, this);
-        }
-        if(this.isPressed && this.inputs?.space.isUp) {
-            this.isPressed = false;
+        } else if (this.notes.length === 0 && this.isEndGame) {
+            this.openEndScreen();
         }
         this.multiplier = this.getCurrentMultiplier(this.chainCount);
         this.scoreText.setText(`Score: ${this.score}`);
@@ -96,25 +102,51 @@ export class GameScene extends Phaser.Scene {
         this.score -= 10;
         this.multiplier = 1;
         this.chainCount = 0;
+        this.noteStatus.missedNotes++;
     }
 
     public poorNote(note: any, area: any) { 
         this.removeNoteFromScene(note);
-        this.isPressed = true;
         this.score -= 20;
         this.chainCount = 1;
+        this.noteStatus.poorNotes++;
     }
 
     public scoredNote(note: any, area: any){
         const noteCenter = note.x - note.width/2;
         const accScore = this.getAccScore(noteCenter, this.pressArea.x, this.pressArea.width);
-        this.isPressed = true;
         this.removeNoteFromScene(note);
         this.score += (10 + accScore)*this.multiplier;
-        this.chainCount+=1;
+        this.chainCount++;
+        this.noteStatus.hitNotes++;
+    }
+
+    public treatStates = (state: MidiState) => {
+        this.musicState = state;
+        try{
+            if(state === "FINISHED") {
+                this.isEndGame = true;
+            }
+        } catch (error){ }
+    }
+
+    public openEndScreen() {
+        const callback = () => {
+            this.scene.bringToTop("endScreen");
+        };
+        callback.bind(this);
+        setTimeout(callback, 1500);
+        const data = {} as EndgameDataModel;
+        data.noteStatus = this.noteStatus;
+        data.score = this.score;
+        EventBus.emit(EventNames.musicEnd, data);
+        this.scene.pause();
     }
 
     public pauseGame = () => {
+        if(this.isEndGame && this.notes.length === 0) {
+            return;
+        }
         try{
             this.isPaused = true;
             this.scene.bringToTop("pause");
