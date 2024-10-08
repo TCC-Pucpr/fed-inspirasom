@@ -7,7 +7,7 @@ use crate::commands::payloads::midi_payload::{MidiFileState, MidiPayload};
 use crate::commands::payloads::music::MidiMusic;
 use crate::commands::payloads::service_error::{ServiceError, ServiceResult};
 use crate::constants::dirs::MUSICS_FOLDER;
-use crate::constants::errors::{FILE_ID_NOT_FOUND, FILE_IS_NOT_A_MIDI, FILE_LOAD_ERROR, FILE_NOT_FOUND, FILE_TOO_LONG};
+use crate::constants::errors::{FILE_ID_NOT_FOUND, FILE_IS_NOT_A_MIDI, FILE_NOT_FOUND, FILE_TOO_LONG};
 use crate::constants::events_name::{MIDI_READ_NOTE, MIDI_READ_STATE};
 use crate::constants::limits::MIDI_LENGTH_SECONDS_LIMIT;
 use crate::get_resources_path;
@@ -72,12 +72,7 @@ pub async fn load_file<R: Runtime>(
     logger: &mut Logger<'_>
 ) -> ServiceResult<Vec<u8>> {
     logger.info(format!("Looking for midi file with id {music_id}..."));
-    let (music, file) = read_music_from_id(db_state, &handle, music_id)
-        .await
-        .map_err(|e1| {
-            logger.done().error(e1.to_string());
-            e1
-        })?;
+    let (music, file) = read_music_from_id(db_state, &handle, music_id).await?;
     logger.success(format!("Music found: {}", music));
     Ok(file)
 }
@@ -112,23 +107,17 @@ pub async fn read_music_from_id<R: Runtime>(
 ) -> ServiceResult<(MidiMusic, Vec<u8>)> {
     let list = music_list(db_state).await?;
     if let Some(m) = list.files.iter().find(|e| e.id == music_id) {
-        match music(handle, &m.directory) {
-            Ok(vec) => Ok((m.to_owned(), vec)),
-            Err(err) => {
-                error!(
-                    "Music with id {} found, but an error occurred while loading midi file: {}",
-                    music_id, err
-                );
-                Err(FILE_LOAD_ERROR.into())
-            }
-        }
+        let vec = music(handle, &m.directory)?;
+        Ok((m.to_owned(), vec))
     } else {
         Err(FILE_ID_NOT_FOUND.into())
     }
 }
 
 pub fn music<R: Runtime>(handle: &AppHandle<R>, music_name: &str) -> ServiceResult<Vec<u8>> {
-    let path = get_resources_path(handle)?.join(MUSICS_FOLDER).join(music_name);
+    let mut path = get_resources_path(handle)?;
+    path.push(MUSICS_FOLDER);
+    path.push(music_name);
     if let Ok(vec) = fs::read(&path) {
         Ok(vec)
     } else {

@@ -21,8 +21,8 @@ pub fn connect(
     info!("Successfully connected, listening for inputs...");
     let window_label = window.label().to_owned();
     device_connection_listener(
-        window_label.clone(),
         midi_state.connected_port_name()?,
+        window_label.clone(),
         app_handle.clone()
     );
     window.emit(MIDI_DEVICE_CONNECTION_STATE, true)?;
@@ -64,7 +64,6 @@ pub fn device_connection_listener(
                 break
             }
             let port_available = if let Ok(devices) = list_available_devices() {
-                info!("Available devices: {:?} | connected device: {}", devices, connected_port_name);
                 devices.into_iter().any(|d| d.contains(&connected_port_name))
             } else { 
                 false
