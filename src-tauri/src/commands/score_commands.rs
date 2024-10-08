@@ -1,11 +1,15 @@
 use crate::app_states::current_music_score_state::CurrentMusicScoreState;
 use crate::app_states::database_state::DatabaseState;
+use crate::app_states::monitoring_state::MonitoringState;
+use crate::commands::commands_utils::database_queries::get_music;
 use crate::commands::payloads::on_note_data::{OnNoteMessage, OnNotePayload};
 use crate::commands::payloads::score::{OrderType, ScorePayload};
-use crate::commands::payloads::service_error::{ServiceError, ServiceResult};
-use entity::prelude::{Music, Score};
+use crate::commands::payloads::service_error::ServiceResult;
+use crate::constants::errors::DATABASE_NO_VALUES_FOUND;
+use entity::prelude::Score;
 use entity::score;
 use migration::Order;
+use paris::error;
 use sea_orm::{ColumnTrait, EntityTrait, ModelTrait, QueryFilter, QueryOrder};
 use tauri::State;
 
@@ -13,14 +17,16 @@ use tauri::State;
 pub async fn on_note(
     on_note_message: OnNoteMessage,
     current_music_score: State<'_, CurrentMusicScoreState>,
+    monitoring_state: State<'_, MonitoringState>,
 ) -> ServiceResult<OnNotePayload> {
     let (new_total_score, gained_score, hit_streak) = current_music_score.add_to_total_score(
         f32::from(on_note_message.precision),
         !bool::from(on_note_message.precision),
     );
+    monitoring_state.receive_score(on_note_message.precision)?;
     Ok(OnNotePayload::new(
         hit_streak,
-        new_total_score,
+        new_total_score as i64,
         gained_score as i32,
     ))
 }
@@ -30,23 +36,13 @@ pub async fn reset_music_score(
     music_id: i32,
     db_state: State<'_, DatabaseState>,
 ) -> ServiceResult<()> {
-    let music = if let Some(m) = Music::find_by_id(music_id)
-        .one(&db_state.db)
-        .await?
-    {
-        m
+    let music = get_music(music_id, &db_state).await?;
+    let res = Score::delete_many().belongs_to(&music).exec(&db_state.db).await?;
+    if res.rows_affected <= 0 {
+        error!("Music with id {} doesnt have any scores", music_id);
+        Err(DATABASE_NO_VALUES_FOUND.into())
     } else {
-        return Err(ServiceError::from("Music does not exist"));
-    };
-    let res = Score::delete_many()
-        .belongs_to(&music)
-        .exec(&db_state.db)
-        .await?;
-    if res.rows_affected > 0 {
         Ok(())
-    } else {
-        let msg = format!("Music with id {} doesnt have any scores", music_id);
-        Err(ServiceError::from(msg))
     }
 }
 
@@ -58,15 +54,7 @@ pub async fn list_scores(
     completed: Option<bool>,
     db_state: State<'_, DatabaseState>,
 ) -> ServiceResult<Vec<ScorePayload>> {
-    let music_model = if let Some(m) = Music::find_by_id(music_id)
-        .one(&db_state.db)
-        .await?
-    {
-        m
-    } else {
-        let msg = format!("Music with id {} doesnt exist", music_id);
-        return Err(ServiceError::from(msg));
-    };
+    let music_model = get_music(music_id, &db_state).await?;
     let related = music_model.find_related(Score);
     let query = if let Some(asc) = ascending {
         let order = if asc { Order::Asc } else { Order::Desc };

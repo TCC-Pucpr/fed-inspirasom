@@ -1,4 +1,3 @@
-use crate::constants::dirs::STORE_DIR;
 use crate::get_context_path;
 use persistence::storage::{
     StorageError, StorageResult, StorageRetrievable, StorageSavable, Store,
@@ -14,11 +13,8 @@ pub struct StoreState {
 
 #[allow(dead_code)]
 impl StoreState {
-    fn db_file_path(file_path: &str) -> String {
-        format!("{}{}", file_path, STORE_DIR)
-    }
     pub fn load_or_create_new(file_path: &str) -> StorageResult<Self> {
-        let store = Store::load_or_create_new(&Self::db_file_path(file_path))?;
+        let store = Store::load_or_create_new(file_path)?;
         Ok(Self {
             store: Mutex::new(store),
         })
@@ -84,7 +80,9 @@ impl TryFrom<App> for StoreState {
 impl TryFrom<&App> for StoreState {
     type Error = StorageError;
     fn try_from(value: &App) -> StorageResult<Self> {
-        let f = get_context_path(value);
+        let f = get_context_path(value).map_err(move |e| {
+            StorageError::StorageReadError(e.to_string())
+        })?;
         let path = f.display().to_string();
         Self::try_from(path)
     }

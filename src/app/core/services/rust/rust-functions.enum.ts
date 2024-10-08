@@ -34,6 +34,18 @@ export enum RustFunctionName {
      */
     startGame = "start_game",
     /**
+     * Sinaliza que a musica foi concluida completamente e agora é necessário salvar
+     * todas as informações coletadas durante a musica. Chamando essa funcao salva o score
+     * com o estado final da musica como finalizada.
+     * 
+     * Essa função PRECISA ser chamada se quiser salvar todos os dados ao terminar a musica e também para 
+     * resetar o estado da musica, se não nunca mais vai conseguir iniciar uma nova musica.
+     * 
+     * Voce so precisa chamar essa funcao se a musica for concluida, não chame essa função depois de 
+     * chamar `stopGame`, se não vai retornar erro
+     */
+    endGame = "end_game",
+    /**
      * Notifica o lado do rust para parar de enviar eventos de notas temporariamente
      */
     pauseGame = "pause_game",
@@ -76,7 +88,7 @@ export enum RustFunctionName {
     /**
      * (music_id: number, order_type: ScoreOrderType, ascending: boolean | null, completed: boolean | null)
      *
-     * Pega a lista de scores e tentativas feitas em uma musica, retornando um
+     * Pega a lista de scores e tentativas feitas em uma musica, retornando uma
      * lista de `Score`. ordenada baseado nos parametros.
      *
      * Se `ascending` for nulo, a lista é retornada na forma que foi armazenada.
@@ -89,10 +101,14 @@ export enum RustFunctionName {
     /**
      * (music_name: String, file_path: String)
      * 
-     * Cria uma nova musica no banco de dados
+     * Cria uma nova musica no banco de dados.
+     *
+     * `music_name` é apenas o nome da musica, não possui nenhuma relação com o nome do arquivo, pode ser
+     * qualquer.
      * 
-     * `file_path` é o caminho absoluto do arquivo, uma cópia desse arquivo é feito dentro do `resources`
-     * se ele existir, e entao essa copia vai ser usada pelo app.
+     * `file_path` é o caminho absoluto do arquivo, o arquivo é validado e uma cópia desse
+     * arquivo é feito dentro do `resources`, essa copia é a que será usada quando começar a
+     * jogar a musica.
      * 
      * Retorna o novo `MidiMusic` adicionado
      */
@@ -133,4 +149,14 @@ export enum RustEventsName {
      * Chamar `RustFunctionName.startGame` para começar a emitir.
      */
     midiReadState = "MIDI_READ_STATE",
+    /**
+     * Evento para receber sinais de conexao com o dispositivo MIDI.
+     * 
+     * Envia apenas um boolean, false quando for desconectado, true quando estiver conectado
+     * 
+     * Você vai receber esse evento quando conectar e desconectar, mas tambem pode receber `false` em 
+     * qualquer momento enquanto tiver um dispositivo conectado, 
+     * a verificação é feita a cada 3 segundos.
+     */
+    midiDeviceState = "MIDI_DEVICE_CONNECTION"
 }

@@ -12,6 +12,14 @@ pub struct Model {
     pub completed: bool,
     pub highest_streak: i32,
     pub music_id: i32,
+    pub breath_average_strength: Option<i32>,
+    pub total_close_hits: Option<i32>,
+    pub total_great_hits: Option<i32>,
+    pub total_ok_hits: Option<i32>,
+    pub highest_breathing_duration: Option<i32>,
+    pub total_breathing_duration: Option<i32>,
+    pub total_early_misses: Option<i32>,
+    pub total_misses: Option<i32>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -21,7 +29,7 @@ pub enum Relation {
         from = "Column::MusicId",
         to = "super::music::Column::Id",
         on_update = "NoAction",
-        on_delete = "NoAction"
+        on_delete = "Cascade"
     )]
     Music,
 }

@@ -33,6 +33,7 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk-score-music_id")
                             .from(Score::Table, Score::MusicId)
+                            .on_delete(ForeignKeyAction::Cascade)
                             .to(Music::Table, Music::Id),
                     )
                     .to_owned(),

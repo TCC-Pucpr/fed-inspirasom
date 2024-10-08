@@ -1,8 +1,8 @@
 [package]
 name = "fed-inspirasom"
 version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "Inspira Som desktop app"
+authors = ["André Luiz Kovalski", "Leonardo Matthew Knight"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -19,16 +19,17 @@ ts-rs = { workspace = true }
 paris = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
-tracing-subscriber = "0.3.18"
-tracing = "0.1.40"
 const_format = "0.2.33"
 convert_case = "0.6.0"
+lazy_static = "1.5.0"
+tokio = "1.40.0"
 
 migration = { path = "persistence/migration", features = ["verbose"] }
 entity = { path = "persistence/entity" }
 persistence = { path = "persistence", features = ["verbose"] }
 midi-reader = { path = "midi-reader" }
 arduino-comm = { path = "arduino-comm", features = ["verbose"] }
+log = "0.4.21"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
@@ -38,7 +39,7 @@ custom-protocol = ["tauri/custom-protocol"]
 members = ["arduino-comm", "midi-reader", "persistence", "utils", "persistence/migration", "persistence/entity"]
 
 [workspace.dependencies]
-ts-rs = "9.0.1"
+ts-rs = "10.0.0"
 waitgroup = "0.1.2"
 paris = "1.5.15"
 anyhow = "1.0.86"
@@ -47,4 +48,4 @@ sea-orm = "1.1.0-rc.1"
 
 [dependencies.sea-orm]
 workspace = true
-features = ["sqlx-sqlite", "macros", "runtime-async-std", "debug-print", "with-json", "with-time"]
+features = ["sqlx-sqlite", "macros", "runtime-tokio", "with-json", "with-time"]
