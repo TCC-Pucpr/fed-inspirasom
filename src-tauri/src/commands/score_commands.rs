@@ -5,12 +5,14 @@ use crate::commands::commands_utils::database_queries::get_music;
 use crate::commands::payloads::on_note_data::{OnNoteMessage, OnNotePayload};
 use crate::commands::payloads::score::{OrderType, ScorePayload};
 use crate::commands::payloads::service_error::ServiceResult;
-use crate::constants::errors::DATABASE_NO_VALUES_FOUND;
+use crate::commands::OnNotePrecision;
+use crate::constants::errors::{DATABASE_NO_VALUES_FOUND, INVALID_PARAMETER};
 use entity::prelude::Score;
 use entity::score;
 use migration::Order;
 use paris::error;
 use sea_orm::{ColumnTrait, EntityTrait, ModelTrait, QueryFilter, QueryOrder};
+use strum::IntoEnumIterator;
 use tauri::State;
 
 #[tauri::command]
@@ -19,11 +21,15 @@ pub async fn on_note(
     current_music_score: State<'_, CurrentMusicScoreState>,
     monitoring_state: State<'_, MonitoringState>,
 ) -> ServiceResult<OnNotePayload> {
+    if on_note_message.precision as usize >= OnNotePrecision::iter().len() {
+        return Err(INVALID_PARAMETER.into());
+    }
+    let precision = unsafe { std::mem::transmute(on_note_message.precision) };
     let (new_total_score, gained_score, hit_streak) = current_music_score.add_to_total_score(
-        f32::from(on_note_message.precision),
-        !bool::from(on_note_message.precision),
+        f32::from(precision),
+        !bool::from(precision),
     );
-    monitoring_state.receive_score(on_note_message.precision)?;
+    monitoring_state.receive_score(precision)?;
     Ok(OnNotePayload::new(
         hit_streak,
         new_total_score as i64,

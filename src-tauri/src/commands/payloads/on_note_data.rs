@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
+use strum::EnumIter;
 use ts_rs::TS;
 
-#[derive(Deserialize, Eq, PartialEq, TS, Copy, Clone)]
+#[derive(Deserialize, Eq, PartialEq, TS, Copy, Clone, EnumIter)]
 #[ts(export, export_to = "../../src/app/core/model/NotePressPrecision.ts")]
 pub enum OnNotePrecision {
     Middle,
@@ -41,9 +42,9 @@ impl From<OnNotePrecision> for bool {
 /// `Miss` quando deixar a nota passar
 /// `EarlyMiss` quando errar a nota completamente antes de entrar na area de acerto
 #[derive(Deserialize, TS, Copy, Clone)]
-#[ts(export, export_to = "../../src/app/core/model/OnNotePressedMessage.ts", rename = "OnNotePressedMessage")]
+#[ts(export, export_to = "../../src/app/core/model/OnNoteMessage.ts")]
 pub struct OnNoteMessage {
-    pub precision: OnNotePrecision,
+    pub precision: u8,
 }
 
 /// Payload que será emitido ao front sobre sempre que o usuario atualizar o seu score

@@ -33,6 +33,11 @@ pub const COULDNT_GET_PATH: CodedError = CodedError {
     message: "Could not get current path",
 };
 
+pub const INVALID_PARAMETER: CodedError = CodedError {
+    code: concatcp!(TAURI_ERRORS_PREFIX, "02"),
+    message: "Invalid parameter",
+};
+
 // MIDI FILE RELATED ERRORS
 pub const FILE_TOO_LONG: CodedError = CodedError {
     code: concatcp!(FILE_ERRORS_PREFIX, "01"),
