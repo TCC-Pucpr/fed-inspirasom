@@ -5,6 +5,7 @@ import { MidiSignal } from "../../model/MidiSignal";
 import { listen } from "@tauri-apps/api/event";
 import { MidiMusicList } from '../../model/MidiMusicList';
 import { MidiState } from '../../model/MidiState';
+import { OnNoteMessage } from '../../model/OnNoteMessage';
 
 @Injectable({
     providedIn: 'root'
@@ -71,5 +72,13 @@ export class RustService {
 
   public async unlistenMusicState() {
     this.listeningMusicState.then((_: any) => { });
+  }
+
+  public async endGameRust() {
+    await invoke(RustFunctionName.endGame);
+  }
+
+  public async onInteractNote(data: OnNoteMessage){
+    await invoke(RustFunctionName.onNote, { on_note_message: data });
   }
 }

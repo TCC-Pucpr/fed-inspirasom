@@ -17,14 +17,14 @@ use tauri::State;
 
 #[tauri::command]
 pub async fn on_note(
-    on_note_message: OnNoteMessage,
+    on_note_message: u8,
     current_music_score: State<'_, CurrentMusicScoreState>,
     monitoring_state: State<'_, MonitoringState>,
 ) -> ServiceResult<OnNotePayload> {
-    if on_note_message.precision as usize >= OnNotePrecision::iter().len() {
+    if on_note_message as usize >= OnNotePrecision::iter().len() {
         return Err(INVALID_PARAMETER.into());
     }
-    let precision = unsafe { std::mem::transmute(on_note_message.precision) };
+    let precision = unsafe { std::mem::transmute(on_note_message) };
     let (new_total_score, gained_score, hit_streak) = current_music_score.add_to_total_score(
         f32::from(precision),
         !bool::from(precision),

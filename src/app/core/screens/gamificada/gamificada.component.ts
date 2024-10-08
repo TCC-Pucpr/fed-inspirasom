@@ -18,6 +18,9 @@ import { MusicService } from '../../services/musicService/music.service';
 import { MidiMusic } from '../../model/MidiMusic';
 import { MidiState } from '../../model/MidiState';
 import { EndgameScene } from './game/scenes/Endgame.scene';
+import { OnNotePrecision } from '../../model/NotePressPrecision';
+import { OnNoteMessage } from '../../model/OnNoteMessage';
+import { NotePrecision } from '../../model/NotePrecision.model';
 
 @Component({
   selector: 'app-gamificada',
@@ -98,6 +101,16 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     EventBus.on(EventNames.resumeGame, (_: any) => {
       this.rust.resumeMusic();
     });
+
+    EventBus.on(EventNames.onNoteInteraction, (data: NotePrecision) => {
+      const interaction: OnNoteMessage = {} as OnNoteMessage;
+      interaction.precision = data;
+      this.rust.onInteractNote(interaction);
+    });
+
+    EventBus.on(EventNames.musicEnd, (_: any) => {
+      this.rust.endGameRust();
+    });
   }
 
   public async ngOnDestroy(): Promise<void> {
@@ -105,7 +118,7 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     try {
       if(this.musicState != "PAUSED") await this.rust.stopMusic();
     } catch (error) { 
-      console.log("Something went wrong, but the music is not playing..."); 
+      console.error("Something went wrong, but the music is not playing..."); 
     }
     await this.rust.unlistenMidiNotes();
     this.rust.releaseOcarina();
@@ -120,7 +133,6 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   public addNoteOnGame = (note: MidiSignal) => {
     if(note.state) this.gameScene?.createNote(note);
   }
- 
 
   public pauseMusic() {
     this.gameScene.pauseGame();
