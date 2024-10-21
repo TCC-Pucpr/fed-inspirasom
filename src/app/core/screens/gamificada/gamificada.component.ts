@@ -8,7 +8,6 @@ import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RustService } from '../../services/rust/rust.service';
-import { MidiSignal } from '../../model/MidiSignal';
 import { MusicService } from '../../services/musicService/music.service';
 import { MidiMusic } from '../../model/MidiMusic';
 import { MidiState } from '../../model/MidiState';
@@ -46,25 +45,11 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   }
   
   public ngOnInit(): void {
-    const scene = new fw.Scene();
-    const camera = new fw.PerspectiveCamera( 75, window.innerWidth/ window.innerHeight, 0.1, 1000);
-    const renderer = new fw.WebGLRenderer();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild(renderer.domElement);
 
     const queryParam = this.route.snapshot.queryParamMap.get('id');
     if(!queryParam) this.router.navigate(['menu-gamificada']);
     const musicId = parseInt(queryParam!);
-    this.rust.startMusic(musicId);
     this.musicData = this.musicService.getMusicById(musicId);
-
-    this.rust.connectOcarina();
-    this.rust.listenForOcarinaNote((note: MidiSignal) => {});
-
-    this.rust.listenForMusicState((state: MidiState) => {
-      this.musicState = state;
-    });
-    
   }
 
   public async ngOnDestroy(): Promise<void> {
@@ -82,3 +67,23 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   }
 
 }
+
+const scene = new fw.Scene();
+const camera = new fw.PerspectiveCamera( 75, window.innerWidth/ window.innerHeight, 0.1, 1000);
+const renderer = new fw.WebGLRenderer();
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild(renderer.domElement);
+
+const geometry = new fw.BoxGeometry(1, 1, 1);
+const material = new fw.MeshBasicMaterial({ color: 0x00ff00 });
+const cube = new fw.Mesh( geometry, material );
+scene.add(cube);
+camera.position.z = 5;
+
+function animate() {
+  cube.rotation.x += 0.1;
+  cube.rotation.y += 0.1;
+  renderer.render(scene, camera);
+}
+
+renderer.setAnimationLoop(animate);
