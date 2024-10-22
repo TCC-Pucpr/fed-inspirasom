@@ -52,7 +52,7 @@ fn main() {
             list_musics,
             music_length,
             remaining_time,
-            on_note,
+            on_note_played,
             reset_music_score,
             list_scores,
             add_new_music,

@@ -74,11 +74,19 @@ export enum RustFunctionName {
      */
     remainingTime = "remaining_time",
     /**
-     * (on_note_message: OnNoteMessage)
+     * (on_note_message: number)
      *
      * Adiciona ao acumulador de score, retorna `OnScoreUpdateMessage`
+     * 
+     * Os numeros possíveis a ser usado sao:
+     *
+     * 0 - `Middle` para quando pressionar exatamente no momento certo
+     * 1 - `Left` para quando estiver um pouco para esquerda
+     * 2 - `Right` para quando estiver um pouco para direita
+     * 3 - `Miss` quando deixar a nota passar
+     * 4 - `EarlyMiss` quando errar a nota completamente antes de entrar na area de acerto
      */
-    onNote = "on_note",
+    onNote = "on_note_played",
     /**
      * (music_id: number)
      *

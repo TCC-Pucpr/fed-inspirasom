@@ -2,7 +2,7 @@ use crate::app_states::current_music_score_state::CurrentMusicScoreState;
 use crate::app_states::database_state::DatabaseState;
 use crate::app_states::monitoring_state::MonitoringState;
 use crate::commands::commands_utils::database_queries::get_music;
-use crate::commands::payloads::on_note_data::{OnNoteMessage, OnNotePayload};
+use crate::commands::payloads::on_note_data::OnNotePayload;
 use crate::commands::payloads::score::{OrderType, ScorePayload};
 use crate::commands::payloads::service_error::ServiceResult;
 use crate::commands::OnNotePrecision;
@@ -16,15 +16,16 @@ use strum::IntoEnumIterator;
 use tauri::State;
 
 #[tauri::command]
-pub async fn on_note(
-    on_note_message: u8,
+pub async fn on_note_played(
+    on_note_message: usize,
     current_music_score: State<'_, CurrentMusicScoreState>,
     monitoring_state: State<'_, MonitoringState>,
 ) -> ServiceResult<OnNotePayload> {
-    if on_note_message as usize >= OnNotePrecision::iter().len() {
+    let mut iter = OnNotePrecision::iter();
+    if on_note_message >= iter.len() {
         return Err(INVALID_PARAMETER.into());
     }
-    let precision = unsafe { std::mem::transmute(on_note_message) };
+    let precision = iter.nth(on_note_message).unwrap();
     let (new_total_score, gained_score, hit_streak) = current_music_score.add_to_total_score(
         f32::from(precision),
         !bool::from(precision),
