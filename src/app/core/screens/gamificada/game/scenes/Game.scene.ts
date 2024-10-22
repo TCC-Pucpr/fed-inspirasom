@@ -2,7 +2,6 @@ import { EndgameDataModel } from "../../../../model/EndgameData.model";
 import { MidiSignal } from "../../../../model/MidiSignal";
 import { MidiState } from "../../../../model/MidiState";
 import { NotePrecision } from "../../../../model/NotePrecision.model";
-import { OnNotePrecision } from "../../../../model/NotePressPrecision";
 import { NoteStatusModel } from "../../../../model/NoteStatus.model";
 import { EventBus } from "../events/EventBus";
 import { EventNames } from "../events/EventNames.enum";
@@ -123,7 +122,7 @@ export class GameScene extends Phaser.Scene {
         this.score += (10 + accScore)*this.multiplier;
         this.chainCount++;
         this.noteStatus.hitNotes++;
-        EventBus.emit(EventNames.onNoteInteraction, NotePrecision.Middle)
+        EventBus.emit(EventNames.onNoteInteraction, NotePrecision.Middle);
     }
 
     public treatStates = (state: MidiState) => {

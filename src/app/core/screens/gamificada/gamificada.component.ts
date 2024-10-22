@@ -116,7 +116,7 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   public async ngOnDestroy(): Promise<void> {
     this.phaserRef.game.destroy(true, false);
     try {
-      if(this.musicState != "PAUSED") await this.rust.stopMusic();
+      await this.rust.stopMusic();
     } catch (error) { 
       console.error("Something went wrong, but the music is not playing..."); 
     }
