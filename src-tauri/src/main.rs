@@ -56,7 +56,8 @@ fn main() {
             reset_music_score,
             list_scores,
             add_new_music,
-            remove_music
+            remove_music,
+            consecutive_days_played
         ])
         .setup(move |app| {
             let mut context_resources_path = get_context_path(app)?;

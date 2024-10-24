@@ -204,6 +204,8 @@ impl StorageSavable for i64 {}
 impl StorageSavable for i32 {}
 impl StorageSavable for String {}
 impl StorageSavable for &str {}
+impl StorageSavable for usize {}
+impl StorageRetrievable for usize {}
 impl StorageRetrievable for u64 {}
 impl StorageRetrievable for u32 {}
 impl StorageRetrievable for i64 {}

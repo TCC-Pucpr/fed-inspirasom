@@ -1,12 +1,14 @@
 use crate::app_states::current_music_score_state::CurrentMusicScoreState;
 use crate::app_states::database_state::DatabaseState;
 use crate::app_states::monitoring_state::MonitoringState;
+use crate::app_states::store_state::StoreState;
 use crate::commands::commands_utils::database_queries::get_music;
 use crate::commands::payloads::on_note_data::OnNotePayload;
 use crate::commands::payloads::score::{OrderType, ScorePayload};
 use crate::commands::payloads::service_error::ServiceResult;
 use crate::commands::OnNotePrecision;
 use crate::constants::errors::{DATABASE_NO_VALUES_FOUND, INVALID_PARAMETER};
+use crate::constants::store_keys::KEY_DAYS_LOGGED_IN;
 use entity::prelude::Score;
 use entity::score;
 use migration::Order;
@@ -14,6 +16,14 @@ use paris::error;
 use sea_orm::{ColumnTrait, EntityTrait, ModelTrait, QueryFilter, QueryOrder};
 use strum::IntoEnumIterator;
 use tauri::State;
+
+#[tauri::command]
+pub async fn consecutive_days_played(
+    store_state: State<'_, StoreState>
+) -> ServiceResult<usize> {
+    let n: String = store_state.retrieve_default(KEY_DAYS_LOGGED_IN)?;
+    Ok(n)
+}
 
 #[tauri::command]
 pub async fn on_note_played(

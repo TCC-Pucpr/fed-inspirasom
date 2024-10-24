@@ -127,7 +127,10 @@ export enum RustFunctionName {
      * Remove a musica e todos os seus scores da base.
      */
     removeMusic = "remove_music",
-    
+    /**
+     * Retorna a quantidade de dias seguidos que o usuário jogou um jogo
+     */
+    consecutiveDaysPlayed = "consecutive_days_played"
 }
 
 /**
