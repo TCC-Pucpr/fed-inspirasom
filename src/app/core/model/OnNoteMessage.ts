@@ -9,5 +9,7 @@
  * `Right` para quando estiver um pouco para direita
  * `Miss` quando deixar a nota passar
  * `EarlyMiss` quando errar a nota completamente antes de entrar na area de acerto
+ *
+ * @deprecated passe apenas o numero agora
  */
 export type OnNoteMessage = { precision: number, };
