@@ -149,7 +149,27 @@ export enum RustFunctionName {
      * Retorna uma lista contendo a quantidade de musicas completadas nos ultimos 7 dias
      * incluindo o dia atual
      */
-    completedSongs = "completed_songs"
+    completedSongs = "completed_songs",
+    /**
+     * (base64: string)
+     * 
+     * Seta de forma persistente o base64 da imagem de perfil do usuario
+     */
+    setUserPfp = "set_user_pfp",
+    /**
+     * (name: string)
+     * 
+     * Seta de forma persistente o nome de usuario preferencial
+     */
+    setUserName = "set_user_name",
+    /**
+     * Retorna o base64 do usuario salvo com `setUserPfp`
+     */
+    getUserPfp = "user_pfp",
+    /**
+     * Retorna o nome preferencial do usuario salvo com `setUserName`
+     */
+    getUserName = "user_name",
 }
 
 /**
