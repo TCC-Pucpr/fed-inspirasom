@@ -21,7 +21,7 @@ use tauri::State;
 pub async fn consecutive_days_played(
     store_state: State<'_, StoreState>
 ) -> ServiceResult<usize> {
-    let n: String = store_state.retrieve_default(KEY_DAYS_LOGGED_IN)?;
+    let n: usize = store_state.retrieve_default(KEY_DAYS_LOGGED_IN)?;
     Ok(n)
 }
 
@@ -36,10 +36,11 @@ pub async fn on_note_played(
         return Err(INVALID_PARAMETER.into());
     }
     let precision = iter.nth(on_note_message).unwrap();
-    let (new_total_score, gained_score, hit_streak) = current_music_score.add_to_total_score(
-        f32::from(precision),
-        !bool::from(precision),
-    );
+    let (new_total_score, gained_score, hit_streak) = current_music_score
+        .add_to_total_score(
+            f32::from(precision), 
+            !bool::from(precision), 
+        );
     monitoring_state.receive_score(precision)?;
     Ok(OnNotePayload::new(
         hit_streak,
