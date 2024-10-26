@@ -1,6 +1,11 @@
 use entity::score::Model;
+use sea_orm::prelude::DateTimeUtc;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
+
+pub fn format_date(date: DateTimeUtc) -> String {
+    date.format("%H:%M:%S | %d/%m/%Y").to_string()
+}
 
 #[derive(Debug, Deserialize, Clone, TS)]
 #[ts(
@@ -13,6 +18,16 @@ pub enum OrderType {
     SCORE,
     STREAK,
     NONE,
+}
+#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[ts(
+    export,
+    export_to = "../../src/app/core/model/DailyScoreData.ts",
+    rename = "DailyScoreData"
+)]
+pub struct DailyScoreData {
+    pub date: String,
+    pub data: i32
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
@@ -32,7 +47,7 @@ impl From<Model> for ScorePayload {
     fn from(value: Model) -> Self {
         Self {
             total: value.total,
-            date_achieved: value.date.format("%H:%M:%S | %d/%m/%Y").to_string(),
+            date_achieved: format_date(value.date),
             highest_streak: value.highest_streak,
             finished: value.completed,
         }

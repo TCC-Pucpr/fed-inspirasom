@@ -130,7 +130,26 @@ export enum RustFunctionName {
     /**
      * Retorna a quantidade de dias seguidos que o usuário jogou um jogo
      */
-    consecutiveDaysPlayed = "consecutive_days_played"
+    consecutiveDaysPlayed = "consecutive_days_played",
+    /**
+     * Retorna uma lista contendo a media de score dos 7 ultimos dias incluindo do dia atual
+     */
+    averageLastWeekScores = "week_avg_scores",
+    /**
+     * Retorna uma lista contendo a média da maior quantidade de acertos seguidos dos 7 ultimos 
+     * dias incluindo do dia atual
+     */
+    averageHighestScores = "week_highest_streak_avg",
+    /**
+     * Retorna uma lista contendo a média do tempo total de sopro durante os jogos dos
+     * ultimos 7 dias incluindo do dia atual
+     */
+    averageTotalBreathDuration = "week_breath_duration_avg",
+    /**
+     * Retorna uma lista contendo a quantidade de musicas completadas nos ultimos 7 dias
+     * incluindo o dia atual
+     */
+    completedSongs = "completed_songs"
 }
 
 /**

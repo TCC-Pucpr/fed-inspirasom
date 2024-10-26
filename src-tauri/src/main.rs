@@ -57,7 +57,11 @@ fn main() {
             list_scores,
             add_new_music,
             remove_music,
-            consecutive_days_played
+            consecutive_days_played,
+            week_avg_scores,
+            week_highest_streak_avg,
+            week_breath_duration_avg,
+            completed_songs
         ])
         .setup(move |app| {
             let mut context_resources_path = get_context_path(app)?;

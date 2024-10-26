@@ -3,8 +3,9 @@ use crate::app_states::database_state::DatabaseState;
 use crate::app_states::monitoring_state::MonitoringState;
 use crate::app_states::store_state::StoreState;
 use crate::commands::commands_utils::database_queries::get_music;
+use crate::commands::commands_utils::monitor::{days_data, ScoreDataInDays};
 use crate::commands::payloads::on_note_data::OnNotePayload;
-use crate::commands::payloads::score::{OrderType, ScorePayload};
+use crate::commands::payloads::score::{format_date, DailyScoreData, OrderType, ScorePayload};
 use crate::commands::payloads::service_error::ServiceResult;
 use crate::commands::OnNotePrecision;
 use crate::constants::errors::{DATABASE_NO_VALUES_FOUND, INVALID_PARAMETER};
@@ -16,6 +17,66 @@ use paris::error;
 use sea_orm::{ColumnTrait, EntityTrait, ModelTrait, QueryFilter, QueryOrder};
 use strum::IntoEnumIterator;
 use tauri::State;
+
+#[tauri::command]
+pub async fn week_avg_scores(
+    db_state: State<'_, DatabaseState>,
+) -> ServiceResult<ScoreDataInDays> {
+    let d = days_data(&db_state.db, score::Column::Total).await?;
+    let mut s = Vec::with_capacity(d.len());
+    for (sum_count, day) in d {
+        s.push(DailyScoreData {
+            data: sum_count.avg(),
+            date: format_date(day)
+        })
+    }
+    Ok(s)
+}
+
+#[tauri::command]
+pub async fn week_highest_streak_avg(
+    db_state: State<'_, DatabaseState>,
+) -> ServiceResult<ScoreDataInDays> {
+    let d = days_data(&db_state.db, score::Column::HighestStreak).await?;
+    let mut s = Vec::with_capacity(d.len());
+    for (sum_count, day) in d {
+        s.push(DailyScoreData {
+            data: sum_count.avg(),
+            date: format_date(day)
+        })
+    }
+    Ok(s)
+}
+
+#[tauri::command]
+pub async fn week_breath_duration_avg(
+    db_state: State<'_, DatabaseState>,
+) -> ServiceResult<ScoreDataInDays> {
+    let d = days_data(&db_state.db, score::Column::TotalBreathingDuration).await?;
+    let mut s = Vec::with_capacity(d.len());
+    for (sum_count, day) in d {
+        s.push(DailyScoreData {
+            data: sum_count.avg(),
+            date: format_date(day)
+        })
+    }
+    Ok(s)
+}
+
+#[tauri::command]
+pub async fn completed_songs(
+    db_state: State<'_, DatabaseState>,
+) -> ServiceResult<ScoreDataInDays> {
+    let d = days_data(&db_state.db, score::Column::Completed).await?;
+    let mut s = Vec::with_capacity(d.len());
+    for (sum_count, day) in d {
+        s.push(DailyScoreData {
+            data: sum_count.count,
+            date: format_date(day)
+        })
+    }
+    Ok(s)
+}
 
 #[tauri::command]
 pub async fn consecutive_days_played(
@@ -90,10 +151,11 @@ pub async fn list_scores(
     } else {
         query
     };
-    let res = query.all(&db_state.db).await?;
-    let mut v: Vec<ScorePayload> = Vec::with_capacity(res.len());
-    for r in res {
-        v.push(ScorePayload::from(r));
-    }
-    Ok(v)
+    let res = query
+        .all(&db_state.db)
+        .await?
+        .into_iter()
+        .map(move |x| ScorePayload::from(x))
+        .collect();
+    Ok(res)
 }
