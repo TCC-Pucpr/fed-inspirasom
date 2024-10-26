@@ -3,7 +3,7 @@ use crate::commands::payloads::score::DailyScoreData;
 use crate::commands::payloads::service_error::ServiceError;
 use crate::commands::ServiceResult;
 use crate::constants::store_keys::{KEY_DAYS_LOGGED_IN, KEY_HIGHEST_CONSECUTIVE_DAYS, KEY_LAST_PLAYED_DAY};
-use chrono::{Days, TimeZone, Utc};
+use chrono::{Days, NaiveTime, TimeZone, Utc};
 use entity::prelude::Score;
 use entity::score;
 use sea_orm::prelude::DateTimeUtc;
@@ -32,10 +32,11 @@ pub async fn days_data<C: ColumnTrait>(
     let last_days = last_n_days(DAYS_TO_LOOK, Utc::now());
     let mut average_scores = Vec::with_capacity(DAYS_TO_LOOK);
     for day in last_days {
+        let start = day.with_time(NaiveTime::MIN).unwrap();
         let res = sum_and_count_of(
             conn,
             column,
-            score::Column::Date.eq(day)
+            score::Column::Date.between(start, day)
         ).await?;
         if let Some(avg_sum) = res {
             average_scores.push((avg_sum, day));
