@@ -33,24 +33,10 @@ impl From<OnNotePrecision> for bool {
     }
 }
 
-/// Struct para quando a nota for pressionada pelo usuario.
-///
-/// Poderá ter 4 estados:
-/// `Middle` para quando pressionar exatamente no momento certo
-/// `Left` para quando estiver um pouco para esquerda
-/// `Right` para quando estiver um pouco para direita
-/// `Miss` quando deixar a nota passar
-/// `EarlyMiss` quando errar a nota completamente antes de entrar na area de acerto
-#[derive(Deserialize, TS, Copy, Clone)]
-#[ts(export, export_to = "../../src/app/core/model/OnNoteMessage.ts")]
-pub struct OnNoteMessage {
-    pub precision: u8,
-}
-
 /// Payload que será emitido ao front sobre sempre que o usuario atualizar o seu score
 /// o `total_score` é o score total acumulado na sessao atual da musica e o
 /// `latest_message_score` é o score ganho/perdido depois do ultimo input.
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../src/app/core/model/OnScoreUpdateMessage.ts", rename = "OnScoreUpdateMessage")]
 pub struct OnNotePayload {
     hit_streak: u32,

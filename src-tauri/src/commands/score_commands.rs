@@ -1,12 +1,15 @@
 use crate::app_states::current_music_score_state::CurrentMusicScoreState;
 use crate::app_states::database_state::DatabaseState;
 use crate::app_states::monitoring_state::MonitoringState;
+use crate::app_states::store_state::StoreState;
 use crate::commands::commands_utils::database_queries::get_music;
-use crate::commands::payloads::on_note_data::{OnNoteMessage, OnNotePayload};
-use crate::commands::payloads::score::{OrderType, ScorePayload};
+use crate::commands::commands_utils::monitor::{days_data, ScoreDataInDays};
+use crate::commands::payloads::on_note_data::OnNotePayload;
+use crate::commands::payloads::score::{format_date, DailyScoreData, OrderType, ScorePayload};
 use crate::commands::payloads::service_error::ServiceResult;
 use crate::commands::OnNotePrecision;
 use crate::constants::errors::{DATABASE_NO_VALUES_FOUND, INVALID_PARAMETER};
+use crate::constants::store_keys::KEY_DAYS_LOGGED_IN;
 use entity::prelude::Score;
 use entity::score;
 use migration::Order;
@@ -16,19 +19,89 @@ use strum::IntoEnumIterator;
 use tauri::State;
 
 #[tauri::command]
-pub async fn on_note(
-    on_note_message: OnNoteMessage,
+pub async fn week_avg_scores(
+    db_state: State<'_, DatabaseState>,
+) -> ServiceResult<ScoreDataInDays> {
+    let d = days_data(&db_state.db, score::Column::Total).await?;
+    let mut s = Vec::with_capacity(d.len());
+    for (sum_count, day) in d {
+        s.push(DailyScoreData {
+            data: sum_count.avg(),
+            date: format_date(day)
+        })
+    }
+    Ok(s)
+}
+
+#[tauri::command]
+pub async fn week_highest_streak_avg(
+    db_state: State<'_, DatabaseState>,
+) -> ServiceResult<ScoreDataInDays> {
+    let d = days_data(&db_state.db, score::Column::HighestStreak).await?;
+    let mut s = Vec::with_capacity(d.len());
+    for (sum_count, day) in d {
+        s.push(DailyScoreData {
+            data: sum_count.avg(),
+            date: format_date(day)
+        })
+    }
+    Ok(s)
+}
+
+#[tauri::command]
+pub async fn week_breath_duration_avg(
+    db_state: State<'_, DatabaseState>,
+) -> ServiceResult<ScoreDataInDays> {
+    let d = days_data(&db_state.db, score::Column::TotalBreathingDuration).await?;
+    let mut s = Vec::with_capacity(d.len());
+    for (sum_count, day) in d {
+        s.push(DailyScoreData {
+            data: sum_count.avg(),
+            date: format_date(day)
+        })
+    }
+    Ok(s)
+}
+
+#[tauri::command]
+pub async fn completed_songs(
+    db_state: State<'_, DatabaseState>,
+) -> ServiceResult<ScoreDataInDays> {
+    let d = days_data(&db_state.db, score::Column::Completed).await?;
+    let mut s = Vec::with_capacity(d.len());
+    for (sum_count, day) in d {
+        s.push(DailyScoreData {
+            data: sum_count.count,
+            date: format_date(day)
+        })
+    }
+    Ok(s)
+}
+
+#[tauri::command]
+pub async fn consecutive_days_played(
+    store_state: State<'_, StoreState>
+) -> ServiceResult<usize> {
+    let n: usize = store_state.retrieve_default(KEY_DAYS_LOGGED_IN)?;
+    Ok(n)
+}
+
+#[tauri::command]
+pub async fn on_note_played(
+    on_note_message: usize,
     current_music_score: State<'_, CurrentMusicScoreState>,
     monitoring_state: State<'_, MonitoringState>,
 ) -> ServiceResult<OnNotePayload> {
-    if on_note_message.precision as usize >= OnNotePrecision::iter().len() {
+    let mut iter = OnNotePrecision::iter();
+    if on_note_message >= iter.len() {
         return Err(INVALID_PARAMETER.into());
     }
-    let precision = unsafe { std::mem::transmute(on_note_message.precision) };
-    let (new_total_score, gained_score, hit_streak) = current_music_score.add_to_total_score(
-        f32::from(precision),
-        !bool::from(precision),
-    );
+    let precision = iter.nth(on_note_message).unwrap();
+    let (new_total_score, gained_score, hit_streak) = current_music_score
+        .add_to_total_score(
+            f32::from(precision), 
+            !bool::from(precision), 
+        );
     monitoring_state.receive_score(precision)?;
     Ok(OnNotePayload::new(
         hit_streak,
@@ -78,10 +151,11 @@ pub async fn list_scores(
     } else {
         query
     };
-    let res = query.all(&db_state.db).await?;
-    let mut v: Vec<ScorePayload> = Vec::with_capacity(res.len());
-    for r in res {
-        v.push(ScorePayload::from(r));
-    }
-    Ok(v)
+    let res = query
+        .all(&db_state.db)
+        .await?
+        .into_iter()
+        .map(move |x| ScorePayload::from(x))
+        .collect();
+    Ok(res)
 }

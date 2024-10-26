@@ -1,6 +1,8 @@
 import { EndgameDataModel } from "../../../../model/EndgameData.model";
 import { MidiSignal } from "../../../../model/MidiSignal";
 import { MidiState } from "../../../../model/MidiState";
+import { NotePrecision } from "../../../../model/NotePrecision.model";
+import { OnNotePrecision } from "../../../../model/NotePressPrecision";
 import { NoteStatusModel } from "../../../../model/NoteStatus.model";
 import { EventBus } from "../events/EventBus";
 import { EventNames } from "../events/EventNames.enum";
@@ -103,6 +105,7 @@ export class GameScene extends Phaser.Scene {
         this.multiplier = 1;
         this.chainCount = 0;
         this.noteStatus.missedNotes++;
+        EventBus.emit(EventNames.onNoteInteraction, NotePrecision.Miss)
     }
 
     public poorNote(note: any, area: any) { 
@@ -110,6 +113,7 @@ export class GameScene extends Phaser.Scene {
         this.score -= 20;
         this.chainCount = 1;
         this.noteStatus.poorNotes++;
+        EventBus.emit(EventNames.onNoteInteraction, NotePrecision.EarlyMiss)
     }
 
     public scoredNote(note: any, area: any){
@@ -119,6 +123,7 @@ export class GameScene extends Phaser.Scene {
         this.score += (10 + accScore)*this.multiplier;
         this.chainCount++;
         this.noteStatus.hitNotes++;
+        EventBus.emit(EventNames.onNoteInteraction, NotePrecision.Middle)
     }
 
     public treatStates = (state: MidiState) => {
@@ -126,6 +131,7 @@ export class GameScene extends Phaser.Scene {
         try{
             if(state === "FINISHED") {
                 this.isEndGame = true;
+                
             }
         } catch (error){ }
     }

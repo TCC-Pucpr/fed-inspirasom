@@ -5,8 +5,10 @@ use super::payloads::{
 use crate::app_states::current_music_score_state::CurrentMusicScoreState;
 use crate::app_states::database_state::DatabaseState;
 use crate::app_states::monitoring_state::MonitoringState;
+use crate::app_states::store_state::StoreState;
 use crate::commands::commands_utils::database_queries::music_list;
 use crate::commands::commands_utils::midi_file_utils::{check_midi_file, end_game as finish, load_file, play_game, read_music_from_id, SheetListener};
+use crate::commands::commands_utils::monitor::consecutive_days_checker;
 use crate::commands::payloads::service_error::ServiceResult;
 use crate::constants::errors::{FILE_COULD_NOT_READ_PATH, FILE_ID_NOT_FOUND, FILE_NAME_ALREADY_EXIST, FILE_NOT_FOUND};
 use crate::{
@@ -37,6 +39,7 @@ pub async fn start_game<R: Runtime>(
     music_id: i32,
     midi_state: State<'_, MidiState>,
     score_state: State<'_, CurrentMusicScoreState>,
+    store_state: State<'_, StoreState>,
     db_state: State<'_, DatabaseState>,
     handle: AppHandle<R>,
     window: Window,
@@ -49,6 +52,7 @@ pub async fn start_game<R: Runtime>(
         file,
         SheetListener::new(&window, true)
     )?;
+    consecutive_days_checker(&*store_state)?;
     score_state.reset();
     let _ = window.emit(MIDI_READ_STATE, MidiFileState::PLAYING);
     play_game(p, &mut logger)?;

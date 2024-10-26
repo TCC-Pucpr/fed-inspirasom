@@ -6,3 +6,4 @@ pub use payloads::on_note_data::OnNotePrecision;
 pub use payloads::service_error::ServiceResult;
 pub mod score_commands;
 mod commands_utils;
+pub mod user_commands;

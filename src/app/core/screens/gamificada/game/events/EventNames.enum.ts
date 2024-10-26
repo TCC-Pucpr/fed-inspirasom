@@ -16,5 +16,7 @@ export enum EventNames {
     /** Emit when music state changes (playing, finished, paused) */
     musicStateChange = "stateChange",
     /** Emit when music ends */
-    musicEnd = "musicEnd"
+    musicEnd = "musicEnd",
+    /** Emit when a note is interacted with */
+    onNoteInteraction = "noteInteraction"
 }

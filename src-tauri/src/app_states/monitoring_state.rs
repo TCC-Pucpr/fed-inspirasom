@@ -125,9 +125,9 @@ impl MonitoringData {
             for byte in self.current_breath_strengths.iter() {
                 current_sum += *byte as usize;
             }
+            let avg = current_sum / self.current_breath_strengths.len();
             self.breath_strength_buffer.clear();
             self.current_breath_strengths.clear();
-            let avg = current_sum / self.current_breath_strengths.len();
             self.average_strength = if self.average_strength > 0 {
                 (self.average_strength + avg as i32) / 2
             } else {
