@@ -1,3 +1,4 @@
+use log::info;
 use crate::app_states::current_music_score_state::CurrentMusicScoreState;
 use crate::app_states::database_state::DatabaseState;
 use crate::app_states::monitoring_state::MonitoringState;
@@ -30,6 +31,7 @@ pub async fn week_avg_scores(
             date: format_date(day)
         })
     }
+    info!("Returning weekly average scores: {:?}", s);
     Ok(s)
 }
 
@@ -45,6 +47,7 @@ pub async fn week_highest_streak_avg(
             date: format_date(day)
         })
     }
+    info!("Returning weekly highest streak: {:?}", s);
     Ok(s)
 }
 
@@ -60,6 +63,7 @@ pub async fn week_breath_duration_avg(
             date: format_date(day)
         })
     }
+    info!("Returning weekly breath duration: {:?}", s);
     Ok(s)
 }
 
@@ -75,6 +79,7 @@ pub async fn completed_songs(
             date: format_date(day)
         })
     }
+    info!("Returning completed songs: {:?}", s);
     Ok(s)
 }
 
@@ -83,6 +88,7 @@ pub async fn consecutive_days_played(
     store_state: State<'_, StoreState>
 ) -> ServiceResult<usize> {
     let n: usize = store_state.retrieve_default(KEY_DAYS_LOGGED_IN)?;
+    info!("Consecutive days played: {}", n);
     Ok(n)
 }
 
