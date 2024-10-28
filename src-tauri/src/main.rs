@@ -8,7 +8,7 @@ use crate::app_states::store_state::StoreState;
 use crate::constants::dirs::{DATA_FOLDER, DB_NAME, RESOURCES_FOLDER, STORE_NAME};
 use crate::constants::errors::{CodedError, COULDNT_GET_PATH};
 use app_states::midi_device_state::MidiState;
-use commands::{midi_connection_commands::*, midi_reader_commands::*, score_commands::*};
+use commands::{midi_connection_commands::*, midi_reader_commands::*, score_commands::*, user_commands::*};
 use persistence::storage::StorageResult;
 use std::path::PathBuf;
 use tauri::async_runtime::block_on;
@@ -56,7 +56,16 @@ fn main() {
             reset_music_score,
             list_scores,
             add_new_music,
-            remove_music
+            remove_music,
+            consecutive_days_played,
+            week_avg_scores,
+            week_highest_streak_avg,
+            week_breath_duration_avg,
+            completed_songs,
+            set_user_pfp,
+            set_user_name,
+            user_pfp,
+            user_name
         ])
         .setup(move |app| {
             let mut context_resources_path = get_context_path(app)?;

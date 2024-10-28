@@ -127,7 +127,49 @@ export enum RustFunctionName {
      * Remove a musica e todos os seus scores da base.
      */
     removeMusic = "remove_music",
-    
+    /**
+     * Retorna a quantidade de dias seguidos que o usuário jogou um jogo
+     */
+    consecutiveDaysPlayed = "consecutive_days_played",
+    /**
+     * Retorna uma lista contendo a media de score dos 7 ultimos dias incluindo do dia atual
+     */
+    averageLastWeekScores = "week_avg_scores",
+    /**
+     * Retorna uma lista contendo a média da maior quantidade de acertos seguidos dos 7 ultimos 
+     * dias incluindo do dia atual
+     */
+    averageHighestScores = "week_highest_streak_avg",
+    /**
+     * Retorna uma lista contendo a média do tempo total de sopro durante os jogos dos
+     * ultimos 7 dias incluindo do dia atual
+     */
+    averageTotalBreathDuration = "week_breath_duration_avg",
+    /**
+     * Retorna uma lista contendo a quantidade de musicas completadas nos ultimos 7 dias
+     * incluindo o dia atual
+     */
+    completedSongs = "completed_songs",
+    /**
+     * (base64: string)
+     * 
+     * Seta de forma persistente o base64 da imagem de perfil do usuario
+     */
+    setUserPfp = "set_user_pfp",
+    /**
+     * (name: string)
+     * 
+     * Seta de forma persistente o nome de usuario preferencial
+     */
+    setUserName = "set_user_name",
+    /**
+     * Retorna o base64 do usuario salvo com `setUserPfp`
+     */
+    getUserPfp = "user_pfp",
+    /**
+     * Retorna o nome preferencial do usuario salvo com `setUserName`
+     */
+    getUserName = "user_name",
 }
 
 /**
