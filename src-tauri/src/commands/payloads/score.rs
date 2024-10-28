@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 pub fn format_date(date: DateTimeUtc) -> String {
-    date.format("%H:%M:%S | %d/%m/%Y").to_string()
+    date.format("%d/%m").to_string()
 }
 
 #[derive(Debug, Deserialize, Clone, TS)]
