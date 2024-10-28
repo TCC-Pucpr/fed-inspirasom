@@ -103,9 +103,7 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     });
 
     EventBus.on(EventNames.onNoteInteraction, (data: NotePrecision) => {
-      const interaction: OnNoteMessage = {} as OnNoteMessage;
-      interaction.precision = data;
-      this.rust.onInteractNote(interaction);
+      this.rust.onInteractNote(data);
     });
 
     EventBus.on(EventNames.musicEnd, (_: any) => {
