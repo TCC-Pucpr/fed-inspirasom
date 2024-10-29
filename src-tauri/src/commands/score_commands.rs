@@ -84,15 +84,6 @@ pub async fn completed_songs(
 }
 
 #[tauri::command]
-pub async fn consecutive_days_played(
-    store_state: State<'_, StoreState>
-) -> ServiceResult<usize> {
-    let n: usize = store_state.retrieve_default(KEY_DAYS_LOGGED_IN)?;
-    info!("Consecutive days played: {}", n);
-    Ok(n)
-}
-
-#[tauri::command]
 pub async fn on_note_played(
     on_note_message: usize,
     current_music_score: State<'_, CurrentMusicScoreState>,
