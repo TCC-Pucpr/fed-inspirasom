@@ -1,5 +1,5 @@
 use crate::app_states::database_state::DatabaseError;
-use crate::constants::errors::{CodedError, COULD_NOT_UPDATE_DATABASE, DATABASE_COULD_NOT_CREATE, DATABASE_COULD_NOT_LOAD, DATABASE_QUERY_ERROR, DEVICE_COULD_NOT_CONNECT, DEVICE_LISTEN_ERROR, DEVICE_NO_INPUT_CONNECTIONS_FOUND, DEVICE_PORT_NOT_FOUND, FILE_ALREADY_PLAYING, FILE_NOT_FOUND, MIDI_NOT_SUPPORTED, MIDI_NO_AVAILABLE_PORTS, MIDI_OUTPUT_CONNECTION_FAILED, MIDI_UNEXPECTED_PLAYBACK_ERROR, STATE_ACQUIRE_ERROR, STORAGE_COULD_NOT_BE_CREATED, STORAGE_COULD_NOT_READ, STORAGE_COULD_NOT_WRITE, STORAGE_HAS_NOT_BEEN_CREATED, STORAGE_KEY_DOES_NOT_EXIST, UNEXPECTED_ERROR};
+use crate::constants::errors::{CodedError, COULD_NOT_UPDATE_DATABASE, DATABASE_COULD_NOT_CREATE, DATABASE_COULD_NOT_LOAD, DATABASE_QUERY_ERROR, DEVICE_COULD_NOT_CONNECT, DEVICE_LISTEN_ERROR, DEVICE_NO_INPUT_CONNECTIONS_FOUND, DEVICE_PORT_NOT_FOUND, FILE_ALREADY_PLAYING, FILE_NOT_FOUND, MIDI_INVALID_BYTE_RECEIVED, MIDI_NOT_SUPPORTED, MIDI_NO_AVAILABLE_PORTS, MIDI_OUTPUT_CONNECTION_FAILED, MIDI_PORT_NOT_FOUND, MIDI_UNEXPECTED_PLAYBACK_ERROR, STATE_ACQUIRE_ERROR, STORAGE_COULD_NOT_BE_CREATED, STORAGE_COULD_NOT_READ, STORAGE_COULD_NOT_WRITE, STORAGE_HAS_NOT_BEEN_CREATED, STORAGE_KEY_DOES_NOT_EXIST, UNEXPECTED_ERROR};
 use anyhow::Error;
 use arduino_comm::errors::ArduinoCommunicationError;
 use midi_reader::errors::MidiReaderError;
@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::PoisonError;
 use thiserror::Error;
 use ts_rs::TS;
+use midi_output::errors::MidiOutputErrors;
 
 pub type ServiceResult<T> = Result<T, ServiceError>;
 
@@ -177,6 +178,19 @@ impl From<CodedError> for ServiceError {
         ServiceError {
             code: value.code.to_string(),
             message: value.message.to_string()
+        }
+    }
+}
+
+impl From<MidiOutputErrors> for ServiceError {
+    fn from(value: MidiOutputErrors) -> Self {
+        error!("Midi output error returned: {}", value.to_string());
+        match value {
+            MidiOutputErrors::Connecting => Self::from(MIDI_NOT_SUPPORTED),
+            MidiOutputErrors::ConnectToPort(_) => Self::from(MIDI_OUTPUT_CONNECTION_FAILED),
+            MidiOutputErrors::PortNotFound(_) => Self::from(MIDI_PORT_NOT_FOUND),
+            MidiOutputErrors::CouldNotSendByte(_) => Self::from(MIDI_INVALID_BYTE_RECEIVED),
+            MidiOutputErrors::NoAvailablePorts => Self::from(MIDI_NO_AVAILABLE_PORTS),
         }
     }
 }

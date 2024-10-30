@@ -26,6 +26,7 @@ tokio = "1.40.0"
 strum = "0.26.3"
 chrono = "0.4.38"
 
+midi-output = { path = "midi-output", features = ["verbose"] }
 migration = { path = "persistence/migration", features = ["verbose"] }
 entity = { path = "persistence/entity" }
 persistence = { path = "persistence", features = ["verbose"] }
@@ -38,7 +39,7 @@ log = "0.4.21"
 custom-protocol = ["tauri/custom-protocol"]
 
 [workspace]
-members = ["arduino-comm", "midi-reader", "persistence", "utils", "persistence/migration", "persistence/entity"]
+members = ["arduino-comm", "midi-reader", "persistence", "utils", "persistence/migration", "persistence/entity", "midi-output"]
 
 [workspace.dependencies]
 ts-rs = "10.0.0"
@@ -47,6 +48,10 @@ paris = "1.5.15"
 anyhow = "1.0.86"
 thiserror = "1.0.63"
 sea-orm = "1.1.0-rc.1"
+serde = "1.0.214"
+strum = "0.26"
+strum_macros = "0.26.4"
+midir = "0.10.0"
 
 [dependencies.sea-orm]
 workspace = true

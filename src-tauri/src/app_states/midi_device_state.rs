@@ -52,7 +52,9 @@ impl MidiState {
         }
     }
 
-    pub fn start_listening_to_device<C: Fn(MidiWrapper) + Send + 'static>(&self, callback: C) -> ServiceResult<()> {
+    pub fn start_listening_to_device<C: Fn(MidiWrapper) + Send + 'static>(
+        &self, callback: C
+    ) -> ServiceResult<()> {
         if let Ok(mut m) = self.midi_input_conn.lock() {
             if let Some(c) = m.take() {
                 if let Ok(mut m) = self.midi_connection_holder.lock() {
