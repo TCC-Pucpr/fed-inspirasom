@@ -107,6 +107,22 @@ pub const MIDI_NOT_SUPPORTED: CodedError = CodedError {
     code: concatcp!(MIDI_ERRORS, "03"),
     message: "This midi file is not supported",
 };
+pub const MIDI_INVALID_BYTE_RECEIVED: CodedError = CodedError {
+    code: concatcp!(INPUT_DEVICE_ERRORS_PREFIX, "04"),
+    message: "An invalid byte was received from the midi device",
+};
+pub const MIDI_PORT_NOT_FOUND: CodedError = CodedError {
+    code: concatcp!(MIDI_ERRORS, "05"),
+    message: "The requested midi port is not available",
+};
+pub const MIDI_OUTPUT_ALREADY_CONNECTED: CodedError = CodedError {
+    code: concatcp!(MIDI_ERRORS, "06"),
+    message: "There is already a connected midi output port",
+};
+pub const MIDI_OUTPUT_NOT_CONNECTED: CodedError = CodedError {
+    code: concatcp!(MIDI_ERRORS, "07"),
+    message: "A midi output port is not connected",
+};
 
 // KEY VALUE STORAGE RELATED ERRORS
 pub const STORAGE_COULD_NOT_BE_CREATED: CodedError = CodedError {

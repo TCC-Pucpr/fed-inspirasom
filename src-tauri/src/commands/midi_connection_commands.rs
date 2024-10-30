@@ -4,6 +4,7 @@ use crate::MidiState;
 use arduino_comm::midi_connection::{connect_to_port, connect_to_port_with_name, list_available_devices};
 use paris::{error, info, success};
 use tauri::{AppHandle, State, Window};
+use crate::app_states::midi_output_state::MidiOutputState;
 
 #[tauri::command]
 pub fn disconnect_midi(state: State<MidiState>) -> bool {
@@ -31,18 +32,20 @@ pub async fn connect_to_midi(
     port_name: &str,
     window: Window,
     state: State<'_, MidiState>,
+    output_state: State<'_, MidiOutputState>,
     app_handle: AppHandle,
 ) -> ServiceResult<()> {
     let conn = connect_to_port_with_name(port_name)?;
-    connect(&window, app_handle, state, conn)
+    connect(&window, app_handle, state, output_state, conn)
 }
 
 #[tauri::command]
 pub async fn start_listening_midi(
     window: Window,
     state: State<'_, MidiState>,
+    output_state: State<'_, MidiOutputState>,
     app_handle: AppHandle,
 ) -> ServiceResult<()> {
     let conn = connect_to_port()?;
-    connect(&window, app_handle, state, conn)
+    connect(&window, app_handle, state, output_state, conn)
 }

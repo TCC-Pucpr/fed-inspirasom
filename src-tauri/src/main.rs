@@ -13,6 +13,7 @@ use persistence::storage::StorageResult;
 use std::path::PathBuf;
 use tauri::async_runtime::block_on;
 use tauri::{App, AppHandle, Manager, Runtime};
+use crate::app_states::midi_output_state::MidiOutputState;
 
 mod app_states;
 mod commands;
@@ -39,6 +40,7 @@ fn main() {
         .manage(MidiState::new())
         .manage(CurrentMusicScoreState::default())
         .manage(MonitoringState::default())
+        .manage(MidiOutputState::default())
         .invoke_handler(tauri::generate_handler![
             start_listening_midi,
             connect_to_midi,
