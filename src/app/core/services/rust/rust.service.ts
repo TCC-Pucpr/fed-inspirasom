@@ -5,6 +5,7 @@ import { MidiSignal } from "../../model/MidiSignal";
 import { listen } from "@tauri-apps/api/event";
 import { MidiMusicList } from '../../model/MidiMusicList';
 import { MidiState } from '../../model/MidiState';
+import { DailyScoreData } from '../../model/DailyScoreData';
 
 @Injectable({
   providedIn: 'root'
@@ -82,10 +83,10 @@ export class RustService {
   }
 
   public async onInteractNote(data: number) {
-    await invoke(RustFunctionName.onNote, { on_note_message: data });
+    await invoke(RustFunctionName.onNote, { onNoteMessage: data });
   }
 
-  public async getSimpleScoreFromLastWeek(): Promise<any> {
+  public async getSimpleScoreFromLastWeek(): Promise<DailyScoreData[]> {
     return await invoke(RustFunctionName.averageHighestScores);
   }
 }

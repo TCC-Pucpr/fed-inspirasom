@@ -137,6 +137,7 @@ export class GameScene extends Phaser.Scene {
 
     public openEndScreen() {
         const callback = () => {
+            this.scene.resume("endScreen");
             this.scene.bringToTop("endScreen");
         };
         callback.bind(this);
@@ -154,6 +155,7 @@ export class GameScene extends Phaser.Scene {
         }
         try{
             this.isPaused = true;
+            this.scene.resume("pause");
             this.scene.bringToTop("pause");
             this.scene.pause();
         } catch (error){ }
@@ -162,6 +164,7 @@ export class GameScene extends Phaser.Scene {
     public resumeGame = () => {
         try{
             this.isPaused = false;
+            this.scene.pause("pause");
             this.scene.bringToTop("game");
             this.scene.resume("game");
         } catch (error){ }

@@ -35,6 +35,7 @@ export class PauseScene extends Phaser.Scene {
             EventBus.emit(EventNames.exitGame);
         });
         EventBus.emit(EventNames.pauseSceneReady, this);
+        this.scene.pause();
     }
 
     public override update() {

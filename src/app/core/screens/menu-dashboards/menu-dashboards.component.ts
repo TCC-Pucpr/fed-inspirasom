@@ -7,6 +7,8 @@ import { SidebarService } from '../../services/sidebarService/sidebar.service';
 import { ButtonModule } from 'primeng/button';
 import { ListVisualizationComponent } from "./components/list-visualization/list-visualization.component";
 import { RustService } from '../../services/rust/rust.service';
+import { DailyScoreData } from '../../model/DailyScoreData';
+import { DashboardServiceService } from '../../services/dashboardService/dashboard-service.service';
 
 @Component({
   selector: 'app-menu-dashboards',
@@ -24,29 +26,17 @@ import { RustService } from '../../services/rust/rust.service';
 export class MenuDashboardsComponent {
 
   public sidebarVisible: boolean = false;
-  // from highest to lowest
-  public testData: GraphData[] = [];
+  public scoreDataPromise: Promise<DailyScoreData[]>;
+  public scoreData: DailyScoreData[];
   public daysInArow: number = 0;
 
   constructor(
     protected sidebarService: SidebarService,
-    protected rust: RustService
+    protected rust: RustService,
   ) { }
 
   public async ngOnInit() {
     this.daysInArow = await this.rust.getConsecutiveDays();
-    await this.setupGraphData();
-  }
-
-  public async setupGraphData() {
-    const scoreList = await this.rust.getSimpleScoreFromLastWeek();
-    console.log(scoreList)
-    
-    scoreList.map((score: number, index: number) => {
-      this.testData.push({
-        score, date: `${index}`
-      });
-    });
   }
 
 }
