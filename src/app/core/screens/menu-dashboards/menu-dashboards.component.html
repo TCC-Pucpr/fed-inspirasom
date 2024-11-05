@@ -2,14 +2,10 @@
 
 <div id="docBody" class="centerDashboard">
     <div class="inRow spacingDashboard heightLimit">
-        <app-chart-visualization [chartData]="testData"></app-chart-visualization>
+        <app-chart-visualization></app-chart-visualization>
         <div class="secondColumn spacingDashboard">
             <div class="numericDisplays spacingDashboard">
-                <app-numeric-visualization class="w-100" upperText="Você logou por" [numericInfo]="10" lowerText="dias consecutivos! Parabéns"></app-numeric-visualization>
-                <!-- <app-numeric-visualization class="w-100" upperText="card temporario" [numericInfo]="100"></app-numeric-visualization> -->
-            </div>
-            <div class="listDisplay">
-                <app-list-visualization></app-list-visualization>
+                <app-numeric-visualization class="w-100" upperText="Você logou por" [numericInfo]="daysInArow" lowerText="dias consecutivos! Parabéns"></app-numeric-visualization>
             </div>
         </div>
     </div>

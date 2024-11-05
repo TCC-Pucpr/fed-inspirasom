@@ -5,26 +5,26 @@ import { MidiSignal } from "../../model/MidiSignal";
 import { listen } from "@tauri-apps/api/event";
 import { MidiMusicList } from '../../model/MidiMusicList';
 import { MidiState } from '../../model/MidiState';
-import { OnNoteMessage } from '../../model/OnNoteMessage';
+import { DailyScoreData } from '../../model/DailyScoreData';
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class RustService {
 
   private listeningMidiNotes: any;
   private listeningMusicState: any;
 
-    constructor() {
-    }
+  constructor() {
+  }
 
-    public connectOcarina() {
-      invoke(RustFunctionName.connectMidi).then(_ => {});
-    }
+  public connectOcarina() {
+    invoke(RustFunctionName.connectMidi).then(_ => { });
+  }
 
-    public releaseOcarina() {
-      invoke(RustFunctionName.stopMidi).then(_ => {});
-    }
+  public releaseOcarina() {
+    invoke(RustFunctionName.stopMidi).then(_ => { });
+  }
 
   public listenForOcarinaNote(callback: (signal: MidiSignal) => void) {
     return listen(RustEventsName.midiNote, (event) => {
@@ -37,7 +37,7 @@ export class RustService {
   }
 
   public async startMusic(musicId: number): Promise<void> {
-    await invoke(RustFunctionName.startGame, { musicId }).then(_ => {});
+    await invoke(RustFunctionName.startGame, { musicId }).then(_ => { });
   }
 
   public async pauseMusic() {
@@ -49,7 +49,7 @@ export class RustService {
   }
 
   public async stopMusic(): Promise<void> {
-    await invoke(RustFunctionName.stopgame).then(_ => {});
+    await invoke(RustFunctionName.stopgame).then(_ => { });
   }
 
   public async listenMidiNotes(callback: (signal: MidiSignal) => void) {
@@ -78,7 +78,15 @@ export class RustService {
     await invoke(RustFunctionName.endGame);
   }
 
-  public async onInteractNote(data: OnNoteMessage){
-    await invoke(RustFunctionName.onNote, { on_note_message: data });
+  public async getConsecutiveDays(): Promise<number> {
+    return await invoke(RustFunctionName.consecutiveDaysPlayed);
+  }
+
+  public async onInteractNote(data: number) {
+    await invoke(RustFunctionName.onNote, { onNoteMessage: data });
+  }
+
+  public async getSimpleScoreFromLastWeek(): Promise<DailyScoreData[]> {
+    return await invoke(RustFunctionName.averageHighestScores);
   }
 }

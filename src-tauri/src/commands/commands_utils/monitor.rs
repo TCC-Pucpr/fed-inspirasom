@@ -15,13 +15,17 @@ pub type ScoreDataInDays = Vec<DailyScoreData>;
 
 #[derive(FromQueryResult)]
 pub struct SumAndCountResult {
-    pub sum: i32,
+    pub sum: Option<i32>,
     pub count: i32
 }
 
 impl SumAndCountResult {
     pub fn avg(self) -> i32 {
-        self.sum / self.count
+        if let Some(a) = self.sum {
+            a / self.count
+        } else { 
+            0
+        }
     }
 }
 

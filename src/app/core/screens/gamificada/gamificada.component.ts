@@ -103,9 +103,7 @@ export class GamificadaComponent implements OnInit, OnDestroy {
     });
 
     EventBus.on(EventNames.onNoteInteraction, (data: NotePrecision) => {
-      const interaction: OnNoteMessage = {} as OnNoteMessage;
-      interaction.precision = data;
-      this.rust.onInteractNote(interaction);
+      this.rust.onInteractNote(data);
     });
 
     EventBus.on(EventNames.musicEnd, (_: any) => {
@@ -116,7 +114,7 @@ export class GamificadaComponent implements OnInit, OnDestroy {
   public async ngOnDestroy(): Promise<void> {
     this.phaserRef.game.destroy(true, false);
     try {
-      if(this.musicState != "PAUSED") await this.rust.stopMusic();
+      await this.rust.stopMusic();
     } catch (error) { 
       console.error("Something went wrong, but the music is not playing..."); 
     }

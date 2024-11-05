@@ -39,6 +39,7 @@ export class EndgameScene extends Phaser.Scene {
             this.totalScore = data.score;
         });
         EventBus.emit(EventNames.endSceneReady, this);
+        this.scene.pause();
     }
 
     public override update() {
