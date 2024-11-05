@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { ChartVisualizationComponent } from "./components/chart-visualization/chart-visualization.component";
-import { GraphData } from '../../model/GraphData.model';
 import { NumericVisualizationComponent } from "./components/numeric-visualization/numeric-visualization.component";
 import { SidebarComponent } from "../components/sidebar/sidebar.component";
 import { SidebarService } from '../../services/sidebarService/sidebar.service';
@@ -8,7 +7,6 @@ import { ButtonModule } from 'primeng/button';
 import { ListVisualizationComponent } from "./components/list-visualization/list-visualization.component";
 import { RustService } from '../../services/rust/rust.service';
 import { DailyScoreData } from '../../model/DailyScoreData';
-import { DashboardServiceService } from '../../services/dashboardService/dashboard-service.service';
 
 @Component({
   selector: 'app-menu-dashboards',
