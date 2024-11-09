@@ -15,3 +15,25 @@
     overflow: scroll;
     gap: 1rem;
 }
+
+.campoTexto {
+    width: 100%;
+}
+
+.campoModal {
+    display: flex;
+    justify-content: center;
+}
+
+.botoesModal {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.estruturaModal {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
