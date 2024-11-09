@@ -14,7 +14,6 @@ use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult, Que
 const DAYS_TO_LOOK: usize = 7;
 pub type ScoreDataInDays = Vec<DailyScoreData>;
 
-
 #[derive(FromQueryResult, Debug)]
 pub struct SumAndCountResult {
     pub sum: Option<i32>,
