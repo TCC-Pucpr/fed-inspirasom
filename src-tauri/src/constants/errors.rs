@@ -59,11 +59,6 @@ pub const FILE_ID_NOT_FOUND: CodedError = CodedError {
     message: "Music ID not found",
 };
 
-pub const FILE_LOAD_ERROR: CodedError = CodedError {
-    code: concatcp!(FILE_ERRORS_PREFIX, "05"),
-    message: "Error while trying to load the file",
-};
-
 pub const NO_FILE_BEING_PLAYED: CodedError = CodedError {
     code: concatcp!(FILE_ERRORS_PREFIX, "06"),
     message: "There is no file being played",
