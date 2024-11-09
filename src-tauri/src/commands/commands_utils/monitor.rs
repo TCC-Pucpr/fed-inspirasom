@@ -6,6 +6,7 @@ use crate::constants::store_keys::{KEY_DAYS_LOGGED_IN, KEY_HIGHEST_CONSECUTIVE_D
 use chrono::{Days, NaiveTime, TimeZone, Utc};
 use entity::prelude::Score;
 use entity::score;
+use paris::{error, info};
 use sea_orm::prelude::DateTimeUtc;
 use sea_orm::sea_query::IntoCondition;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult, QueryFilter, QuerySelect};
@@ -13,7 +14,8 @@ use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult, Que
 const DAYS_TO_LOOK: usize = 7;
 pub type ScoreDataInDays = Vec<DailyScoreData>;
 
-#[derive(FromQueryResult)]
+
+#[derive(FromQueryResult, Debug)]
 pub struct SumAndCountResult {
     pub sum: Option<i32>,
     pub count: i32
@@ -67,6 +69,7 @@ pub async fn sum_and_count_of<C: ColumnTrait, F: IntoCondition>(
 
 pub fn consecutive_days_checker(store_state: &StoreState) -> ServiceResult<()> {
     let last_played: i64 = store_state.retrieve_default(KEY_LAST_PLAYED_DAY)?;
+    info!("Last day played: {}", last_played);
     let now = Utc::now();
     let saved = Utc.timestamp_millis_opt(last_played).unwrap();
     if now == saved {
@@ -75,20 +78,24 @@ pub fn consecutive_days_checker(store_state: &StoreState) -> ServiceResult<()> {
     if let Some(n) = now.checked_sub_days(Days::new(1)) {
         let current = if n.eq(&saved) {
             let current_consecutive: i32 = store_state.retrieve_default(KEY_DAYS_LOGGED_IN)?;
+            info!("Last day played was yesterday, incrementing current consecutive days ({})", current_consecutive);
             let c = current_consecutive + 1;
             store_state.save(KEY_DAYS_LOGGED_IN, &c)?;
             store_state.save(KEY_LAST_PLAYED_DAY, &now.timestamp())?;
             c
         } else {
-            store_state.save(KEY_DAYS_LOGGED_IN, &0)?;
-            0
+            info!("Last day played was not yesterday, resetting to 1");
+            store_state.save(KEY_DAYS_LOGGED_IN, &1)?;
+            1
         };
         let highest: i32 = store_state.retrieve_default(KEY_HIGHEST_CONSECUTIVE_DAYS)?;
         if current > highest {
             store_state.save(KEY_HIGHEST_CONSECUTIVE_DAYS, &current)?;
         };
+        store_state.commit()?;
         Ok(())
     } else {
+        error!("Unexpected error while saving consecutive days played");
         Err(ServiceError::generic())
     }
 }
