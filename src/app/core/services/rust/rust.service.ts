@@ -90,7 +90,7 @@ export class RustService {
     return await invoke(RustFunctionName.averageHighestScores);
   }
 
-  public async addNewMusic(music_name: string, file_path: string) {
-    return await invoke(RustFunctionName.addNewMusic, { music_name, file_path });
+  public async addNewMusic(musicName: string, filePath: string) {
+    return await invoke(RustFunctionName.addNewMusic, { musicName, filePath });
   }
 }
