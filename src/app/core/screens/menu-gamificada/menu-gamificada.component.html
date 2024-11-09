@@ -8,3 +8,13 @@
     </div>
     <button pButton label="Preferencias" (click)="openPreferenciasGamificada()"></button>
 </div>
+
+<p-dialog header="Edit Profile" [modal]="true" [(visible)]="isFileNameModalOpen" [style]="{ width: '25rem' }">
+    <div class="flex justify-content-end gap-2">
+        <form (submit)="confirmarModal()">
+            <input type="text" pInputText [formControl]="newMusicName" required [ngClass]="{'ng-invalid ng-dirty': newMusicName.touched && newMusicName.invalid}"/>
+            <p-button label="Cancel" severity="secondary" (onClick)="fecharModal()" />
+            <p-button label="Save" type="submit"/>
+        </form>
+    </div>
+</p-dialog>

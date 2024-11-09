@@ -3,12 +3,14 @@ import { SidebarComponent } from "../components/sidebar/sidebar.component";
 import { ButtonModule } from 'primeng/button';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
-import { PreferenciasGamificadaComponent } from './components/preferencias-gamificada/preferencias-gamificada.component';
 import { RustService } from '../../services/rust/rust.service';
 import { MidiMusic } from '../../model/MidiMusic';
 import { CommonModule } from '@angular/common';
 import { MusicService } from '../../services/musicService/music.service';
-import { MidiSignal } from '../../model/MidiSignal';
+import { open } from '@tauri-apps/api/dialog';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-menu-gamificada',
@@ -16,7 +18,10 @@ import { MidiSignal } from '../../model/MidiSignal';
   imports: [
     SidebarComponent,
     ButtonModule,
-    CommonModule
+    CommonModule,
+    DialogModule,
+    InputTextModule,
+    ReactiveFormsModule
   ],
   providers: [
     DialogService
@@ -27,6 +32,9 @@ import { MidiSignal } from '../../model/MidiSignal';
 export class MenuGamificadaComponent implements OnInit {
 
   protected musicList: MidiMusic[];
+  protected newMusicPath: string = '';
+  protected isFileNameModalOpen: boolean = false;
+  protected newMusicName = new FormControl('');
 
   constructor(
     private router: Router,
@@ -49,8 +57,34 @@ export class MenuGamificadaComponent implements OnInit {
     this.rust.releaseOcarina();
   }
 
-  public openPreferenciasGamificada(): void {
-    this.dialogService.open(PreferenciasGamificadaComponent, { header: 'Preferencias'} );
+  public async openPreferenciasGamificada() {
+    const selected = await open({
+      multiple: false,
+      filters: [{
+        name: 'Selecione uma musica',
+        extensions: ['mid']
+      }]
+    });
+    if (selected) {
+      this.newMusicPath = selected as string;
+      this.isFileNameModalOpen = true;
+    }
+  }
+
+  public fecharModal() {
+    this.newMusicName.reset();
+    this.newMusicPath = '';
+    this.isFileNameModalOpen = false;
+  }
+
+  public async confirmarModal() {
+    this.newMusicName.markAllAsTouched();
+    if(!this.newMusicName.valid) {
+      await this.rust.addNewMusic(this.newMusicName.value as string, this.newMusicPath);
+      this.musicList = [];
+      await this.ngOnInit();
+      this.fecharModal();
+    }
   }
 
   public selectMusic(music: MidiMusic): void {
