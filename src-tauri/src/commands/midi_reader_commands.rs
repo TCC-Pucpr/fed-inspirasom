@@ -10,6 +10,7 @@ use crate::commands::commands_utils::database_queries::music_list;
 use crate::commands::commands_utils::midi_file_utils::{check_midi_file, end_game as finish, load_file, play_game, read_music_from_id, SheetListener};
 use crate::commands::commands_utils::monitor::consecutive_days_checker;
 use crate::commands::payloads::service_error::ServiceResult;
+use crate::constants::dirs::MUSICS_FOLDER;
 use crate::constants::errors::{FILE_COULD_NOT_READ_PATH, FILE_ID_NOT_FOUND, FILE_NAME_ALREADY_EXIST, FILE_NOT_FOUND};
 use crate::{
     app_states::midi_device_state::MidiState,
@@ -136,6 +137,7 @@ pub async fn add_new_music<R: Runtime>(
     app_handle: AppHandle<R>,
     db_state: State<'_, DatabaseState>,
 ) -> ServiceResult<MidiMusic> {
+    info!("Received request to add music {} with name {}", file_path, music_name);
     if let Ok(e) = exists(file_path) {
         if !e {
             return Err(FILE_NOT_FOUND.into());
@@ -148,15 +150,17 @@ pub async fn add_new_music<R: Runtime>(
         {
             return Err(FILE_NAME_ALREADY_EXIST.into());
         }
-        let mut path = get_resources_path(&app_handle)?;
-        path.push(music_name.to_case(Case::Snake));
         let dur = check_midi_file(file_path)?;
+        let mut path = get_resources_path(&app_handle)?;
+        let dir = music_name.to_case(Case::Snake) + ".mid";
+        path.push(MUSICS_FOLDER);
+        path.push(dir.clone());
         fs::copy(file_path, &path)?;
         let model = music::ActiveModel {
             id: Default::default(),
             name: ActiveValue::Set(music_name.to_string()),
             duration: ActiveValue::Set(dur as i32),
-            directory: ActiveValue::Set(path.display().to_string()),
+            directory: ActiveValue::Set(dir),
         };
         let new = model.insert(&db_state.db).await?;
         Ok(new.into())
@@ -176,6 +180,7 @@ pub async fn remove_music<R: Runtime>(
         return Err(FILE_ID_NOT_FOUND.into());
     };
     let mut p = get_resources_path(&app_handle)?;
+    p.push(MUSICS_FOLDER);
     p.push(&music.directory);
     if let Err(_) = fs::remove_file(&p) {
         logger.error(format!(

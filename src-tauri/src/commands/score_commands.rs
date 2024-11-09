@@ -1,4 +1,3 @@
-use log::info;
 use crate::app_states::current_music_score_state::CurrentMusicScoreState;
 use crate::app_states::database_state::DatabaseState;
 use crate::app_states::monitoring_state::MonitoringState;
@@ -13,6 +12,7 @@ use crate::constants::errors::{DATABASE_NO_VALUES_FOUND, INVALID_PARAMETER};
 use crate::constants::store_keys::KEY_DAYS_LOGGED_IN;
 use entity::prelude::Score;
 use entity::score;
+use log::info;
 use migration::Order;
 use paris::error;
 use sea_orm::{ColumnTrait, EntityTrait, ModelTrait, QueryFilter, QueryOrder};
@@ -23,6 +23,7 @@ use tauri::State;
 pub async fn week_avg_scores(
     db_state: State<'_, DatabaseState>,
 ) -> ServiceResult<ScoreDataInDays> {
+    info!("Received request to fetch week average scores");
     let d = days_data(&db_state.db, score::Column::Total).await?;
     let mut s = Vec::with_capacity(d.len());
     for (sum_count, day) in d {
@@ -39,6 +40,7 @@ pub async fn week_avg_scores(
 pub async fn week_highest_streak_avg(
     db_state: State<'_, DatabaseState>,
 ) -> ServiceResult<ScoreDataInDays> {
+    info!("Received request to fetch week highest average streaks");
     let d = days_data(&db_state.db, score::Column::HighestStreak).await?;
     let mut s = Vec::with_capacity(d.len());
     for (sum_count, day) in d {
@@ -55,6 +57,7 @@ pub async fn week_highest_streak_avg(
 pub async fn week_breath_duration_avg(
     db_state: State<'_, DatabaseState>,
 ) -> ServiceResult<ScoreDataInDays> {
+    info!("Received request to fetch week average breath duration");
     let d = days_data(&db_state.db, score::Column::TotalBreathingDuration).await?;
     let mut s = Vec::with_capacity(d.len());
     for (sum_count, day) in d {
@@ -71,6 +74,7 @@ pub async fn week_breath_duration_avg(
 pub async fn completed_songs(
     db_state: State<'_, DatabaseState>,
 ) -> ServiceResult<ScoreDataInDays> {
+    info!("Received request to fetch week completed songs");
     let d = days_data(&db_state.db, score::Column::Completed).await?;
     let mut s = Vec::with_capacity(d.len());
     for (sum_count, day) in d {
@@ -87,6 +91,7 @@ pub async fn completed_songs(
 pub async fn consecutive_days_played(
     store_state: State<'_, StoreState>
 ) -> ServiceResult<usize> {
+    info!("Received request to fetch amount of consecutive days played");
     let n: usize = store_state.retrieve_default(KEY_DAYS_LOGGED_IN)?;
     info!("Consecutive days played: {}", n);
     Ok(n)
