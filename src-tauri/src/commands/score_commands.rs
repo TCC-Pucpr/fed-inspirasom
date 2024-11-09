@@ -12,9 +12,8 @@ use crate::constants::errors::{DATABASE_NO_VALUES_FOUND, INVALID_PARAMETER};
 use crate::constants::store_keys::KEY_DAYS_LOGGED_IN;
 use entity::prelude::Score;
 use entity::score;
-use log::info;
 use migration::Order;
-use paris::error;
+use paris::{error, info};
 use sea_orm::{ColumnTrait, EntityTrait, ModelTrait, QueryFilter, QueryOrder};
 use strum::IntoEnumIterator;
 use tauri::State;
@@ -85,16 +84,6 @@ pub async fn completed_songs(
     }
     info!("Returning completed songs: {:?}", s);
     Ok(s)
-}
-
-#[tauri::command]
-pub async fn consecutive_days_played(
-    store_state: State<'_, StoreState>
-) -> ServiceResult<usize> {
-    info!("Received request to fetch amount of consecutive days played");
-    let n: usize = store_state.retrieve_default(KEY_DAYS_LOGGED_IN)?;
-    info!("Consecutive days played: {}", n);
-    Ok(n)
 }
 
 #[tauri::command]
@@ -169,4 +158,14 @@ pub async fn list_scores(
         .map(move |x| ScorePayload::from(x))
         .collect();
     Ok(res)
+}
+
+#[tauri::command]
+pub async fn consecutive_days_played(
+    store_state: State<'_, StoreState>
+) -> ServiceResult<usize> {
+    info!("Received request to fetch amount of consecutive days played");
+    let n: usize = store_state.retrieve_default(KEY_DAYS_LOGGED_IN)?;
+    info!("Consecutive days played: {}", n);
+    Ok(n)
 }

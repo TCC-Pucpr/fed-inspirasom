@@ -100,7 +100,7 @@ impl MonitoringData {
                 self.total_close_scores += 1
             }
             OnNotePrecision::Miss => {
-                self.total_early_misses += 1
+                self.total_misses += 1
             }
             OnNotePrecision::EarlyMiss => {
                 self.total_early_misses += 1
