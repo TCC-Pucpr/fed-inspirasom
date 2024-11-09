@@ -6,7 +6,7 @@
             <button pButton (click)="selectMusic(music)">{{music.name}}</button>
         </div>
     </div>
-    <button pButton label="Preferencias" (click)="openPreferenciasGamificada()"></button>
+    <button pButton label="Adicionar nova música" (click)="adicionarMusica()"></button>
 </div>
 
 <p-dialog header="Qual o nome da sua música?" [modal]="true" [(visible)]="isFileNameModalOpen" [style]="{ width: '25rem' }">
