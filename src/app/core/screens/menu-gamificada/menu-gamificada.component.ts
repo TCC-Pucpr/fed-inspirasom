@@ -10,7 +10,7 @@ import { MusicService } from '../../services/musicService/music.service';
 import { open } from '@tauri-apps/api/dialog';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-menu-gamificada',
@@ -19,9 +19,9 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
     SidebarComponent,
     ButtonModule,
     CommonModule,
+    FormsModule,
     DialogModule,
     InputTextModule,
-    ReactiveFormsModule
   ],
   providers: [
     DialogService
@@ -32,9 +32,9 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 export class MenuGamificadaComponent implements OnInit {
 
   protected musicList: MidiMusic[];
+  protected newMusicName: string = '';
   protected newMusicPath: string = '';
   protected isFileNameModalOpen: boolean = false;
-  protected newMusicName = new FormControl('');
 
   constructor(
     private router: Router,
@@ -72,17 +72,15 @@ export class MenuGamificadaComponent implements OnInit {
   }
 
   public fecharModal() {
-    this.newMusicName.reset();
+    this.newMusicName = '';
     this.newMusicPath = '';
     this.isFileNameModalOpen = false;
   }
 
   public async confirmarModal() {
-    this.newMusicName.markAllAsTouched();
-    if(!this.newMusicName.valid) {
-      await this.rust.addNewMusic(this.newMusicName.value as string, this.newMusicPath);
-      this.musicList = [];
-      await this.ngOnInit();
+    if(this.newMusicName !== '') {
+      await this.rust.addNewMusic(this.newMusicName, this.newMusicPath);
+      this.musicList = await this.musicService.fetchMusicList();
       this.fecharModal();
     }
   }

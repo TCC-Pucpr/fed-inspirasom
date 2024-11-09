@@ -11,16 +11,14 @@
 
 <p-dialog header="Qual o nome da sua música?" [modal]="true" [(visible)]="isFileNameModalOpen" [style]="{ width: '25rem' }">
     <div class="flex justify-content-end gap-2">
-        <form (submit)="confirmarModal()">
             <div class="estruturaModal">
                 <div class="campoModal">
-                    <input type="text" class="campoTexto" pInputText [formControl]="newMusicName" required [ngClass]="{'ng-invalid ng-dirty': newMusicName.touched && newMusicName.invalid}"/>
+                    <input type="text" class="campoTexto" pInputText [(ngModel)]="newMusicName" />
                 </div>
                 <div class="botoesModal">
                     <p-button label="Cancel" severity="secondary" (onClick)="fecharModal()" />
-                    <p-button label="Save" type="submit"/>
+                    <p-button label="Save" (onClick)="confirmarModal()"/>
                 </div>
             </div>
-        </form>
     </div>
 </p-dialog>
