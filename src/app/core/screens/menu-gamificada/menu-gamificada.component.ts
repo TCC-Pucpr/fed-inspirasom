@@ -57,7 +57,7 @@ export class MenuGamificadaComponent implements OnInit {
     this.rust.releaseOcarina();
   }
 
-  public async openPreferenciasGamificada() {
+  public async adicionarMusica() {
     const selected = await open({
       multiple: false,
       filters: [{
