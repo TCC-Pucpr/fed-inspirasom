@@ -31,6 +31,7 @@ export class ChartVisualizationComponent implements OnInit {
 
   public async ngOnInit() {
     const scoreData = await this.dashboardService.getDashboardData();
+    scoreData.reverse();
     for(let data of scoreData){
       this.dates.push(data.date);
       this.scores.push(data.data);

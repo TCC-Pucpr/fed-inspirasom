@@ -87,7 +87,7 @@ export class RustService {
   }
 
   public async getSimpleScoreFromLastWeek(): Promise<DailyScoreData[]> {
-    return await invoke(RustFunctionName.averageHighestScores);
+    return await invoke(RustFunctionName.averageLastWeekScores);
   }
 
   public async addNewMusic(musicName: string, filePath: string) {
