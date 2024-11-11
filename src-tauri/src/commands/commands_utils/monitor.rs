@@ -30,6 +30,10 @@ impl SumAndCountResult {
     }
 }
 
+fn is_on_same_day(date1: DateTimeUtc, date2: DateTimeUtc) -> bool {
+    date1.day() == date2.day() && date1.month() == date2.month() && date1.year() == date2.year()
+}
+
 pub async fn days_data<C: ColumnTrait>(
     conn: &DatabaseConnection,
     column: C
@@ -70,11 +74,11 @@ pub fn consecutive_days_checker(store_state: &StoreState) -> ServiceResult<()> {
     let last_played: i64 = store_state.retrieve_default(KEY_LAST_PLAYED_DAY)?;
     let now = Utc::now();
     let saved = Utc.timestamp_millis_opt(last_played).unwrap();
-    if now.day() == saved.day() && now.month() == saved.month() && now.year() == saved.year() {
+    if is_on_same_day(now, saved) {
         return Ok(())
     }
     if let Some(n) = now.checked_sub_days(Days::new(1)) {
-        let current = if n.eq(&saved) {
+        let current = if is_on_same_day(n, saved) {
             let current_consecutive: i32 = store_state.retrieve_default(KEY_DAYS_LOGGED_IN)?;
             info!("Last day played was yesterday, incrementing current consecutive days ({})", current_consecutive);
             let c = current_consecutive + 1;
