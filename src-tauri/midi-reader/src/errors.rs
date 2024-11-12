@@ -1,34 +1,21 @@
-use std::{error::Error, fmt::Display};
+use thiserror::Error;
 
-#[derive(Debug, Clone)]
-pub struct InvalidMidiFile;
-#[derive(Debug, Clone)]
-pub struct PlaybackError;
-#[derive(Debug, Clone)]
-pub struct AlreadyPlaying;
-#[derive(Debug, Clone)]
-pub struct Interrupted;
-impl Display for PlaybackError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "An error has occurred during game!")
-    }
+pub type MidiReaderResult<T> = Result<T, MidiReaderError>;
+
+#[derive(Debug, Error)]
+pub enum MidiReaderError {
+    #[error("File is invalid")]
+    InvalidMidiFile(#[source] anyhow::Error),
+    #[error("Error while playing file: `{0}`")]
+    PlaybackError(String),
+    #[error("This file is already being played")]
+    AlreadyPlaying,
+    #[error("File playback has been interrupted")]
+    Interrupted,
+    #[error("An error occurred while connect to this devices midi output")]
+    MidiOutputError(#[source] anyhow::Error),
+    #[error("No output ports was found")]
+    NoPortsFound,
+    #[error("Path `{0}` does not exist")]
+    FileDoesNotExist(String),
 }
-impl Display for InvalidMidiFile {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "The selected file is invalid!")
-    }
-}
-impl Display for AlreadyPlaying {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "The selected file is invalid!")
-    }
-}
-impl Display for Interrupted {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "The music has been interrupted!")
-    }
-}
-impl Error for PlaybackError {}
-impl Error for InvalidMidiFile {}
-impl Error for AlreadyPlaying {}
-impl Error for Interrupted {}

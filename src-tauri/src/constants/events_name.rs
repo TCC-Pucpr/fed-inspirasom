@@ -1,3 +1,4 @@
 pub const MIDI_NOTE: &str = "MIDI_INPUT_NOTE";
 pub const MIDI_READ_NOTE: &str = "MIDI_READ_NOTE";
 pub const MIDI_READ_STATE: &str = "MIDI_READ_STATE";
+pub const MIDI_DEVICE_CONNECTION_STATE: &str = "MIDI_DEVICE_CONNECTION";

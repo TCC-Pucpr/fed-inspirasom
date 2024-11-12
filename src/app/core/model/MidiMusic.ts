@@ -7,4 +7,4 @@
  * Se esse for o caso, chama o comando `music_length`.
  *
  */
-export type MidiMusic = { name: string, id: string, directory: string, duration: bigint | null, };
+export type MidiMusic = { name: string, id: number, directory: string, duration: bigint, };

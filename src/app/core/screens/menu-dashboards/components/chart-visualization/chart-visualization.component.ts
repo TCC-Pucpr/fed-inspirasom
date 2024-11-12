@@ -1,8 +1,8 @@
-import { Component, Inject, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
-import { GraphData as ChartData } from '../../../../model/GraphData.model';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { ThemeService } from '../../../../services/themeService/theme.service';
+import { DashboardServiceService } from '../../../../services/dashboardService/dashboard-service.service';
 @Component({
   selector: 'app-chart-visualization',
   standalone: true,
@@ -15,8 +15,6 @@ import { ThemeService } from '../../../../services/themeService/theme.service';
 })
 export class ChartVisualizationComponent implements OnInit {
 
-  @Input() chartData: ChartData[];
-
   public refreshChart: boolean = false;
   public dates: string[] = [];
   public scores: number[] = [];
@@ -27,13 +25,16 @@ export class ChartVisualizationComponent implements OnInit {
   constructor(
     private themeService: ThemeService,
     @Inject(DOCUMENT) private document: Document,
+    protected dashboardService: DashboardServiceService,
   ) {
   }
 
-  public ngOnInit(): void {
-    for(let data of this.chartData){
+  public async ngOnInit() {
+    const scoreData = await this.dashboardService.getDashboardData();
+    scoreData.reverse();
+    for(let data of scoreData){
       this.dates.push(data.date);
-      this.scores.push(data.score);
+      this.scores.push(data.data);
     }
     this.buildChart();
     setTimeout(() => {

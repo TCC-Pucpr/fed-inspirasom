@@ -46,5 +46,7 @@ Thumbs.db
 .vscode
 src/assets/phaser.min.js
 
-src-tauri/resources/musics/*.mid
-src-tauri/user/.env
+src-tauri/resources/musics/*
+!src-tauri/resources/musics/*.json
+src-tauri/resources/data/*
+.env

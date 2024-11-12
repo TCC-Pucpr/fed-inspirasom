@@ -12,7 +12,7 @@ use utils::mutable_arc::MutableArc;
 const GAME_PAUSE_CHECK_DELAY_MS: u32 = 4_000;
 
 #[derive(Debug)]
-pub struct MidiPauserTimer<P: PlayBackCallback> {
+pub struct MidiPauseTimer<P: PlayBackCallback> {
     check_delay: u32,
     ticker: Ticker,
     reading_state: MutableArc<ReadingState>,
@@ -20,7 +20,7 @@ pub struct MidiPauserTimer<P: PlayBackCallback> {
     elapsed_time: MutableArc<Duration>,
 }
 
-impl<P: PlayBackCallback> MidiPauserTimer<P> {
+impl<P: PlayBackCallback> MidiPauseTimer<P> {
     pub fn new(
         ticker: Ticker,
         reading_state: MutableArc<ReadingState>,
@@ -37,10 +37,10 @@ impl<P: PlayBackCallback> MidiPauserTimer<P> {
     }
 
     fn count_sleep(&self, duration: Duration) {
-        if let Some(mut t) = self.elapsed_time.get_data() {
-            *t += duration;
-        }
         if !duration.is_zero() {
+            if let Some(mut t) = self.elapsed_time.get_data() {
+                *t += duration;
+            }
             sleep(duration)
         }
     }
@@ -86,7 +86,7 @@ impl<P: PlayBackCallback> MidiPauserTimer<P> {
     }
 }
 
-impl<P: PlayBackCallback> Timer for MidiPauserTimer<P> {
+impl<P: PlayBackCallback> Timer for MidiPauseTimer<P> {
     fn sleep_duration(&mut self, n_ticks: u32) -> Duration {
         self.ticker.sleep_duration(n_ticks)
     }

@@ -1,4 +1,8 @@
+import { EndgameDataModel } from "../../../../model/EndgameData.model";
 import { MidiSignal } from "../../../../model/MidiSignal";
+import { MidiState } from "../../../../model/MidiState";
+import { NotePrecision } from "../../../../model/NotePrecision.model";
+import { NoteStatusModel } from "../../../../model/NoteStatus.model";
 import { EventBus } from "../events/EventBus";
 import { EventNames } from "../events/EventNames.enum";
 
@@ -7,22 +11,23 @@ export class GameScene extends Phaser.Scene {
     public pressArea: Phaser.GameObjects.Rectangle; 
     public wrongPressArea: Phaser.GameObjects.Rectangle; 
     public limit: Phaser.GameObjects.Rectangle;
-    public notes: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody[] = [];
-    public readonly noteSprite: string = "note";
+    public notes: { note: MidiSignal, body: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody }[] = [];
     
     public score: number;
     public multiplier: number;
     public chainCount: number;
 
     public inputs: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
-    public isPressed: boolean | undefined = false;
     public scoreText: Phaser.GameObjects.Text;
     public multiplierText: Phaser.GameObjects.Text;
     public chainText: Phaser.GameObjects.Text;
     public noteText: Phaser.GameObjects.Text;
 
+    public musicState: MidiState;
     public isPaused: boolean = false;
+    public isEndGame: boolean = false;
 
+    public noteStatus: NoteStatusModel = {} as NoteStatusModel;
     public lastOcarinaNote: MidiSignal = {} as MidiSignal;
     
     constructor(
@@ -48,27 +53,43 @@ export class GameScene extends Phaser.Scene {
         this.chainText = this.add.text(50, 100, '', { color: 'white' }).setOrigin(0, 0);
         this.noteText = this.add.text(50, 125, '', { color: 'white' }).setOrigin(0, 0);
         this.add.text(0, 0, `Press [space] to hit the note, press [ESC] to pause`, { color: 'white' }).setOrigin(0, 0);
+
+        this.noteStatus = { hitNotes: 0, missedNotes: 0, poorNotes: 0 };
     }
     
     public create() {
         EventBus.emit(EventNames.gameSceneReady, this);
         EventBus.on(EventNames.resumeGame, this.resumeGame);
         EventBus.on(EventNames.pauseGame, this.pauseGame);
-        EventBus.on(EventNames.ocarinaNote, (note: MidiSignal) => { this.lastOcarinaNote = note });
+        EventBus.on(EventNames.ocarinaNote, this.checkForNote);
+        EventBus.on(EventNames.musicStateChange, this.treatStates);
         const escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)!;
         escKey.on('down', () => { EventBus.emit(EventNames.pauseGame); });
+        this.scene.launch("endScreen");
         this.scene.launch("pause");
+    }
+
+    public checkForNote = (playedNote: MidiSignal) => {
+        this.lastOcarinaNote = playedNote;
+        try {
+            if(this.notes.length > 0) {
+                const note = this.notes[0];
+                console.log(`body: [${note.note.note_name}], current: [${playedNote.note_name}]`);
+                if(note.note.note_name === playedNote.note_name) {
+                    this.physics.overlap(note.body, this.limit, this.removeNote, undefined, this);
+                    this.physics.overlap(note.body, this.pressArea, this.scoredNote, undefined, this);
+                    this.physics.overlap(note.body, this.wrongPressArea, this.poorNote, undefined, this);
+                }
+            }
+        } catch (err) { };
     }
 
     public override update() {
         if(this.notes.length > 0) {
             const note = this.notes[0];
-            this.physics.overlap(note, this.limit, this.removeNote, undefined, this);
-            this.physics.overlap(note, this.pressArea, this.scoredNote, undefined, this);
-            this.physics.overlap(note, this.wrongPressArea, this.poorNote, undefined, this);
-        }
-        if(this.isPressed && this.inputs?.space.isUp) {
-            this.isPressed = false;
+            this.physics.overlap(note.body, this.limit, this.removeNote, undefined, this);
+        } else if (this.notes.length === 0 && this.isEndGame) {
+            this.openEndScreen();
         }
         this.multiplier = this.getCurrentMultiplier(this.chainCount);
         this.scoreText.setText(`Score: ${this.score}`);
@@ -82,31 +103,59 @@ export class GameScene extends Phaser.Scene {
         this.score -= 10;
         this.multiplier = 1;
         this.chainCount = 0;
+        this.noteStatus.missedNotes++;
+        EventBus.emit(EventNames.onNoteInteraction, NotePrecision.Miss)
     }
 
     public poorNote(note: any, area: any) { 
-        if(!this.isPressed && this.inputs?.space.isDown) {
-            this.removeNoteFromScene(note);
-            this.isPressed = true;
-            this.score -= 20;
-            this.chainCount = 1;
-        }
+        this.removeNoteFromScene(note);
+        this.score -= 20;
+        this.chainCount = 1;
+        this.noteStatus.poorNotes++;
+        EventBus.emit(EventNames.onNoteInteraction, NotePrecision.EarlyMiss)
     }
 
     public scoredNote(note: any, area: any){
-        if(!this.isPressed && this.inputs?.space.isDown) {
-            const noteCenter = note.x - note.width/2;
-            const accScore = this.getAccScore(noteCenter, this.pressArea.x, this.pressArea.width);
-            this.isPressed = true;
-            this.removeNoteFromScene(note);
-            this.score += (10 + accScore)*this.multiplier;
-            this.chainCount+=1;
-        }
+        const noteCenter = note.x - note.width/2;
+        const accScore = this.getAccScore(noteCenter, this.pressArea.x, this.pressArea.width);
+        this.removeNoteFromScene(note);
+        this.score += (10 + accScore)*this.multiplier;
+        this.chainCount++;
+        this.noteStatus.hitNotes++;
+        EventBus.emit(EventNames.onNoteInteraction, NotePrecision.Middle);
+    }
+
+    public treatStates = (state: MidiState) => {
+        this.musicState = state;
+        try{
+            if(state === "FINISHED") {
+                this.isEndGame = true;
+                
+            }
+        } catch (error){ }
+    }
+
+    public openEndScreen() {
+        const callback = () => {
+            this.scene.resume("endScreen");
+            this.scene.bringToTop("endScreen");
+        };
+        callback.bind(this);
+        setTimeout(callback, 1500);
+        const data = {} as EndgameDataModel;
+        data.noteStatus = this.noteStatus;
+        data.score = this.score;
+        EventBus.emit(EventNames.musicEnd, data);
+        this.scene.pause();
     }
 
     public pauseGame = () => {
+        if(this.isEndGame && this.notes.length === 0) {
+            return;
+        }
         try{
             this.isPaused = true;
+            this.scene.resume("pause");
             this.scene.bringToTop("pause");
             this.scene.pause();
         } catch (error){ }
@@ -115,6 +164,7 @@ export class GameScene extends Phaser.Scene {
     public resumeGame = () => {
         try{
             this.isPaused = false;
+            this.scene.pause("pause");
             this.scene.bringToTop("game");
             this.scene.resume("game");
         } catch (error){ }
@@ -149,41 +199,27 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    public oldCreateNote(row: number, isBmol: boolean): void {
-        if( row === -1 ) return;
-        const y = 226 + (row * 13);
-        const x = 980;
-        const s = 1;
-        const type = isBmol ? 'bmolNote' : 'note';
-        try{
-            const note = this.physics.add.sprite(x, y, type);
-            note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(35, 32);
-            this.notes.push(note);
-        } catch(error) { }
-    }
-
-    public createNote(row: number, isBmol: boolean): void {
-        if( row === -1 ) return;
-        const y = 226 + (row * 13);
+    public createNote(note: MidiSignal): void {
+        if( note.note_index === -1 ) return;
+        const y = 226 + (note.note_index * 13);
         const x = 980;
         const s = 1;
         try{
-            if(isBmol) {
-                const note = this.physics.add.sprite(x, y+3, 'bmolNote');
-                note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(42, 36).setOffset(11, 4);
-                this.notes.push(note);
+            if(note.is_bmol) {
+                const body = this.physics.add.sprite(x, y+3, 'bmolNote');
+                body.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(42, 36).setOffset(11, 4);
+                this.notes.push({ note, body });
             } else {
-                const note = this.physics.add.sprite(x, y, 'note');
-                note.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(35, 32);
-                this.notes.push(note);
+                const body = this.physics.add.sprite(x, y, 'note');
+                body.setVelocityX(-100*s).setOrigin(1, 1).setSize(35, 28).setDisplaySize(35, 32);
+                this.notes.push({ note, body });
             }
         } catch(error) { }
     }
 
     public removeNoteFromScene(note: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
-        const index = this.notes.indexOf(note);
-        if( index !== -1) {
-            this.notes.shift()?.destroy();
+        if(this.notes.filter((data) => data.body === note)) {
+            this.notes.shift()?.body.destroy();
         }
     }
 

@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { PauseScene } from './scenes/Pause.scene';
 import { GameScene } from './scenes/Game.scene';
 import { BootUtils } from './scenes/BootUtils.scene';
+import { EndgameScene } from './scenes/Endgame.scene';
 
 @Component({
   selector: 'phaser-game',
@@ -29,6 +30,7 @@ export class GameComponent implements OnInit {
       scene: [
         BootUtils,
         PauseScene,
+        EndgameScene,
         GameScene
       ],
       physics: {

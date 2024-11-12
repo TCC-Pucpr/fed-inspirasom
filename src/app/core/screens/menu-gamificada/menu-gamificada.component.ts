@@ -1,14 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, IterableDiffers, OnInit } from '@angular/core';
 import { SidebarComponent } from "../components/sidebar/sidebar.component";
 import { ButtonModule } from 'primeng/button';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
-import { PreferenciasGamificadaComponent } from './components/preferencias-gamificada/preferencias-gamificada.component';
 import { RustService } from '../../services/rust/rust.service';
 import { MidiMusic } from '../../model/MidiMusic';
 import { CommonModule } from '@angular/common';
 import { MusicService } from '../../services/musicService/music.service';
-import { MidiSignal } from '../../model/MidiSignal';
+import { open } from '@tauri-apps/api/dialog';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { FormsModule } from '@angular/forms';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-menu-gamificada',
@@ -16,7 +19,10 @@ import { MidiSignal } from '../../model/MidiSignal';
   imports: [
     SidebarComponent,
     ButtonModule,
-    CommonModule
+    CommonModule,
+    FormsModule,
+    DialogModule,
+    InputTextModule,
   ],
   providers: [
     DialogService
@@ -27,6 +33,13 @@ import { MidiSignal } from '../../model/MidiSignal';
 export class MenuGamificadaComponent implements OnInit {
 
   protected musicList: MidiMusic[];
+  protected newMusicName: string = '';
+  protected newMusicPath: string = '';
+  protected isFileNameModalOpen: boolean = false;
+
+  protected isDeleting: boolean = false;
+  protected refreshButtons: boolean = false;
+  protected severity: "success" | "info" | "warning" | "danger" | "help" | "primary" | "secondary" | "contrast" | null | undefined = "primary";
 
   constructor(
     private router: Router,
@@ -46,15 +59,54 @@ export class MenuGamificadaComponent implements OnInit {
   }
 
   private ngOnDestroy(): void {
-    this.rust.stop_midi();
+    this.rust.releaseOcarina();
   }
 
-  public openPreferenciasGamificada(): void {
-    this.dialogService.open(PreferenciasGamificadaComponent, { header: 'Preferencias'} );
+  public async adicionarMusica() {
+    const selected = await open({
+      multiple: false,
+      filters: [{
+        name: 'Selecione uma musica',
+        extensions: ['mid']
+      }]
+    });
+    if (selected) {
+      this.newMusicPath = selected as string;
+      this.isFileNameModalOpen = true;
+    }
   }
 
-  public selectMusic(music: MidiMusic): void {
-    this.router.navigate(['gamificada'], { queryParams: { id: music.id }});
+  public fecharModal() {
+    this.newMusicName = '';
+    this.newMusicPath = '';
+    this.isFileNameModalOpen = false;
+  }
+
+  public async confirmarModal() {
+    if(this.newMusicName !== '') {
+      await this.rust.addNewMusic(this.newMusicName, this.newMusicPath);
+      this.musicList = await this.musicService.fetchMusicList();
+      this.fecharModal();
+    }
+  }
+
+  public async selectMusic(music: MidiMusic) {
+    if(this.isDeleting) {
+      await this.rust.removeMusic(music.id);
+      this.musicList = await this.musicService.fetchMusicList();
+      this.toggleDelete();
+    } else {
+      this.router.navigate(['gamificada'], { queryParams: { id: music.id }});
+    }
+  }
+
+  public toggleDelete() {
+    this.isDeleting = !this.isDeleting;
+    this.severity = this.isDeleting?'danger':'primary';
+    this.refreshButtons = true;
+    setTimeout(() => {
+      this.refreshButtons = false; 
+    }, 0);
   }
 
 }

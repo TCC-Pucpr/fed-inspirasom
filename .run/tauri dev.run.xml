@@ -6,7 +6,7 @@
       <script value="tauri" />
     </scripts>
     <arguments value="dev" />
-    <node-interpreter value="$USER_HOME$/.nvm/versions/node/v22.7.0/bin/node" />
+    <node-interpreter value="node" />
     <envs />
     <method v="2" />
   </configuration>

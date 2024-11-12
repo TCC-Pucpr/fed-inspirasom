@@ -1,6 +1,12 @@
 use std::time::Duration;
 
+use crate::midi_file::{create_sheet_and_ticker, load_midi_bytes};
 use nodi::{timers::Ticker, Connection, Player, Sheet, Timer};
+
+pub fn calculate_midi_length(file: &str) -> Duration {
+    let (sheet, timer) = create_sheet_and_ticker(load_midi_bytes(file).unwrap()).unwrap();
+    calc_midi_sheet_length(&sheet, timer)
+}
 
 pub(crate) fn calc_midi_sheet_length(sheet: &Sheet, ticker: Ticker) -> Duration {
     let mut dur = Duration::ZERO;
