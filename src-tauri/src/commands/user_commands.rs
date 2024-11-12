@@ -1,8 +1,18 @@
 use crate::app_states::store_state::StoreState;
 use crate::commands::ServiceResult;
-use crate::constants::store_keys::{KEY_USER_NAME, KEY_USER_PFP};
+use crate::constants::store_keys::{KEY_DAYS_LOGGED_IN, KEY_USER_NAME, KEY_USER_PFP};
 use std::option::Option;
+use log::info;
 use tauri::State;
+
+#[tauri::command]
+pub async fn consecutive_days_played(
+    store_state: State<'_, StoreState>
+) -> ServiceResult<usize> {
+    let n: usize = store_state.retrieve_default(KEY_DAYS_LOGGED_IN)?;
+    info!("Consecutive days played: {}", n);
+    Ok(n)
+}
 
 #[tauri::command]
 pub async fn set_user_pfp(
