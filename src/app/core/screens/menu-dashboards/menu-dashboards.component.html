@@ -1,11 +1,18 @@
 <app-sidebar></app-sidebar>
 
 <div id="docBody" class="centerDashboard">
-    <div class="inRow spacingDashboard heightLimit">
-        <app-chart-visualization></app-chart-visualization>
-        <div class="secondColumn spacingDashboard">
-            <div class="numericDisplays spacingDashboard">
-                <app-numeric-visualization class="w-100" upperText="Você logou por" [numericInfo]="daysInArow" lowerText="dias consecutivos"></app-numeric-visualization>
+    <div class="flex-end">
+        <p-dropdown [options]="dropdownOptions" optionLabel="titulo" [ngModel]="selectedOption" (ngModelChange)="onDropdownSelect($event)" placeholder="Selecione um filtro" />
+
+        <div class="inRow spacingDashboard heightLimit">
+            <app-chart-visualization #dash></app-chart-visualization>
+            <div class="secondColumn spacingDashboard">
+                <div class="numericDisplays spacingDashboard">
+                    <app-numeric-visualization class="w-100" 
+                    upperText="Você logou por" 
+                    [numericInfo]="daysInArow" 
+                    [lowerText]="daysInArow===1?'dia consecutivo':'dias consecutivos'"></app-numeric-visualization>
+                </div>
             </div>
         </div>
     </div>

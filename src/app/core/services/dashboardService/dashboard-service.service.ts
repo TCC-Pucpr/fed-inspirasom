@@ -13,8 +13,21 @@ export class DashboardServiceService {
     private rust: RustService
   ) { }
 
-  public async getDashboardData(): Promise<DailyScoreData[]> {
-    this.scoreData = this.rust.getSimpleScoreFromLastWeek();
+  public async getDashboardData(filter: number): Promise<DailyScoreData[]> {
+    switch(filter) {
+      case 1:
+        this.scoreData = this.rust.getSimpleScoreFromLastWeek();
+      break;
+      case 2:
+        this.scoreData = this.rust.getWeekHighestScores();
+      break;
+      case 3:
+        this.scoreData = this.rust.getTotalBreath();
+      break;
+      case 4:
+        this.scoreData = this.rust.getBreathStr();
+      break;
+    }
     return this.scoreData;
   }
 }

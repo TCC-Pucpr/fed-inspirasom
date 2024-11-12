@@ -15,6 +15,7 @@ import { DashboardServiceService } from '../../../../services/dashboardService/d
 })
 export class ChartVisualizationComponent implements OnInit {
 
+  public filter: number = 1;
   public refreshChart: boolean = false;
   public dates: string[] = [];
   public scores: number[] = [];
@@ -30,7 +31,7 @@ export class ChartVisualizationComponent implements OnInit {
   }
 
   public async ngOnInit() {
-    const scoreData = await this.dashboardService.getDashboardData();
+    const scoreData = await this.dashboardService.getDashboardData(this.filter);
     scoreData.reverse();
     for(let data of scoreData){
       this.dates.push(data.date);
@@ -64,6 +65,19 @@ export class ChartVisualizationComponent implements OnInit {
       this.buildChart();
       this.refreshChart = false;  
     }, 1);
+  }
+
+  public async setFilter(filter: number) {
+    this.dates = [];
+    this.scores = [];
+    this.filter = filter;
+    const scoreData = await this.dashboardService.getDashboardData(this.filter);
+    scoreData.reverse();
+    for(let data of scoreData){
+      this.dates.push(data.date);
+      this.scores.push(data.data);
+    }
+    this.updateChart();
   }
 
   protected buildChart() {

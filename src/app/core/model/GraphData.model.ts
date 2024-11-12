@@ -12,3 +12,8 @@ export interface GraphData {
      */
     score: number
 }
+
+export interface DadosDropdown {
+    titulo: string,
+    id: number
+}

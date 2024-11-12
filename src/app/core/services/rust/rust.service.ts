@@ -89,6 +89,15 @@ export class RustService {
   public async getSimpleScoreFromLastWeek(): Promise<DailyScoreData[]> {
     return await invoke(RustFunctionName.averageLastWeekScores);
   }
+  public async getWeekHighestScores(): Promise<DailyScoreData[]> {
+    return await invoke(RustFunctionName.averageHighestScores);
+  }
+  public async getTotalBreath(): Promise<DailyScoreData[]> {
+    return await invoke(RustFunctionName.averageTotalBreathDuration);
+  }
+  public async getBreathStr(): Promise<DailyScoreData[]> {
+    return await invoke(RustFunctionName.averageBreathStrength);
+  }
 
   public async addNewMusic(musicName: string, filePath: string) {
     return await invoke(RustFunctionName.addNewMusic, { musicName, filePath });
