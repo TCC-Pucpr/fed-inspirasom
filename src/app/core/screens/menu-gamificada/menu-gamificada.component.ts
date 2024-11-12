@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, IterableDiffers, OnInit } from '@angular/core';
 import { SidebarComponent } from "../components/sidebar/sidebar.component";
 import { ButtonModule } from 'primeng/button';
 import { Router } from '@angular/router';
@@ -11,6 +11,7 @@ import { open } from '@tauri-apps/api/dialog';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-menu-gamificada',
@@ -35,6 +36,10 @@ export class MenuGamificadaComponent implements OnInit {
   protected newMusicName: string = '';
   protected newMusicPath: string = '';
   protected isFileNameModalOpen: boolean = false;
+
+  protected isDeleting: boolean = false;
+  protected refreshButtons: boolean = false;
+  protected severity: "success" | "info" | "warning" | "danger" | "help" | "primary" | "secondary" | "contrast" | null | undefined = "primary";
 
   constructor(
     private router: Router,
@@ -85,8 +90,23 @@ export class MenuGamificadaComponent implements OnInit {
     }
   }
 
-  public selectMusic(music: MidiMusic): void {
-    this.router.navigate(['gamificada'], { queryParams: { id: music.id }});
+  public async selectMusic(music: MidiMusic) {
+    if(this.isDeleting) {
+      await this.rust.removeMusic(music.id);
+      this.musicList = await this.musicService.fetchMusicList();
+      this.toggleDelete();
+    } else {
+      this.router.navigate(['gamificada'], { queryParams: { id: music.id }});
+    }
+  }
+
+  public toggleDelete() {
+    this.isDeleting = !this.isDeleting;
+    this.severity = this.isDeleting?'danger':'primary';
+    this.refreshButtons = true;
+    setTimeout(() => {
+      this.refreshButtons = false; 
+    }, 0);
   }
 
 }

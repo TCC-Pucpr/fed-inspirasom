@@ -3,10 +3,12 @@
 <div class="centerElements">
     <div class="musicList">
         <div *ngFor="let music of musicList">
-            <button pButton (click)="selectMusic(music)">{{music.name}}</button>
+            <button *ngIf="!refreshButtons" pButton (click)="selectMusic(music)" [severity]="severity">{{music.name}}</button>
         </div>
     </div>
-    <button pButton label="Adicionar nova música" (click)="adicionarMusica()"></button>
+    <button *ngIf="!isDeleting" pButton label="Adicionar nova música" (click)="adicionarMusica()"></button>
+    <button *ngIf="!isDeleting" pButton label="Remover uma música" (click)="toggleDelete()"></button>
+    <button *ngIf="isDeleting" pButton label="Cancelar" (click)="toggleDelete()"></button>
 </div>
 
 <p-dialog header="Qual o nome da sua música?" [modal]="true" [(visible)]="isFileNameModalOpen" [style]="{ width: '25rem' }">

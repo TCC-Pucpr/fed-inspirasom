@@ -93,4 +93,8 @@ export class RustService {
   public async addNewMusic(musicName: string, filePath: string) {
     return await invoke(RustFunctionName.addNewMusic, { musicName, filePath });
   }
+
+  public async removeMusic(musicId: number) {
+    return await invoke(RustFunctionName.removeMusic, { musicId });
+  }
 }

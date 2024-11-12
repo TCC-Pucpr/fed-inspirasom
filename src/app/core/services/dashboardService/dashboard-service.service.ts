@@ -14,9 +14,7 @@ export class DashboardServiceService {
   ) { }
 
   public async getDashboardData(): Promise<DailyScoreData[]> {
-    if(!this.scoreData) {
-      this.scoreData = this.rust.getSimpleScoreFromLastWeek();
-    } 
+    this.scoreData = this.rust.getSimpleScoreFromLastWeek();
     return this.scoreData;
   }
 }
