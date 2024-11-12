@@ -1,9 +1,7 @@
-import { Component, Inject, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
-import { GraphData as ChartData } from '../../../../model/GraphData.model';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { ThemeService } from '../../../../services/themeService/theme.service';
-import { DailyScoreData } from '../../../../model/DailyScoreData';
 import { DashboardServiceService } from '../../../../services/dashboardService/dashboard-service.service';
 @Component({
   selector: 'app-chart-visualization',
@@ -33,6 +31,7 @@ export class ChartVisualizationComponent implements OnInit {
 
   public async ngOnInit() {
     const scoreData = await this.dashboardService.getDashboardData();
+    scoreData.reverse();
     for(let data of scoreData){
       this.dates.push(data.date);
       this.scores.push(data.data);

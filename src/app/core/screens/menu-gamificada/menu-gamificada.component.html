@@ -3,8 +3,24 @@
 <div class="centerElements">
     <div class="musicList">
         <div *ngFor="let music of musicList">
-            <button pButton (click)="selectMusic(music)">{{music.name}}</button>
+            <button *ngIf="!refreshButtons" pButton (click)="selectMusic(music)" [severity]="severity">{{music.name}}</button>
         </div>
     </div>
-    <button pButton label="Preferencias" (click)="openPreferenciasGamificada()"></button>
+    <button *ngIf="!isDeleting" pButton label="Adicionar nova música" (click)="adicionarMusica()"></button>
+    <button *ngIf="!isDeleting" pButton label="Remover uma música" (click)="toggleDelete()"></button>
+    <button *ngIf="isDeleting" pButton label="Cancelar" (click)="toggleDelete()"></button>
 </div>
+
+<p-dialog header="Qual o nome da sua música?" [modal]="true" [(visible)]="isFileNameModalOpen" [style]="{ width: '25rem' }">
+    <div class="flex justify-content-end gap-2">
+            <div class="estruturaModal">
+                <div class="campoModal">
+                    <input type="text" class="campoTexto" pInputText [(ngModel)]="newMusicName" />
+                </div>
+                <div class="botoesModal">
+                    <p-button label="Cancel" severity="secondary" (onClick)="fecharModal()" />
+                    <p-button label="Save" (onClick)="confirmarModal()"/>
+                </div>
+            </div>
+    </div>
+</p-dialog>
