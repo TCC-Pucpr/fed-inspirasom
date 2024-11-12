@@ -16,6 +16,10 @@ impl MidiOutputConnectionHolder {
         let output = MidiOutput::new(PORT_NAME)?;
         let ports = output.ports();
         if ports.is_empty() {
+            #[cfg(feature = "verbose")]
+            {
+                info!("{} No output ports available", LOG_TAG)
+            }
             return Err(NoAvailablePorts)
         }
         let port = &ports[0];

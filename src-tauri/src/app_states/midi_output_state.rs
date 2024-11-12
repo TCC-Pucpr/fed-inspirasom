@@ -16,13 +16,9 @@ impl MidiOutputState {
 
     pub fn create_output_connection(&self) -> ServiceResult<()> {
         if let Ok(mut mf) = self.midi_output_connection.lock() {
-            if mf.is_some() {
-                Err(MIDI_OUTPUT_ALREADY_CONNECTED.into())
-            } else {
-                let a = MidiOutputConnectionHolder::new_with_first_port()?;
-                *mf = Some(a);
-                Ok(())
-            }
+            let a = MidiOutputConnectionHolder::new_with_first_port()?;
+            *mf = Some(a);
+            Ok(())
         } else {
             Err(STATE_ACQUIRE_ERROR.into())
         }

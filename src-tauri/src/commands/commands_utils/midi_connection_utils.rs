@@ -29,7 +29,9 @@ pub fn connect(
         app_handle.clone()
     );
     window.emit(MIDI_DEVICE_CONNECTION_STATE, true)?;
-    midi_output_state.create_output_connection()?;
+    if let Err(e) = midi_output_state.create_output_connection() {
+        error!("Could not connect to output port: {}", e);
+    }
     midi_state.start_listening_to_device(move |wrapper| {
         let monitoring_state = app_handle.state::<MonitoringState>();
         let output_state = app_handle.state::<MidiOutputState>();
@@ -45,6 +47,8 @@ pub fn connect(
             wrapper.air_strength
         ) {
             error!("Could not send output note: {}", e);
+        } else { 
+            info!("Successfully sent output: {}", wrapper.state);
         }
         if let Err(_) = monitoring_state.receive_breath_data(wrapper.air_strength, is_on) {
             warn!("Error while monitoring breath data {}", input_msg);

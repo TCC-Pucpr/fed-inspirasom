@@ -25,7 +25,6 @@ lazy_static = "1.5.0"
 tokio = "1.40.0"
 strum = "0.26.3"
 chrono = "0.4.38"
-
 midi-output = { path = "midi-output", features = ["verbose"] }
 migration = { path = "persistence/migration", features = ["verbose"] }
 entity = { path = "persistence/entity" }
