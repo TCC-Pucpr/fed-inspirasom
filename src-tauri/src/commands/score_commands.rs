@@ -51,6 +51,23 @@ pub async fn week_highest_streak_avg(
 }
 
 #[tauri::command]
+pub async fn week_breath_strength_avg(
+    db_state: State<'_, DatabaseState>,
+) -> ServiceResult<ScoreDataInDays> {
+    info!("Received request to fetch week average breath strength");
+    let d = days_data(&db_state.db, score::Column::BreathAverageStrength).await?;
+    let mut s = Vec::with_capacity(d.len());
+    for (sum_count, day) in d {
+        s.push(DailyScoreData {
+            data: sum_count.avg(),
+            date: format_date(day)
+        })
+    }
+    info!("Returning weekly breath strength: {:?}", s);
+    Ok(s)
+}
+
+#[tauri::command]
 pub async fn week_breath_duration_avg(
     db_state: State<'_, DatabaseState>,
 ) -> ServiceResult<ScoreDataInDays> {

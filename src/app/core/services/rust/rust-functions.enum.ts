@@ -146,6 +146,11 @@ export enum RustFunctionName {
      */
     averageTotalBreathDuration = "week_breath_duration_avg",
     /**
+     * Retorna uma lista contendo a média da forca do sopro durante os jogos dos
+     * ultimos 7 dias incluindo do dia atual
+     */
+    averageBreathStrength = "week_breath_strength_avg",
+    /**
      * Retorna uma lista contendo a quantidade de musicas completadas nos ultimos 7 dias
      * incluindo o dia atual
      */

@@ -63,6 +63,7 @@ fn main() {
             week_avg_scores,
             week_highest_streak_avg,
             week_breath_duration_avg,
+            week_breath_strength_avg,
             completed_songs,
             set_user_pfp,
             set_user_name,
